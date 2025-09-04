@@ -46,6 +46,8 @@ export interface IRenderOptions {
   strokeWidth: number;
   /** 笔画颜色 */
   strokeColor: string;
+  /** 部首颜色 */
+  radicalColor?: string;
   /** 是否使用米字格背景 */
   useGridBackground: boolean;
   /** 米字格线条颜色 */

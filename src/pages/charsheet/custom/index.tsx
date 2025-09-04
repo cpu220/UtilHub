@@ -12,8 +12,8 @@ const { Title, Paragraph } = Typography;
 const config: ICharsheetConfig = {
   width: 60,
   height: 60,
-  defaultRow: 4,
-  defaultCol: 4
+  defaultRow: 12,
+  defaultCol: 10
 };
 
 /**
@@ -75,7 +75,8 @@ const CustomCharsheetPage: React.FC = () => {
       style={{
         width: config.width + 'px',
         height: config.height + 'px',
-        border: '1px solid #000',
+        border: '1px solid #ddd',
+        fontSize: `${config.width*0.6}px`,
       }}
       >
         {item.character}
@@ -153,7 +154,8 @@ const CustomCharsheetPage: React.FC = () => {
         width: config.width, // 设置合适的宽度
         height: config.height, // 设置合适的高度
         strokeWidth: 3, // 设置笔画宽度
-        strokeColor: '#333', // 设置笔画颜色
+        strokeColor: '#bbbcbd', // 设置笔画颜色
+        radicalColor: '#168F16',
         useGridBackground: true, // 使用米字格背景
         gridColor: '#DDD', // 设置米字格线条颜色
         // delayBetweenLoops: 2000, // 设置动画循环间隔
