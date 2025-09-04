@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, Card, Typography } from 'antd';
+import { Form, message, Input, Button, Card, Typography } from 'antd';
 import type { FormProps } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter } from '@/utils';
 import styles from './index.less';
@@ -16,19 +16,19 @@ type IFieldType = {
  */
 const BasicCharsheetPage: React.FC = () => {
   const [form] = Form.useForm();
-  const [character, setCharacter] = useState<string>('待');
+  const [character, setCharacter] = useState<string>('赢');
 
 
   useEffect(() => {
-    const strokeColors = ['#333', '#EE00FF', '#777', '#999', '#bbb'];
-    const radicalColor = '#168F16';
+ 
     const options = {
-      width: 100,
-      height: 100,
+      width: 400,
+      height: 400,
       strokeWidth: 5,
-      radicalColor: radicalColor,
-      strokeColor: strokeColors[1],
-      delayBetweenLoops:1000
+      radicalColor: '#168F16',
+      strokeColor: '#000',
+      useGridBackground: true,
+      delayBetweenLoops: 1000
     };
 
     renderHanziInContainer('a1', character, options);
@@ -42,32 +42,36 @@ const BasicCharsheetPage: React.FC = () => {
 
 
   const onFinish: FormProps<IFieldType>['onFinish'] = (values) => {
-     
+
     console.log('Success:', values);
-    setCharacter(values.character);
+    const newCharacter = values.character.trim();
+    if (newCharacter.length > 1) {
+      console.log(newCharacter[0]);
+      setCharacter(newCharacter[0]);
+    } else {
+      message.error('请输入一个汉字');
+      return
+    }
+
   };
 
 
   return (
     <div style={{ padding: '24px' }}>
-      <Card title="基础字帖生成" bordered={false}>
-        <Title level={4}>基础字帖生成功能</Title>
-        <Paragraph>
-          这里是基础的字帖生成页面，用户可以选择预设的字帖模板和参数来生成书法练习内容。
-        </Paragraph>
-        <Paragraph>
-          即将实现的功能包括：字体选择、文字内容设置、纸张样式选择等。
-        </Paragraph>
-      </Card>
+      
 
       <div className={styles['from-container']} >
-        <Form
+        <Form 
           layout={"inline"}
           form={form}
-          initialValues={{ character: "赢" }}
+          initialValues={{ character: character }}
           onFinish={onFinish}
         >
-          <Form.Item label="汉字" name="character">
+          <Form.Item
+            label="汉字"
+            name="character"
+            rules={[{ required: true, message: 'Please input your password!' }]}
+          >
             <Input placeholder="input placeholder" />
           </Form.Item>
           <Form.Item>
