@@ -167,7 +167,7 @@ const CustomCharsheetPage: React.FC = () => {
         width: config.width, // 设置合适的宽度
         height: config.height, // 设置合适的高度
         strokeWidth: 3, // 设置笔画宽度
-        strokeColor: '#bbbcbd', // 设置笔画颜色
+        strokeColor: '#c3c3c3', // 设置笔画颜色
         radicalColor: '#168F16',
         useGridBackground: true, // 使用米字格背景
         gridColor: '#DDD', // 设置米字格线条颜色
