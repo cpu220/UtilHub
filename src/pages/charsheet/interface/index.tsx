@@ -1,0 +1,91 @@
+/**
+ * 字帖相关接口定义
+ * 统一管理字帖功能中用到的所有TypeScript类型
+ */
+
+/**
+ * 网格中的单个单元格数据类型
+ */
+export interface IGridItem {
+  /** 单元格的X坐标 */
+  x: number;
+  /** 单元格的Y坐标 */
+  y: number;
+  /** 单元格中显示的字符 */
+  character: string;
+}
+
+/**
+ * 二维网格数据类型
+ */
+export type IGridData = IGridItem[][];
+
+/**
+ * 字帖配置参数
+ */
+export interface ICharsheetConfig {
+  /** 单元格宽度 */
+  width: number;
+  /** 单元格高度 */
+  height: number;
+  /** 默认行数 */
+  defaultRow: number;
+  /** 默认列数 */
+  defaultCol: number;
+}
+
+/**
+ * 渲染汉字时的配置选项
+ */
+export interface IRenderOptions {
+  /** 渲染宽度 */
+  width: number;
+  /** 渲染高度 */
+  height: number;
+  /** 笔画宽度 */
+  strokeWidth: number;
+  /** 笔画颜色 */
+  strokeColor: string;
+  /** 是否使用米字格背景 */
+  useGridBackground: boolean;
+  /** 米字格线条颜色 */
+  gridColor: string;
+  /** 动画循环间隔 */
+  delayBetweenLoops?: number;
+  /** 是否显示汉字轮廓 */
+  showOutline: boolean;
+  /** 轮廓颜色 */
+  outlineColor: string;
+}
+
+/**
+ * 打印配置选项
+ */
+export interface IPrintOptions {
+  /** 打印标题 */
+  title: string;
+  /** 是否显示预览 */
+  showPreview: boolean;
+  /** 打印样式 */
+  styles: string[];
+  /** 打印前回调函数 */
+  onBeforePrint?: () => void;
+  /** 打印后回调函数 */
+  onAfterPrint?: () => void;
+}
+
+/**
+ * 字帖工具相关接口
+ */
+export namespace ICharsheetInterface {
+  /** 网格项类型 */
+  export type Item = IGridItem;
+  /** 网格数据类型 */
+  export type Data = IGridData;
+  /** 配置参数类型 */
+  export type Config = ICharsheetConfig;
+  /** 渲染选项类型 */
+  export type HanziRenderOptions = IRenderOptions;
+  /** 打印选项类型 */
+  export type PrintConfig = IPrintOptions;
+}

@@ -6,6 +6,7 @@ const radicalColor = '#ff0000';
 const defaultOptions = {
   width: 100,
   height: 100,
+  padding: 5,
   strokeWidth: 5,
   strokeColor: strokeColors[1],
   useGridBackground: false,  // 新增：默认不使用米字格背景
