@@ -9,12 +9,16 @@ const defaultOptions = {
   padding: 5,
   strokeWidth: 5,
   strokeColor: strokeColors[1],
-  useGridBackground: false,  // 新增：默认不使用米字格背景
-  gridColor: '#DDD'  // 新增：米字格线条颜色
+  useGridBackground: false,
+  gridColor: '#DDD',
+  useLocalData: true // 控制是否使用本地字库
 };
 
 // 存储已创建的writer实例引用
 const writerInstances = new Map<string, any>();
+
+// 本地字库数据缓存
+const localCharacterDataCache = new Map<string, any>();
 
 /**
  * 安全地清空DOM容器内容
@@ -23,18 +27,17 @@ const writerInstances = new Map<string, any>();
  */
 export const safelyClearContainer = (container: HTMLElement | null): boolean => {
   if (!container) {
-    console.error('Container not found or is null');
+    console.error('容器未找到或为空');
     return false;
   }
 
   try {
-    // 安全地清空容器
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
     return true;
   } catch (error) {
-    console.error('Error clearing container:', error);
+    console.error('清空容器出错:', error);
     return false;
   }
 };
@@ -48,67 +51,71 @@ export const safelyClearContainer = (container: HTMLElement | null): boolean => 
  * @returns 创建的SVG元素的唯一ID
  */
 const createGridBackground = (container: HTMLElement, width: number, height: number, gridColor: string): string => {
-  // 生成唯一的SVG ID
   const svgId = `character-svg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-  // 创建一个带米字格背景的SVG元素
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('id', svgId);
   svg.setAttribute('width', width.toString());
   svg.setAttribute('height', height.toString());
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-  // 添加米字格背景
-  // 水平线
-  const horizontalLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  horizontalLine.setAttribute('x1', '0');
-  horizontalLine.setAttribute('y1', (height / 2).toString());
-  horizontalLine.setAttribute('x2', width.toString());
-  horizontalLine.setAttribute('y2', (height / 2).toString());
-  horizontalLine.setAttribute('stroke', gridColor);
+  // 添加米字格线条
+  const addGridLine = (x1: string, y1: string, x2: string, y2: string) => {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('stroke', gridColor);
+    svg.appendChild(line);
+  };
 
-  // 垂直线
-  const verticalLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  verticalLine.setAttribute('x1', (width / 2).toString());
-  verticalLine.setAttribute('y1', '0');
-  verticalLine.setAttribute('x2', (width / 2).toString());
-  verticalLine.setAttribute('y2', height.toString());
-  verticalLine.setAttribute('stroke', gridColor);
+  // 绘制米字格
+  addGridLine('0', (height / 2).toString(), width.toString(), (height / 2).toString()); // 水平线
+  addGridLine((width / 2).toString(), '0', (width / 2).toString(), height.toString()); // 垂直线
+  addGridLine('0', '0', width.toString(), height.toString()); // 对角线1
+  addGridLine(width.toString(), '0', '0', height.toString()); // 对角线2
 
-  // 对角线1
-  const diagonalLine1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  diagonalLine1.setAttribute('x1', '0');
-  diagonalLine1.setAttribute('y1', '0');
-  diagonalLine1.setAttribute('x2', width.toString());
-  diagonalLine1.setAttribute('y2', height.toString());
-  diagonalLine1.setAttribute('stroke', gridColor);
-
-  // 对角线2
-  const diagonalLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  diagonalLine2.setAttribute('x1', width.toString());
-  diagonalLine2.setAttribute('y1', '0');
-  diagonalLine2.setAttribute('x2', '0');
-  diagonalLine2.setAttribute('y2', height.toString());
-  diagonalLine2.setAttribute('stroke', gridColor);
-
-  // 将所有线条添加到SVG中
-  svg.appendChild(horizontalLine);
-  svg.appendChild(verticalLine);
-  svg.appendChild(diagonalLine1);
-  svg.appendChild(diagonalLine2);
-
-  // 将SVG添加到容器中
   container.appendChild(svg);
-
   return svgId;
 };
 
+/**
+ * 加载本地汉字数据
+ * @param character 要加载的汉字
+ * @returns 汉字数据或null
+ */
+const loadLocalCharacterData = (character: string): any => {
+  // 检查缓存
+  if (localCharacterDataCache.has(character)) {
+    return localCharacterDataCache.get(character);
+  }
+
+  try {
+    // 使用require方式加载本地字库数据
+    const characterData = require(`hanzi-writer-data/${character}`);
+    // 缓存数据
+    localCharacterDataCache.set(character, characterData);
+    return characterData;
+  } catch (error) {
+    console.warn(`本地字库中未找到"${character}"，将使用CDN方式加载`);
+    return null;
+  }
+};
+
+/**
+ * 在指定容器中渲染汉字
+ * @param svgId 容器ID
+ * @param character 要渲染的汉字
+ * @param options 可选配置项
+ * @returns HanziWriter实例
+ */
 export const renderHanziInContainer = (svgId: string, character: string, options?: any) => {
   const _opt = {
     ...defaultOptions,
     ...options,
   };
-  console.log(_opt)
+  
   // 字符验证
   if (!character || character.length === 0) {
     return;
@@ -120,75 +127,71 @@ export const renderHanziInContainer = (svgId: string, character: string, options
   // 获取容器元素
   const container = document.getElementById(svgId);
   if (!container) {
-    console.error(`Container with id "${svgId}" not found`);
+    console.error(`未找到ID为"${svgId}"的容器`);
     return;
   }
 
   try {
+    // 创建配置对象
+    const writerOptions = { ..._opt };
+    
+    // 如果需要使用本地字库，根据官方API方式设置charDataLoader
+    if (_opt.useLocalData) {
+      writerOptions.charDataLoader = function() {
+        return loadLocalCharacterData(str);
+      };
+    }
+
     // 检查是否已有writer实例
     if (writerInstances.has(svgId)) {
       const writer = writerInstances.get(svgId);
       if (writer && typeof writer.setCharacter === 'function') {
-        // 如果使用了米字格且options中指定了useGridBackground
-        // 则需要重新创建整个writer实例，确保米字格和字符正确关联
+        // 如果使用了米字格，需要重新创建writer实例
         if (_opt.useGridBackground) {
-          // step1: 清空容器
           safelyClearContainer(container);
-
-          // step2: 创建米字格背景
           const targetSvgId = createGridBackground(container, _opt.width, _opt.height, _opt.gridColor);
-
-          // step3: 重新创建writer实例，使用新创建的SVG元素
-          const newWriter = HanziWriter.create(targetSvgId, str, _opt);
-
-          // step4: 更新实例引用
+          const newWriter = HanziWriter.create(targetSvgId, str, writerOptions);
           writerInstances.set(svgId, newWriter);
-
+          
           if (_opt.delayBetweenLoops) {
             newWriter.loopCharacterAnimation();
           }
-
-          // step5: 返回新的writer实例
+          
           return newWriter;
         }
 
-        // step6: 没有使用米字格时，直接更新字符
+        // 没有使用米字格时，直接更新字符
         writer.setCharacter(str);
         return writer;
       }
     } else {
-      // step1: 清空容器
       safelyClearContainer(container);
-
-      let targetSvgId = svgId; // 默认使用传入的容器ID作为目标SVG ID
-
-      // step2: 如果需要米字格，先创建米字格背景并获取其唯一ID
+      
+      let targetSvgId = svgId;
+      // 如果需要米字格，先创建背景
       if (_opt.useGridBackground) {
         targetSvgId = createGridBackground(container, _opt.width, _opt.height, _opt.gridColor);
       }
 
-      // step3: 创建新的writer实例，使用目标SVG ID
-      const writer = HanziWriter.create(targetSvgId, str, _opt);
-
-      // step4: 保存实例引用
+      const writer = HanziWriter.create(targetSvgId, str, writerOptions);
       writerInstances.set(svgId, writer);
+      
       if (_opt.delayBetweenLoops) {
         writer.loopCharacterAnimation();
       }
-      // step5: 返回新的writer实例
+      
       return writer;
-      // 注意：hanzi-writer 3.7.2版本可能没有draw方法，create后会自动渲染
     }
 
-
-
   } catch (error) {
-    console.error('Error rendering character:', error);
+    console.error('渲染汉字出错:', error);
   }
 };
 
-// 提供一个清理函数，在组件卸载时调用
-// 符合React规范，在组件卸载时清理资源
+/**
+ * 清理HanziWriter资源
+ * @param svgId 容器ID
+ */
 export const cleanupHanziWriter = (svgId: string) => {
   try {
     // 从map中删除实例引用
@@ -202,6 +205,28 @@ export const cleanupHanziWriter = (svgId: string) => {
       safelyClearContainer(container);
     }
   } catch (error) {
-    console.error('Error cleaning up HanziWriter resources:', error);
+    console.error('清理HanziWriter资源出错:', error);
+  }
+};
+
+/**
+ * 预加载本地汉字数据到缓存
+ * @param characters 要预加载的汉字数组
+ */
+export const preloadLocalCharacterData = (characters: string[]) => {
+  try {
+    characters.forEach(char => {
+      if (!localCharacterDataCache.has(char)) {
+        try {
+          // 使用require方式预加载本地字库数据
+          const characterData = require(`hanzi-writer-data/${char}`);
+          localCharacterDataCache.set(char, characterData);
+        } catch (error) {
+          console.warn(`预加载本地字库数据"${char}"失败，将在使用时通过CDN加载`);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('预加载本地字库数据出错:', error);
   }
 };

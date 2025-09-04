@@ -199,8 +199,7 @@ const CustomCharsheetPage: React.FC = () => {
         <div id="grid-container">
           {renderGrid(gridData)}
         </div>
-      </div>
-
+      </div> 
     </div>
   );
 }
