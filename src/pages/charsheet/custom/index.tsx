@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Row, Col, message, Input, Button, Card, Typography } from 'antd';
 import type { FormProps } from 'antd';
-import { renderHanziInContainer, cleanupHanziWriter, printElementById } from '@/utils';
+import { renderHanziInContainer, cleanupHanziWriter, printElementById, generateRandomChineseCharsString, generateRandomChineseChar } from '@/utils';
 import styles from './index.less';
 
 const { Title, Paragraph } = Typography;
@@ -27,15 +27,23 @@ const CustomCharsheetPage: React.FC = () => {
     };
   }, [characters])
 
+  const createFontList = (count: number) :string=> {
+    const chars = generateRandomChineseCharsString(count);
+    return chars
+  }
+
   const createGrid = (x: number, y: number) => {
+    const chars = createFontList(x * y);
+    console.log(chars)
     const grid = [];
+    let index = 0;
     for (let i = 0; i < y; i++) {
       const row = [];
       for (let j = 0; j < x; j++) {
         row.push({
           y: i,
           x: j,
-          character: `${i}x${j}`,
+          character: chars[index++],  
         });
       }
       grid.push(row);
@@ -91,7 +99,7 @@ const CustomCharsheetPage: React.FC = () => {
   /**
    * 打印网格
    */
-  const printGrid = () => {
+  const handlePrintGrid = () => {
     printElementById('grid-container', {
       title: '自定义字帖打印',
       showPreview: false,
@@ -118,11 +126,15 @@ const CustomCharsheetPage: React.FC = () => {
     });
   }
 
+  const handleTranslate = () => {
+    
+  }
+
   return (
     <div style={{ padding: '24px' }}>
       <div>
-        <Button>创建字帖</Button>
-        <Button onClick={printGrid}>打印</Button>
+        <Button onClick={handleTranslate}>创建字帖</Button>
+        <Button onClick={handlePrintGrid}>打印</Button>
       </div>
       <div id="grid-container">
         {renderGrid(gridData)}
