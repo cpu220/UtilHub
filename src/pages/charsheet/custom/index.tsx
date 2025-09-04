@@ -2,11 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Row, Col, Input, Button, App } from 'antd';
 import type { FormProps } from 'antd';
-import { renderHanziInContainer, cleanupHanziWriter, printElementById, generateRandomChineseCharsString } from '@/utils';
-import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
+import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
+import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions } from '../interface';
 import { LEVEL4_LIST } from '../const';
 import { config, defaultRenderOptions } from './const';
 import styles from './index.less';
+import PrintButton from './Component/printButton';
 
  
 
@@ -27,7 +28,7 @@ const CustomCharsheetPage: React.FC = () => {
     // 调用 renderGrid 方法来渲染网格
     const grid = createGrid(config.defaultCol, config.defaultRow);
     setGridData(grid);
-    // handleTranslate()
+
     // 清理函数
     return () => {
       cleanupHanziWriter('grid-container');
@@ -106,45 +107,15 @@ const CustomCharsheetPage: React.FC = () => {
     return result;
   }
 
-  /**
-   * 打印网格
-   */
-  const handlePrintGrid = async () => {
-    // 获取当前时间作为默认左上角时间
-    const currentTime = new Date().toLocaleString();
-    
-    const printOptions: IPrintOptions = {
-      // title: '自定义字帖打印',
-      title:'',
-      showPreview: false,
-      styles: [
-        // 打印专用样式
-        `
-        .grid-item {
-          page-break-inside: avoid;
-          margin: 2px;
-        }
-        .grid-row {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-        }
-        `
-      ],
-      onBeforePrint: () => {
-        message.info('正在准备打印内容...');
-      },
-      onAfterPrint: () => {
-        message.success('打印操作完成');
-      },
-      // 传递当前时间到左上角，如果不需要显示，设置为undefined
-      // topLeftTime: currentTime,
-      // 传递about:blank到左下角，如果不需要显示，设置为undefined
-      // bottomLeftContent: 'about:blank'
-    };
-
-    await printElementById('grid-container', printOptions);
-  }
+  // 打印选项配置
+  const printOptions = {
+    onBeforePrint: () => {
+      message.info('正在准备打印内容...');
+    },
+    onAfterPrint: () => {
+      message.success('打印操作完成');
+    }
+  };
 
   const handleTranslate = () => {
     try {
@@ -193,7 +164,12 @@ const CustomCharsheetPage: React.FC = () => {
     <div style={{ padding: '24px' }}>
       <div className={styles['button-container']}>
         <Button type="link" onClick={handleTranslate}>转化为字帖样式</Button>
-        <Button type="link" onClick={handlePrintGrid}>打印</Button>
+        <PrintButton 
+          elementId="grid-container"
+          printOptions={printOptions}
+          buttonType="link"
+          buttonText="打印"
+        />
       </div>
       <div className={styles['page-grid-container']}>
         <div id="grid-container">
