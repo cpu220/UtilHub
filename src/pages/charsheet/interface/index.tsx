@@ -74,6 +74,10 @@ export interface IPrintOptions {
   onBeforePrint?: () => void;
   /** 打印后回调函数 */
   onAfterPrint?: () => void;
+  /** 左上角时间内容，不传则不显示 */
+  topLeftTime?: string;
+  /** 左下角内容，不传则不显示 */
+  bottomLeftContent?: string;
 }
 
 /**

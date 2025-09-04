@@ -28,6 +28,16 @@ export interface PrintOptions {
    * 打印后的回调函数
    */
   onAfterPrint?: () => void;
+  
+  /**
+   * 左上角时间内容，不传则不显示
+   */
+  topLeftTime?: string;
+  
+  /**
+   * 左下角内容，不传则不显示
+   */
+  bottomLeftContent?: string;
 
   /**
    * 打印标题
@@ -126,11 +136,9 @@ const createStyledHtmlForElement = (elementId: string): string => {
   const justifyContent = elementStyle.justifyContent;
   const flexWrap = elementStyle.flexWrap;
   
-  // 创建包含所有必要样式的HTML字符串，保留原始元素的ID和布局样式
+  // 直接返回带有内联样式的元素HTML，避免重复的ID和不必要的嵌套
   const htmlWithStyles = `
-    <div id="${elementIdName}" class="${classNames}" style="display: ${displayStyle}; width: 100%; flex-direction: ${flexDirection || 'row'}; justify-content: ${justifyContent || 'flex-start'}; flex-wrap: ${flexWrap || 'nowrap'};">
-      ${tempContainer.innerHTML}
-    </div>
+    ${tempContainer.innerHTML}
     <style>
       /* 复制的元素特定样式 */
       ${extraStyles}
@@ -153,6 +161,13 @@ const createStyledHtmlForElement = (elementId: string): string => {
       @media print {
         .no-print { display: none !important; }
       }
+      /* 确保内容可见性 */
+      #${elementIdName} {
+        display: ${displayStyle} !important;
+        width: 100% !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
     </style>
   `;
   
@@ -170,7 +185,9 @@ export const printElementById = async (elementId: string, options: PrintOptions 
     styles = [],
     onBeforePrint,
     onAfterPrint,
-    title = document.title
+    title = document.title,
+    topLeftTime,
+    bottomLeftContent
   } = options;
 
   try {
@@ -196,12 +213,69 @@ export const printElementById = async (elementId: string, options: PrintOptions 
     // 使用函数创建包含完整样式的HTML内容
     const styledHtml = createStyledHtmlForElement(elementId);
     
+    // 准备附加内容和专用样式
+    let additionalContent = '';
+    let additionalStyles = '';
+    
+    // 只有在有内容时才添加元素和样式
+    if (topLeftTime || bottomLeftContent) {
+      // 添加打印专用样式
+      additionalStyles = `
+        <style>
+          /* 打印媒体查询特定样式 */
+          @media print {
+            .print-header, .print-footer {
+              position: fixed !important;
+              z-index: 1000 !important;
+              font-size: 12px !important;
+            }
+            .print-content {
+              margin-top: 20px !important;
+              margin-bottom: 20px !important;
+            }
+          }
+          /* 屏幕预览样式 */
+          // .print-header, .print-footer {
+          //   position: absolute;
+          //   font-size: 12px;
+          //   background: white;
+          //   padding: 2px 5px;
+          // }
+          .print-container {
+            position: relative;
+            min-height: calc(100vh - 40px);
+          }
+        </style>
+      `;
+      
+      // 如果有左上角时间，添加到附加内容
+      // if (topLeftTime) {
+      //   additionalContent += `<div class="print-header" style="top: 0; left: 0;">${topLeftTime}</div>`;
+      // }
+      
+      // // 如果有左下角内容，添加到附加内容
+      // if (bottomLeftContent) {
+      //   additionalContent += `<div class="print-footer" style="bottom: 0; left: 0;">${bottomLeftContent}</div>`;
+      // }
+    }
+    
+    // 创建包含所有必要样式和附加内容的最终HTML
+    const finalContent = `
+      ${additionalStyles}
+      <div class="print-container">
+        ${additionalContent}
+        <div class="print-content">
+          ${styledHtml}
+        </div>
+      </div>
+    `;
+    
     // 准备模板参数
     const templateParams = {
       title: title,
       originalStyles: '', // 不收集整个页面样式，避免冲突
       userStyles: styles.map(style => `<style>${style}</style>`).join('\n'),
-      content: styledHtml
+      content: finalContent
     };
     
     // 使用模板方法生成HTML内容

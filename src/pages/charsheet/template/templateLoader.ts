@@ -20,11 +20,44 @@ export const renderPrintTemplate = async (params: {
   try {
     // 使用fetch API加载printTemplate.html文件
     // 在Umi项目中，构建后的文件会在根目录下
-    const response = await fetch('/printTemplate.html');
+    console.log('Attempting to load printTemplate.html...');
     
-    // 如果fetch失败，使用降级方案
-    if (!response.ok) {
-      console.warn('Failed to load printTemplate.html, using fallback template');
+    // 尝试不同的路径方案
+    const basePath = window.location.origin;
+    console.log('Base path:', basePath);
+    
+    // 定义多个可能的路径
+    const templatePaths = [
+      '/printTemplate.html',
+      `${basePath}/printTemplate.html`,
+      'printTemplate.html'
+    ];
+    
+    let templateContent: string | null = null;
+    let successPath: string | null = null;
+    
+    // 尝试所有可能的路径
+    for (const path of templatePaths) {
+      try {
+        console.log(`Trying to load from path: ${path}`);
+        const response = await fetch(path);
+        
+        if (response.ok) {
+          templateContent = await response.text();
+          successPath = path;
+          console.log(`Successfully loaded printTemplate.html from ${path}`);
+          break;
+        } else {
+          console.warn(`Failed to load from ${path}, status: ${response.status}`);
+        }
+      } catch (error) {
+        console.warn(`Error loading from ${path}:`, error);
+      }
+    }
+    
+    // 如果没有找到有效模板，使用降级方案
+    if (!templateContent) {
+      console.warn('All template paths failed, using fallback template');
       // 使用内联硬编码模板作为降级方案
       const fallbackTemplate = `<!DOCTYPE html>
 <html>
@@ -66,14 +99,11 @@ export const renderPrintTemplate = async (params: {
       return renderedContent;
     }
     
-    // 获取模板内容
-    const templateContent = await response.text();
-    
     // 使用Handlebars编译并渲染模板
     const template = Handlebars.compile(templateContent);
     const renderedContent = template(params);
     
-    // console.log('Rendered print template content:', renderedContent);
+    console.log(`Successfully rendered template using ${successPath ? 'external file' : 'fallback template'}`);
     return renderedContent;
   } catch (error) {
     console.error('Error rendering print template:', error);

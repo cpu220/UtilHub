@@ -4,6 +4,7 @@ import { Form, Row, Col, Input, Button, Card, Typography, App } from 'antd';
 import type { FormProps } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, printElementById, generateRandomChineseCharsString } from '@/utils';
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
+import { LEVEL4_LIST } from '../const';
 import styles from './index.less';
 
 const { Title, Paragraph } = Typography;
@@ -12,8 +13,8 @@ const { Title, Paragraph } = Typography;
 const config: ICharsheetConfig = {
   width: 60,
   height: 60,
-  defaultRow: 15,
-  defaultCol: 12
+  defaultRow: 25,
+  defaultCol: 10
 };
 
 
@@ -39,8 +40,10 @@ const CustomCharsheetPage: React.FC = () => {
   }, [characters])
 
   const createFontList = (count: number): string => {
-    const chars = generateRandomChineseCharsString(count);
-    return chars
+    // const chars = generateRandomChineseCharsString(count);
+    // return chars
+    const chars = LEVEL4_LIST;
+    return chars;
   }
 
   const createGrid = (x: number, y: number): IGridData => {
@@ -112,8 +115,12 @@ const CustomCharsheetPage: React.FC = () => {
    * 打印网格
    */
   const handlePrintGrid = async () => {
+    // 获取当前时间作为默认左上角时间
+    const currentTime = new Date().toLocaleString();
+    
     const printOptions: IPrintOptions = {
-      title: '自定义字帖打印',
+      // title: '自定义字帖打印',
+      title:'',
       showPreview: false,
       styles: [
         // 打印专用样式
@@ -134,7 +141,11 @@ const CustomCharsheetPage: React.FC = () => {
       },
       onAfterPrint: () => {
         message.success('打印操作完成');
-      }
+      },
+      // 传递当前时间到左上角，如果不需要显示，设置为undefined
+      // topLeftTime: currentTime,
+      // 传递about:blank到左下角，如果不需要显示，设置为undefined
+      // bottomLeftContent: 'about:blank'
     };
 
     await printElementById('grid-container', printOptions);
