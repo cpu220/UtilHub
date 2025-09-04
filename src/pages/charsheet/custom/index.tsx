@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Row, Col, message, Input, Button, Card, Typography } from 'antd';
 import type { FormProps } from 'antd';
-import { renderHanziInContainer, cleanupHanziWriter, printElementById, generateRandomChineseCharsString, generateRandomChineseChar } from '@/utils';
+import { renderHanziInContainer, cleanupHanziWriter, printElementById, generateRandomChineseCharsString } from '@/utils';
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
 import styles from './index.less';
 
@@ -12,9 +12,10 @@ const { Title, Paragraph } = Typography;
 const config: ICharsheetConfig = {
   width: 60,
   height: 60,
-  defaultRow: 12,
-  defaultCol: 10
+  defaultRow: 2,
+  defaultCol: 3
 };
+
 
 /**
  * 自定义字帖生成页面
@@ -27,9 +28,9 @@ const CustomCharsheetPage: React.FC = () => {
 
   useEffect(() => {
     // 调用 renderGrid 方法来渲染网格
-    const grid = createGrid(config.defaultCol, config.defaultRow); 
+    const grid = createGrid(config.defaultCol, config.defaultRow);
     setGridData(grid);
-    
+    // handleTranslate()
     // 清理函数
     return () => {
       cleanupHanziWriter('grid-container');
@@ -52,7 +53,7 @@ const CustomCharsheetPage: React.FC = () => {
         row.push({
           y: i,
           x: j,
-          character: chars[index++],  
+          character: chars[index++],
         });
       }
       grid.push(row);
@@ -68,16 +69,16 @@ const CustomCharsheetPage: React.FC = () => {
    */
   const createBlockItem = (item: IGridItem) => {
     return (
-      <div 
-      id={`grid-item-${item.x}-${item.y}`} 
-      key={item.x + item.y} 
-      className={styles['grid-item']}
-      style={{
-        width: config.width + 'px',
-        height: config.height + 'px',
-        border: '1px solid #ddd',
-        fontSize: `${config.width*0.6}px`,
-      }}
+      <div
+        id={`grid-item-${item.x}-${item.y}`}
+        key={item.x + item.y}
+        className={styles['grid-item']}
+        style={{
+          width: config.width + 'px',
+          height: config.height + 'px',
+          border: '1px solid #ddd',
+          fontSize: `${config.width * 0.6}px`,
+        }}
       >
         {item.character}
       </div>
@@ -109,7 +110,7 @@ const CustomCharsheetPage: React.FC = () => {
   /**
    * 打印网格
    */
-  const handlePrintGrid = () => {
+  const handlePrintGrid = async () => {
     const printOptions: IPrintOptions = {
       title: '自定义字帖打印',
       showPreview: false,
@@ -134,8 +135,8 @@ const CustomCharsheetPage: React.FC = () => {
         message.success('打印操作完成');
       }
     };
-    
-    printElementById('grid-container', printOptions);
+
+    await printElementById('grid-container', printOptions);
   }
 
   const handleTranslate = () => {
@@ -146,9 +147,9 @@ const CustomCharsheetPage: React.FC = () => {
         message.error('未找到网格容器');
         return;
       }
-      
+
       message.info('正在将文本转换为字帖样式...');
-      
+
       // 渲染选项配置
       const renderOptions: IRenderOptions = {
         width: config.width, // 设置合适的宽度
@@ -162,7 +163,7 @@ const CustomCharsheetPage: React.FC = () => {
         showOutline: true, // 显示汉字轮廓
         outlineColor: '#F0F0F0' // 设置轮廓颜色
       };
-      
+
       // 遍历每一行
       gridData.forEach((row, rowIndex) => {
         row.forEach((item, colIndex) => {
@@ -171,18 +172,18 @@ const CustomCharsheetPage: React.FC = () => {
           if (cellElement) {
             // 清空单元格内容
             cellElement.innerHTML = '';
-            
+
             // 设置样式以确保米字格能正确显示
             cellElement.style.display = 'flex';
             cellElement.style.alignItems = 'center';
             cellElement.style.justifyContent = 'center';
-            
+
             // 使用 renderHanziInContainer 方法渲染带米字格的汉字
             renderHanziInContainer(cellElement.id, item.character, renderOptions);
           }
         });
       });
-      
+
       message.success('字帖样式转换完成');
     } catch (error) {
       console.error('转换为字帖样式时出错:', error);
@@ -192,9 +193,9 @@ const CustomCharsheetPage: React.FC = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      <div>
-        <Button onClick={handleTranslate}>转化为字帖样式</Button>
-        <Button onClick={handlePrintGrid}>打印</Button>
+      <div className={styles['button-container']}>
+        <Button type="link" onClick={handleTranslate}>转化为字帖样式</Button>
+        <Button type="link" onClick={handlePrintGrid}>打印</Button>
       </div>
       <div id="grid-container">
         {renderGrid(gridData)}

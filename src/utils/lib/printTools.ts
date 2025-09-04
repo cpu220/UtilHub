@@ -3,6 +3,8 @@
  * 提供通用的打印功能，支持选择性打印指定HTML元素
  */
 
+import { renderPrintTemplate } from '@/pages/charsheet/template/templateLoader';
+
 /**
  * 打印配置选项
  */
@@ -34,11 +36,135 @@ export interface PrintOptions {
 }
 
 /**
+ * 获取元素的所有计算样式并应用为内联样式
+ * @param element 要处理的DOM元素
+ * @returns 处理后的元素克隆
+ */
+const cloneElementWithInlineStyles = (element: HTMLElement): HTMLElement => {
+  // 克隆元素
+  const clone = element.cloneNode(true) as HTMLElement;
+  
+  // 获取元素的计算样式
+  const computedStyle = window.getComputedStyle(element);
+  
+  // 将计算样式应用为内联样式
+  let styleText = '';
+  for (let i = 0; i < computedStyle.length; i++) {
+    const prop = computedStyle[i];
+    const value = computedStyle.getPropertyValue(prop);
+    styleText += `${prop}: ${value}; `;
+  }
+  clone.style.cssText = styleText;
+  
+  // 递归处理所有子元素
+  Array.from(clone.children).forEach(child => {
+    if (child instanceof HTMLElement) {
+      // 递归克隆子元素，保留其样式
+      const styledChild = cloneElementWithInlineStyles(child);
+      clone.replaceChild(styledChild, child);
+    }
+  });
+  
+  return clone;
+};
+
+/**
+ * 创建一个包含元素和其所有样式的完整HTML片段
+ * @param elementId 元素ID
+ * @returns 包含完整样式的HTML字符串
+ */
+const createStyledHtmlForElement = (elementId: string): string => {
+  // 获取要打印的元素
+  const element = document.getElementById(elementId);
+  if (!element) {
+    throw new Error(`Element with id ${elementId} not found`);
+  }
+  
+  // 克隆元素并应用内联样式
+  const styledElement = cloneElementWithInlineStyles(element);
+  
+  // 获取元素的类名和ID，确保样式选择器匹配
+  const classNames = element.className;
+  const elementIdName = element.id;
+  
+  // 创建一个临时容器，用于收集所有应用的样式
+  const tempContainer = document.createElement('div');
+  tempContainer.appendChild(styledElement);
+  
+  // 为了确保样式在打印窗口中正确应用，我们添加额外的内联样式块
+  let extraStyles = '';
+  
+  // 查找与该元素相关的所有CSS规则
+  Array.from(document.styleSheets).forEach(sheet => {
+    try {
+      if (sheet.cssRules) {
+        Array.from(sheet.cssRules).forEach(rule => {
+          // 查找可能影响该元素的规则
+          if (rule instanceof CSSStyleRule) {
+            // 检查元素是否匹配这个规则
+            if (element.matches(rule.selectorText)) {
+              extraStyles += `${rule.selectorText} { ${rule.style.cssText} }\n`;
+            }
+            // 特殊处理网格相关样式（grid-row, grid-item）
+            if (rule.selectorText.includes('.grid-row') || rule.selectorText.includes('.grid-item') || 
+                rule.selectorText.includes('#grid-container') || rule.selectorText.includes('#' + elementIdName)) {
+              extraStyles += `${rule.selectorText} { ${rule.style.cssText} }\n`;
+            }
+          }
+        });
+      }
+    } catch (e) {
+      // 忽略跨域样式表错误
+      console.warn('Cannot access stylesheet:', e);
+    }
+  });
+  
+  // 获取原始元素的计算样式，特别是布局相关的样式
+  const elementStyle = window.getComputedStyle(element);
+  const displayStyle = elementStyle.display;
+  const flexDirection = elementStyle.flexDirection;
+  const justifyContent = elementStyle.justifyContent;
+  const flexWrap = elementStyle.flexWrap;
+  
+  // 创建包含所有必要样式的HTML字符串，保留原始元素的ID和布局样式
+  const htmlWithStyles = `
+    <div id="${elementIdName}" class="${classNames}" style="display: ${displayStyle}; width: 100%; flex-direction: ${flexDirection || 'row'}; justify-content: ${justifyContent || 'flex-start'}; flex-wrap: ${flexWrap || 'nowrap'};">
+      ${tempContainer.innerHTML}
+    </div>
+    <style>
+      /* 复制的元素特定样式 */
+      ${extraStyles}
+      /* 网格项打印专用样式 */
+      .grid-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
+      .grid-item {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        page-break-inside: avoid;
+        margin: 2px;
+      }
+      /* 打印专用重置样式 */
+      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      @media print {
+        .no-print { display: none !important; }
+      }
+    </style>
+  `;
+  
+  return htmlWithStyles;
+};
+
+/**
  * 打印指定ID的HTML元素
  * @param elementId 要打印的HTML元素ID
  * @param options 打印配置选项
  */
-export const printElementById = (elementId: string, options: PrintOptions = {}): void => {
+export const printElementById = async (elementId: string, options: PrintOptions = {}): Promise<void> => {
   const {
     showPreview = false,
     styles = [],
@@ -67,61 +193,22 @@ export const printElementById = (elementId: string, options: PrintOptions = {}):
       return;
     }
 
-    // 获取原始文档的样式
-    const originalStyles = Array.from(document.styleSheets)
-      .map(sheet => {
-        try {
-          // 尝试获取样式内容
-          if (sheet.href) {
-            return `<link rel="stylesheet" href="${sheet.href}">`;
-          } else if (sheet.cssRules) {
-            return `<style>${Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n')}</style>`;
-          }
-        } catch (e) {
-          // 忽略跨域样式表的错误
-          console.warn('Cannot access stylesheet:', e);
-        }
-        return '';
-      })
-      .filter(Boolean)
-      .join('\n');
-
-    // 添加用户指定的额外样式
-    const userStyles = styles.map(style => `<style>${style}</style>`).join('\n');
+    // 使用函数创建包含完整样式的HTML内容
+    const styledHtml = createStyledHtmlForElement(elementId);
+    
+    // 准备模板参数
+    const templateParams = {
+      title: title,
+      originalStyles: '', // 不收集整个页面样式，避免冲突
+      userStyles: styles.map(style => `<style>${style}</style>`).join('\n'),
+      content: styledHtml
+    };
+    
+    // 使用模板方法生成HTML内容
+    const htmlContent = await renderPrintTemplate(templateParams);
 
     // 设置打印窗口的内容
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${title}</title>
-          ${originalStyles}
-          ${userStyles}
-          <style>
-            /* 打印专用样式 */
-            @media print {
-              body {
-                margin: 0;
-                padding: 0;
-              }
-              .no-print {
-                display: none !important;
-              }
-            }
-            #page-content {
-              padding: 20px;
-              width: 100%;
-              height: 100%;
-            }
-          </style>
-        </head>
-        <body>
-          <div id="page-content">
-          ${element.outerHTML}
-          <div>
-        </body>
-      </html>
-    `);
+    printWindow.document.write(htmlContent);
 
     // 等待文档加载完成
     printWindow.document.close();
@@ -141,21 +228,44 @@ export const printElementById = (elementId: string, options: PrintOptions = {}):
 
     printWindow.addEventListener('afterprint', handleAfterPrint);
 
-    // 触发打印对话框
-    setTimeout(() => {
+    // 标记打印是否已触发
+    let printTriggered = false;
+    
+    // 主要打印触发函数
+    const triggerPrint = () => {
+      if (printTriggered) return;
+      printTriggered = true;
+      
       try {
         if (showPreview) {
           // 预览模式，不自动触发打印
           printWindow.focus();
         } else {
           // 非预览模式，自动触发打印
+          printWindow.focus(); // 确保窗口获得焦点
           printWindow.print();
         }
       } catch (e) {
         console.error('Printing failed:', e);
         handleAfterPrint();
       }
-    }, 300);
+    };
+    
+    // 优先使用DOMContentLoaded事件作为主要的打印触发点
+    printWindow.addEventListener('DOMContentLoaded', () => {
+      // DOM加载完成后，稍微延迟确保内容完全渲染
+      setTimeout(() => {
+        triggerPrint();
+      }, 200); // 较小的延迟，因为DOM已经加载完成
+    });
+    
+    // 使用setTimeout作为后备方案，防止DOMContentLoaded事件没有触发
+    setTimeout(() => {
+      if (!printTriggered) {
+        console.warn('DOMContentLoaded event did not trigger, using fallback timeout');
+        triggerPrint();
+      }
+    }, 1000); // 较长的超时时间，确保有足够时间让DOMContentLoaded事件触发
 
   } catch (error) {
     console.error('Error during printing:', error);
@@ -171,7 +281,7 @@ export const printElementById = (elementId: string, options: PrintOptions = {}):
  * @param htmlContent 要打印的HTML内容
  * @param options 打印配置选项
  */
-export const printHtmlContent = (htmlContent: string, options: PrintOptions = {}): void => {
+export const printHtmlContent = async (htmlContent: string, options: PrintOptions = {}): Promise<void> => {
   // 创建一个临时元素来存储HTML内容
   const tempId = `print-temp-${Date.now()}`;
   const tempElement = document.createElement('div');
@@ -181,7 +291,7 @@ export const printHtmlContent = (htmlContent: string, options: PrintOptions = {}
   document.body.appendChild(tempElement);
 
   // 打印这个临时元素
-  printElementById(tempId, {
+  await printElementById(tempId, {
     ...options,
     onAfterPrint: () => {
       // 打印完成后删除临时元素

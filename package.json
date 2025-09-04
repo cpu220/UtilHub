@@ -42,9 +42,11 @@
     "antd-style": "^3.7.0",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.13",
+    "hanzi-writer": "^3.7.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "hanzi-writer": "^3.7.2"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@ant-design/pro-cli": "^3.3.0",
