@@ -1,22 +1,46 @@
-import { Card, Typography } from 'antd';
+ 
+import React, { useEffect, useState } from 'react';
+import { Form, message, Input, Button, Card, Typography } from 'antd';
+import type { FormProps } from 'antd';
+import { renderHanziInContainer, cleanupHanziWriter } from '@/utils';
+import styles from './index.less';
 
 const { Title, Paragraph } = Typography;
 
 /**
  * 自定义字帖生成页面
  */
-export default function CustomCharsheetPage() {
+const CustomCharsheetPage : React.FC = () => {
+
+  const [form] = Form.useForm();
+  const [characters, setCharacters] = useState('');
+
+  useEffect(()=>{
+    createGrid(8,16)
+  },[characters])
+
+  const createGrid = (x:number,y:number)=>{
+    const grid = [];
+    for (let i = 0; i < y; i++) {
+      const row = [];
+      for (let j = 0; j < x; j++) {
+        row.push({
+          y: i,
+          x: j,
+          character: `${i}x${j}`,
+        });
+      }
+      grid.push(row);
+    }
+    console.log(grid)
+    return grid;
+  }
+
   return (
     <div style={{ padding: '24px' }}>
-      <Card title="自定义字帖生成" bordered={false}>
-        <Title level={4}>高级字帖定制功能</Title>
-        <Paragraph>
-          这里是自定义字帖生成页面，提供更丰富的设置选项来创建个性化的书法练习内容。
-        </Paragraph>
-        <Paragraph>
-          即将实现的功能包括：高级字体参数调整、自定义布局、特殊效果添加等。
-        </Paragraph>
-      </Card>
+      
     </div>
   );
 }
+
+export default CustomCharsheetPage;

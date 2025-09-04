@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, message, Input, Button, Card, Typography } from 'antd';
+import { Form, Switch, message, Input, Button, Card, Typography } from 'antd';
 import type { FormProps } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter } from '@/utils';
 import styles from './index.less';
@@ -9,6 +9,7 @@ const { Title, Paragraph } = Typography;
 
 type IFieldType = {
   character: string;
+  loops: number;
 };
 
 /**
@@ -17,10 +18,10 @@ type IFieldType = {
 const BasicCharsheetPage: React.FC = () => {
   const [form] = Form.useForm();
   const [character, setCharacter] = useState<string>('赢');
-
+  const [loops, setLoops] = useState<number>(1000);
 
   useEffect(() => {
- 
+
     const options = {
       width: 400,
       height: 400,
@@ -28,7 +29,7 @@ const BasicCharsheetPage: React.FC = () => {
       radicalColor: '#168F16',
       strokeColor: '#000',
       useGridBackground: true,
-      delayBetweenLoops: 1000
+      delayBetweenLoops: loops
     };
 
     renderHanziInContainer('a1', character, options);
@@ -37,7 +38,7 @@ const BasicCharsheetPage: React.FC = () => {
     return () => {
       cleanupHanziWriter('a1');
     };
-  }, [character]);
+  }, [character, loops]);
 
 
 
@@ -45,9 +46,12 @@ const BasicCharsheetPage: React.FC = () => {
 
     console.log('Success:', values);
     const newCharacter = values.character.trim();
-    if (newCharacter.length > 1) {
+    if (newCharacter.length >= 1) {
       console.log(newCharacter[0]);
       setCharacter(newCharacter[0]);
+      setLoops(Number(values.loops));
+
+
     } else {
       message.error('请输入一个汉字');
       return
@@ -58,13 +62,13 @@ const BasicCharsheetPage: React.FC = () => {
 
   return (
     <div style={{ padding: '24px' }}>
-      
+
 
       <div className={styles['from-container']} >
-        <Form 
+        <Form
           layout={"inline"}
           form={form}
-          initialValues={{ character: character }}
+          initialValues={{ character: character, loops: loops }}
           onFinish={onFinish}
         >
           <Form.Item
@@ -73,6 +77,9 @@ const BasicCharsheetPage: React.FC = () => {
             rules={[{ required: true, message: 'Please input your password!' }]}
           >
             <Input placeholder="input placeholder" />
+          </Form.Item>
+          <Form.Item name="loops" label="动画速度" >
+            <Input />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">Submit</Button>

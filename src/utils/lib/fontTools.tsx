@@ -107,7 +107,7 @@ export const renderHanziInContainer = (svgId: string, character: string, options
     ...defaultOptions,
     ...options,
   };
-
+  console.log(_opt)
   // 字符验证
   if (!character || character.length === 0) {
     return;
