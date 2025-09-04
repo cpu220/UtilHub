@@ -233,6 +233,7 @@ export const printElementById = async (elementId: string, options: PrintOptions 
     
     // 主要打印触发函数
     const triggerPrint = () => {
+      
       if (printTriggered) return;
       printTriggered = true;
       

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Form, Row, Col, message, Input, Button, Card, Typography } from 'antd';
+import { Form, Row, Col, Input, Button, Card, Typography, App } from 'antd';
 import type { FormProps } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, printElementById, generateRandomChineseCharsString } from '@/utils';
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
@@ -12,8 +12,8 @@ const { Title, Paragraph } = Typography;
 const config: ICharsheetConfig = {
   width: 60,
   height: 60,
-  defaultRow: 2,
-  defaultCol: 3
+  defaultRow: 15,
+  defaultCol: 12
 };
 
 
@@ -25,6 +25,7 @@ const CustomCharsheetPage: React.FC = () => {
   const [form] = Form.useForm();
   const [characters, setCharacters] = useState('');
   const [gridData, setGridData] = useState<IGridData>([]);
+  const { message } = App.useApp();
 
   useEffect(() => {
     // 调用 renderGrid 方法来渲染网格
@@ -197,9 +198,12 @@ const CustomCharsheetPage: React.FC = () => {
         <Button type="link" onClick={handleTranslate}>转化为字帖样式</Button>
         <Button type="link" onClick={handlePrintGrid}>打印</Button>
       </div>
-      <div id="grid-container">
-        {renderGrid(gridData)}
+      <div className={styles['page-grid-container']}>
+        <div id="grid-container">
+          {renderGrid(gridData)}
+        </div>
       </div>
+
     </div>
   );
 }

@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
-    {{originalStyles}}
-    {{userStyles}}
+    {{{originalStyles}}}
+    {{{userStyles}}}
     <style>
       /* 打印专用样式 */
       @media print {
@@ -24,8 +26,8 @@
   </head>
   <body>
     <div id="page-content">
-        <div>测试模板是否使用</div>
-      {{content}}
+      <div>测试模板是否使用</div>
+      {{{content}}}
     </div>
   </body>
 </html>

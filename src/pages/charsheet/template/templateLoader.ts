@@ -1,7 +1,10 @@
-/**
+/*
  * 模板加载器
  * 提供加载和处理 HTML 模板的功能
  */
+
+// 导入Handlebars模板引擎
+import Handlebars from 'handlebars';
 
 /**
  * 渲染打印模板
@@ -29,8 +32,8 @@ export const renderPrintTemplate = async (params: {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
-    {{originalStyles}}
-    {{userStyles}}
+    {{{originalStyles}}}
+    {{{userStyles}}}
     <style>
       /* 打印专用样式 */
       @media print {
@@ -51,17 +54,14 @@ export const renderPrintTemplate = async (params: {
   </head>
   <body>
     <div id="page-content">
-      {{content}}
+      {{{content}}}
     </div>
   </body>
 </html>`;
     
-      // 替换模板中的变量
-      let renderedContent = fallbackTemplate
-        .replace(/{{title}}/g, params.title)
-        .replace(/{{originalStyles}}/g, params.originalStyles)
-        .replace(/{{userStyles}}/g, params.userStyles)
-        .replace(/{{content}}/g, params.content);
+      // 使用Handlebars编译并渲染模板
+      const template = Handlebars.compile(fallbackTemplate);
+      const renderedContent = template(params);
     
       return renderedContent;
     }
@@ -69,14 +69,11 @@ export const renderPrintTemplate = async (params: {
     // 获取模板内容
     const templateContent = await response.text();
     
-    // 替换模板中的变量
-    let renderedContent = templateContent
-      .replace(/{{title}}/g, params.title)
-      .replace(/{{originalStyles}}/g, params.originalStyles)
-      .replace(/{{userStyles}}/g, params.userStyles)
-      .replace(/{{content}}/g, params.content);
+    // 使用Handlebars编译并渲染模板
+    const template = Handlebars.compile(templateContent);
+    const renderedContent = template(params);
     
-    console.log('Rendered print template content:', renderedContent);
+    // console.log('Rendered print template content:', renderedContent);
     return renderedContent;
   } catch (error) {
     console.error('Error rendering print template:', error);
