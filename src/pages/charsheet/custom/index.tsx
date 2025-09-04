@@ -1,21 +1,16 @@
 
 import React, { useEffect, useState } from 'react';
-import { Form, Row, Col, Input, Button, Card, Typography, App } from 'antd';
+import { Form, Row, Col, Input, Button, App } from 'antd';
 import type { FormProps } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, printElementById, generateRandomChineseCharsString } from '@/utils';
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
 import { LEVEL4_LIST } from '../const';
+import { config, defaultRenderOptions } from './const';
 import styles from './index.less';
 
-const { Title, Paragraph } = Typography;
+ 
 
-// 配置参数
-const config: ICharsheetConfig = {
-  width: 60,
-  height: 60,
-  defaultRow: 25,
-  defaultCol: 10
-};
+
 
 
 /**
@@ -48,7 +43,7 @@ const CustomCharsheetPage: React.FC = () => {
 
   const createGrid = (x: number, y: number): IGridData => {
     const chars = createFontList(x * y);
-    console.log(chars)
+    // console.log(chars)
     const grid: IGridData = [];
     let index = 0;
     for (let i = 0; i < y; i++) {
@@ -62,7 +57,7 @@ const CustomCharsheetPage: React.FC = () => {
       }
       grid.push(row);
     }
-    console.log(grid)
+    // console.log(grid)
     return grid;
   }
 
@@ -163,18 +158,9 @@ const CustomCharsheetPage: React.FC = () => {
       message.info('正在将文本转换为字帖样式...');
 
       // 渲染选项配置
-      const renderOptions: IRenderOptions = {
-        width: config.width, // 设置合适的宽度
-        height: config.height, // 设置合适的高度
-        strokeWidth: 3, // 设置笔画宽度
-        strokeColor: '#c3c3c3', // 设置笔画颜色
-        radicalColor: '#168F16',
-        useGridBackground: true, // 使用米字格背景
-        gridColor: '#DDD', // 设置米字格线条颜色
-        // delayBetweenLoops: 2000, // 设置动画循环间隔
-        showOutline: true, // 显示汉字轮廓
-        outlineColor: '#F0F0F0' // 设置轮廓颜色
-      };
+      const renderOptions: IRenderOptions =  {
+        ...defaultRenderOptions
+      }
 
       // 遍历每一行
       gridData.forEach((row, rowIndex) => {
