@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, type ButtonProps } from 'antd';
 import { printElementById } from '@/utils';
-import { IPrintOptions } from '../../interface';
-import styles from './printButton.less';
+import { IPrintOptions } from '../../../interface';
+import styles from './index.less';
 
 interface PrintButtonProps {
   /**

@@ -1,1 +1,1 @@
-git add . && git commit -m "feat: 修改enderGrid 和  handleTranslate 的调用顺序"
+git add . && git commit -m "feat: 网格渲染单独抽为组件"
