@@ -28,8 +28,62 @@ export async function getInitialState(): Promise<{
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
-  // 定义超时处理的fetchUserInfo函数
+  // 定义mock数据，开发环境直接使用
+  const mockUserData = {
+    id: '00000001',
+    name: 'Serati Ma',
+    avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
+    email: 'antdesign@alipay.com',
+    signature: '海纳百川，有容乃大',
+    title: '交互专家',
+    group: '蚂蚁金服－某某某事业群－某某平台部－某某技术部－UED',
+    tags: [
+      {
+        key: '0',
+        label: '很有想法的',
+      },
+      {
+        key: '1',
+        label: '专注设计',
+      },
+      {
+        key: '2',
+        label: '辣~',
+      },
+      {
+        key: '3',
+        label: '大长腿',
+      },
+      {
+        key: '4',
+        label: '川妹子',
+      },
+      {
+        key: '5',
+        label: '海纳百川',
+      },
+    ],
+    notifyCount: 12,
+    unreadCount: 11,
+    country: 'China',
+    access: 'admin',
+    geographic: {
+      province: { label: '浙江省', key: '330000' },
+      city: { label: '杭州市', key: '330100' },
+    },
+    address: '西湖区工专路 77 号',
+    phone: '0752-268888888',
+  };
+
+  // 定义fetchUserInfo函数
   const fetchUserInfo = async () => {
+    // 如果是开发环境，直接返回mock数据
+    if (isDev) {
+      console.log('开发环境，使用本地mock数据');
+      return mockUserData;
+    }
+
+    // 非开发环境，执行原有的接口调用逻辑
     try {
       // 创建一个Promise.race，确保请求不会无限等待
       const timeoutPromise = new Promise((_, reject) => {
@@ -46,26 +100,7 @@ export async function getInitialState(): Promise<{
     } catch (_error) {
       console.log('API请求超时或失败，使用本地模拟数据');
       // 发生错误时返回模拟的用户数据，而不是强制跳转到登录页
-      return {
-        id: '1',
-        name: '管理员',
-        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
-        email: 'admin@example.com',
-        signature: '我是管理员',
-        title: '管理员',
-        group: '管理员组',
-        tags: [],
-        notifyCount: 0,
-        unreadCount: 0,
-        country: 'China',
-        access: 'admin',
-        geographic: {
-          province: { label: '浙江省', key: '330000' },
-          city: { label: '杭州市', key: '330100' },
-        },
-        address: '杭州市西湖区',
-        phone: '13800138000',
-      };
+      return mockUserData;
     }
   };
   // 如果不是登录页面，执行

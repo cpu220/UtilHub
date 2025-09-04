@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import { Card, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Button, Card, Typography } from 'antd';
+import type { FormProps } from 'antd';
 import HanziWriter from 'hanzi-writer';
 import { renderHanziInContainer } from '@/utils'
 import styles from './index.less';
@@ -7,26 +8,39 @@ import styles from './index.less';
 
 const { Title, Paragraph } = Typography;
 
+type IFieldType = {
+  character: string;
+};
+
 /**
  * 基础字帖生成页面
  */
 const BasicCharsheetPage: React.FC = () => {
+  const [form] = Form.useForm();
+  const [character, setCharacter] = useState<string>('待');
 
-  const strokeColors = ['#333', '#EE00FF', '#777', '#999', '#bbb'];
-  const radicalColor = '#168F16';
+
+  useEffect(() => {
+    const strokeColors = ['#333', '#EE00FF', '#777', '#999', '#bbb'];
+    const radicalColor = '#168F16';
+    const options = {
+      width: 100,
+      height: 100,
+      strokeWidth: 5,
+      radicalColor: radicalColor,
+      strokeColor: strokeColors[1],
+    };
+
+    renderHanziInContainer('a1', character, options);
+  }, [character]);
 
 
-  const options = {
-    width: 100,
-    height: 100,
-    strokeWidth: 5,
-    radicalColor: radicalColor,
-    strokeColor: strokeColors[1],
+
+  const onFinish: FormProps<IFieldType>['onFinish'] = (values) => {
+    debugger
+    console.log('Success:', values);
+    setCharacter(character);
   };
-
-  useEffect(() => { 
-    renderHanziInContainer('a1', '腻', options);
-  }, []);
 
 
   return (
@@ -40,6 +54,22 @@ const BasicCharsheetPage: React.FC = () => {
           即将实现的功能包括：字体选择、文字内容设置、纸张样式选择等。
         </Paragraph>
       </Card>
+
+      <div className={styles['from-container']} >
+        <Form
+          layout={"inline"}
+          form={form}
+          initialValues={{ character: "赢" }}
+          onFinish={onFinish}
+        >
+          <Form.Item label="汉字" name="character">
+            <Input placeholder="input placeholder" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary">Submit</Button>
+          </Form.Item>
+        </Form>
+      </div>
 
       <div id="a1" className={styles['font-container']}></div>
     </div>
