@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Row, Col, message, Input, Button, Card, Typography } from 'antd';
 import type { FormProps } from 'antd';
-import { renderHanziInContainer, cleanupHanziWriter } from '@/utils';
+import { renderHanziInContainer, cleanupHanziWriter, printElementById } from '@/utils';
 import styles from './index.less';
 
 const { Title, Paragraph } = Typography;
@@ -18,8 +18,9 @@ const CustomCharsheetPage: React.FC = () => {
 
   useEffect(() => {
     // 调用 renderGrid 方法来渲染网格
-    const grid = createGrid(8, 16); 
+    const grid = createGrid(10, 14); 
     setGridData(grid);
+    
     // 清理函数
     return () => {
       cleanupHanziWriter('grid-container');
@@ -55,14 +56,14 @@ const CustomCharsheetPage: React.FC = () => {
       key={item.x + item.y} 
       className={styles['grid-item']}
       style={{
-        width: '100px',
-        height: '100px',
+        width: '60px',
+        height: '60px',
         border: '1px solid #000',
-  
-      }}>
+      }}
+      >
         {item.character}
       </div>
-    )
+    );
   }
 
   /**
@@ -70,7 +71,6 @@ const CustomCharsheetPage: React.FC = () => {
    * @param grid 二维数组网格数据
    */
   const renderGrid = (grid: any[]) => {
-    // 存储网格数据到state
     const result = [];
     for (let i = 0; i < grid.length; i++) {
       const row = [];
@@ -81,16 +81,49 @@ const CustomCharsheetPage: React.FC = () => {
       }
       const rowDOM = (
         <div id={`grid-row-${i}`} key={i} className={styles['grid-row']}> {row}</div>
-      )
+      );
       result.push(rowDOM);
     }
 
     return result;
   }
 
+  /**
+   * 打印网格
+   */
+  const printGrid = () => {
+    printElementById('grid-container', {
+      title: '自定义字帖打印',
+      showPreview: false,
+      styles: [
+        // 打印专用样式
+        `
+        .grid-item {
+          page-break-inside: avoid;
+          margin: 2px;
+        }
+        .grid-row {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        `
+      ],
+      onBeforePrint: () => {
+        message.info('正在准备打印内容...');
+      },
+      onAfterPrint: () => {
+        message.success('打印操作完成');
+      }
+    });
+  }
+
   return (
     <div style={{ padding: '24px' }}>
-
+      <div>
+        <Button>创建字帖</Button>
+        <Button onClick={printGrid}>打印</Button>
+      </div>
       <div id="grid-container">
         {renderGrid(gridData)}
       </div>
