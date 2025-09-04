@@ -1,1 +1,1 @@
-git add . && git commit -m "feat: 打印按钮封装为组件，方便你维护"
+git add . && git commit -m "feat: 修改enderGrid 和  handleTranslate 的调用顺序"

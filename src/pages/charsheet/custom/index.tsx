@@ -35,6 +35,13 @@ const CustomCharsheetPage: React.FC = () => {
     };
   }, [characters])
 
+  // 当网格数据生成或更新后，自动进行字帖转换
+  useEffect(() => {
+    if (gridData.length > 0) {
+      handleTranslate();
+    }
+  }, [gridData])
+
   const createFontList = (count: number): string => {
     // const chars = generateRandomChineseCharsString(count);
     // return chars
