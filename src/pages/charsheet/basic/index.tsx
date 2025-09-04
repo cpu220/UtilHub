@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Card, Typography } from 'antd';
 import type { FormProps } from 'antd';
-import HanziWriter from 'hanzi-writer';
-import { renderHanziInContainer } from '@/utils'
+import { renderHanziInContainer, cleanupHanziWriter } from '@/utils';
 import styles from './index.less';
 
 
@@ -29,17 +28,23 @@ const BasicCharsheetPage: React.FC = () => {
       strokeWidth: 5,
       radicalColor: radicalColor,
       strokeColor: strokeColors[1],
+      delayBetweenLoops:1000
     };
 
     renderHanziInContainer('a1', character, options);
+
+    // 在组件卸载时清理资源
+    return () => {
+      cleanupHanziWriter('a1');
+    };
   }, [character]);
 
 
 
   const onFinish: FormProps<IFieldType>['onFinish'] = (values) => {
-    debugger
+     
     console.log('Success:', values);
-    setCharacter(character);
+    setCharacter(values.character);
   };
 
 
@@ -66,7 +71,7 @@ const BasicCharsheetPage: React.FC = () => {
             <Input placeholder="input placeholder" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary">Submit</Button>
+            <Button type="primary" htmlType="submit">Submit</Button>
           </Form.Item>
         </Form>
       </div>
