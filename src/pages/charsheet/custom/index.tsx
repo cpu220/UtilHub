@@ -9,7 +9,7 @@ import { config, defaultRenderOptions } from './const';
 import styles from './index.less';
 import { PrintButton, GridRenderer } from './Component';
 
-
+import { LEVEL4_LIST } from '../const';
 
 
 
@@ -20,12 +20,15 @@ import { PrintButton, GridRenderer } from './Component';
 const CustomCharsheetPage: React.FC = () => {
 
   const [form] = Form.useForm();
+  const [fontList, setFontList] = useState<string>(LEVEL4_LIST);
 
 
 
 
-
-
+  const handleCreateFontList = () => {
+    const fontList = generateRandomChineseCharsString(250);
+    setFontList(fontList);
+  }
 
 
 
@@ -46,6 +49,7 @@ const CustomCharsheetPage: React.FC = () => {
   return (
     <div style={{ padding: '24px' }}>
       <div className={styles['button-container']}>
+        <Button type="link" onClick={handleCreateFontList}>创建字体列表</Button>
 
         <PrintButton
           elementId="grid-container"
@@ -57,6 +61,7 @@ const CustomCharsheetPage: React.FC = () => {
 
 
       <GridRenderer
+        fontList =  {fontList}
         // gridData={gridData} 
         renderOptions={defaultRenderOptions} />
 
