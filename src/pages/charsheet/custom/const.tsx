@@ -1,7 +1,7 @@
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
 
 
-// 配置参数
+// 字帖单元格默认配置参数
 export const GridConfig: ICharsheetConfig = {
   width: 60,
   height: 60,
@@ -17,7 +17,7 @@ export const DefaultRenderOptions: IRenderOptions = {
         height: GridConfig.height, // 设置合适的高度
         strokeWidth: 3, // 设置笔画宽度
         strokeColor: '#c3c3c3', // 设置笔画颜色
-        radicalColor: '#168F16',
+        radicalColor: '#3889f2', // 偏旁颜色
         useGridBackground: true, // 使用米字格背景
         gridColor: '#DDD', // 设置米字格线条颜色
         // delayBetweenLoops: 2000, // 设置动画循环间隔

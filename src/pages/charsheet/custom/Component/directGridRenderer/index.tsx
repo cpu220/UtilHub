@@ -45,7 +45,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
         }, 100);
 
         return () => clearTimeout(timer);
-    }, [fontList, config.defaultCol, config.defaultRow, renderOptions]);
+    }, [fontList, config.defaultCol, config.defaultRow, renderOptions,renderOptions.radicalColor, config.width, config.height]);
 
     /**
      * 直接渲染网格，生成一个单元格就转换一个
