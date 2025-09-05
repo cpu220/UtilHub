@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, message, App } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter } from '@/utils';
 import { IGridItem, IGridData, IRenderOptions } from '../../../interface';
-import { config } from '../../const';
+import { GridConfig } from '../../const';
 import styles from './index.less';
 import { LEVEL4_LIST } from '../../../const';
 
@@ -70,7 +70,7 @@ const GridRenderer: React.FC<GridRendererProps> = ({
 
     useEffect(() => {
         // 调用 renderGrid 方法来渲染网格
-        const grid = createGrid(config.defaultCol, config.defaultRow);
+        const grid = createGrid(GridConfig.defaultCol, GridConfig.defaultRow);
         setGridData(grid);
 
         // 清理函数 - 移除过早的cleanupHanziWriter调用
@@ -143,10 +143,10 @@ const GridRenderer: React.FC<GridRendererProps> = ({
                 key={item.x + item.y}
                 className={styles['grid-item']}
                 style={{
-                    width: config.width + 'px',
-                    height: config.height + 'px',
+                    width: GridConfig.width + 'px',
+                    height: GridConfig.height + 'px',
                     border: '1px solid #ddd',
-                    fontSize: `${config.width * 0.6}px`,
+                    fontSize: `${GridConfig.width * 0.6}px`,
                 }}
             >
                 {item.character}

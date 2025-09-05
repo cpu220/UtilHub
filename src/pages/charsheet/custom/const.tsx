@@ -2,7 +2,7 @@ import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions }
 
 
 // 配置参数
-export const config: ICharsheetConfig = {
+export const GridConfig: ICharsheetConfig = {
   width: 60,
   height: 60,
   defaultRow: 25,
@@ -12,9 +12,9 @@ export const config: ICharsheetConfig = {
 /**
  * 渲染选项配置
  */
-export const defaultRenderOptions: IRenderOptions = {
-        width: config.width, // 设置合适的宽度
-        height: config.height, // 设置合适的高度
+export const DefaultRenderOptions: IRenderOptions = {
+        width: GridConfig.width, // 设置合适的宽度
+        height: GridConfig.height, // 设置合适的高度
         strokeWidth: 3, // 设置笔画宽度
         strokeColor: '#c3c3c3', // 设置笔画颜色
         radicalColor: '#168F16',

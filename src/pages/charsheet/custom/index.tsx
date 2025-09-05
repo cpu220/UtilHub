@@ -5,9 +5,9 @@ import type { FormProps } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions } from '../interface';
 
-import { config, defaultRenderOptions } from './const';
+import { GridConfig, DefaultRenderOptions } from './const';
 import styles from './index.less';
-import { PrintButton, GridRenderer } from './Component';
+import { PrintButton, DirectGridRenderer } from './Component';
 
 import { LEVEL4_LIST } from '../const';
 
@@ -26,7 +26,7 @@ const CustomCharsheetPage: React.FC = () => {
 
 
   const handleCreateFontList = () => {
-    const fontList = generateRandomChineseCharsString(250);
+    const fontList = generateRandomChineseCharsString(153);
     setFontList(fontList);
   }
 
@@ -60,10 +60,11 @@ const CustomCharsheetPage: React.FC = () => {
       </div>
 
 
-      <GridRenderer
-        fontList =  {fontList}
-        // gridData={gridData} 
-        renderOptions={defaultRenderOptions} />
+      <DirectGridRenderer
+        fontList={fontList}
+        renderOptions={DefaultRenderOptions} 
+        config={GridConfig}
+      />
 
     </div>
   );
