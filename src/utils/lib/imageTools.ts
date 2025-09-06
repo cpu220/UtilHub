@@ -25,18 +25,26 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
       
       // 获取容器的尺寸
       const containerRect = containerElement.getBoundingClientRect();
-      // 保存原始尺寸，不应用devicePixelRatio
       const originalWidth = containerRect.width;
       const originalHeight = containerRect.height;
-      // 设置canvas尺寸，应用devicePixelRatio
-      canvas.width = originalWidth * (window.devicePixelRatio || 1);
-      canvas.height = originalHeight * (window.devicePixelRatio || 1);
+      
+      // 提高清晰度：使用更高的设备像素比倍数
+      const pixelRatio = window.devicePixelRatio || 1;
+      
+      // 设置canvas尺寸，应用设备像素比
+      canvas.width = originalWidth * pixelRatio;
+      canvas.height = originalHeight * pixelRatio;
+      
       // 缩放上下文以匹配设备像素比
-      context.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      context.scale(pixelRatio, pixelRatio);
+      
+      // 启用高质量图像渲染
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
       
       // 设置背景色
       context.fillStyle = options.backgroundColor || '#ffffff';
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.fillRect(0, 0, originalWidth, originalHeight);
       
       // 获取所有子SVG元素或网格项
       const gridItems = Array.from(containerElement.querySelectorAll('.grid-item'));
@@ -68,17 +76,10 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
           
           // 获取元素的位置和尺寸
           const elementRect = element.getBoundingClientRect();
-          // 计算相对位置时不应用devicePixelRatio，只在最终绘制时应用
           const x = (elementRect.left - containerRect.left);
           const y = (elementRect.top - containerRect.top);
           const width = elementRect.width;
           const height = elementRect.height;
-          
-          // 应用devicePixelRatio到最终绘制坐标和尺寸
-          const scaledX = x * (window.devicePixelRatio || 1);
-          const scaledY = y * (window.devicePixelRatio || 1);
-          const scaledWidth = width * (window.devicePixelRatio || 1);
-          const scaledHeight = height * (window.devicePixelRatio || 1);
           
           // 检查是否是SVG元素
           if (element.tagName.toLowerCase() === 'svg') {
@@ -89,9 +90,9 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
             const elementOptions = {
               backgroundColor: 'transparent',
               quality: options.quality,
-              canvasWidth: elementRect.width,
-              canvasHeight: elementRect.height,
-              pixelRatio: window.devicePixelRatio || 1
+              canvasWidth: width,
+              canvasHeight: height,
+              pixelRatio: pixelRatio
             };
             elementDataUrl = await htmlToImage.toPng(element as unknown as HTMLElement, elementOptions);
           }
@@ -99,8 +100,7 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
           // 将元素图片绘制到主canvas上
           const img = new Image();
           img.onload = () => {
-            // 绘制图片到对应的位置，使用原始坐标和尺寸
-            // 因为context已经被缩放，所以这里使用未缩放的坐标和尺寸
+            // 绘制图片到对应的位置
             context.drawImage(img, x, y, width, height);
             // 处理下一个元素
             processElement(index + 1);
@@ -259,61 +259,78 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
         return;
       }
       
-      // 获取SVG元素的尺寸
-      const { width, height } = svgElement.getBoundingClientRect();
+      // 获取SVG元素的尺寸 - 这是包含margin、padding等盒模型属性的实际渲染尺寸
+      const elementRect = svgElement.getBoundingClientRect();
       
-      // 获取SVG的viewBox属性，如果存在，可能包含更准确的内容尺寸
-      // 根据用户反馈，将尺寸乘以0.5以修复比例问题
-      let viewBoxWidth = width * 0.5;
-      let viewBoxHeight = height * 0.5;
+      // 使用元素的实际尺寸
+      const actualWidth = elementRect.width;
+      const actualHeight = elementRect.height;
+      
+      // 获取SVG的viewBox属性
+      let viewBoxX = 0;
+      let viewBoxY = 0;
+      let viewBoxWidth = actualWidth;
+      let viewBoxHeight = actualHeight;
       
       const viewBox = svgElement.getAttribute('viewBox');
       if (viewBox) {
-        const [, , vbWidth, vbHeight] = viewBox.split(' ').map(parseFloat);
-        if (!isNaN(vbWidth) && !isNaN(vbHeight)) {
-          // 如果viewBox尺寸大于元素尺寸，使用viewBox尺寸，同样乘以0.5
-          viewBoxWidth = Math.max(width, vbWidth) * 0.5;
-          viewBoxHeight = Math.max(height, vbHeight) * 0.5;
+        const [x, y, width, height] = viewBox.split(' ').map(parseFloat);
+        if (!isNaN(x) && !isNaN(y) && !isNaN(width) && !isNaN(height)) {
+          // 获取viewBox信息
+          viewBoxX = x;
+          viewBoxY = y;
+          viewBoxWidth = width;
+          viewBoxHeight = height;
         }
       }
       
-      // 为确保内容不被裁剪，增加一个小的边距
-      const margin = 10;
+      // 提高清晰度：使用设备像素比
+      const pixelRatio = window.devicePixelRatio || 1;
       
-      // 保存原始尺寸，不应用devicePixelRatio
-      const originalWidth = viewBoxWidth + margin * 2;
-      const originalHeight = viewBoxHeight + margin * 2;
-      
-      // 设置canvas尺寸，应用devicePixelRatio
-      canvas.width = originalWidth * (window.devicePixelRatio || 1);
-      canvas.height = originalHeight * (window.devicePixelRatio || 1);
+      // 设置canvas的实际像素尺寸
+      canvas.width = actualWidth * pixelRatio;
+      canvas.height = actualHeight * pixelRatio;
       
       // 缩放上下文以匹配设备像素比
-      ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      ctx.scale(pixelRatio, pixelRatio);
+      
+      // 启用高质量图像渲染
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // 设置背景色 - 在渲染SVG之前先填充背景
+      ctx.fillStyle = options.backgroundColor || '#ffffff';
+      ctx.fillRect(0, 0, actualWidth, actualHeight);
+      
+      // 计算缩放比例，确保SVG内容完整显示
+      const scaleX = actualWidth / viewBoxWidth;
+      const scaleY = actualHeight / viewBoxHeight;
+      const scale = Math.min(scaleX, scaleY);
       
       // 使用canvg渲染SVG到canvas
       const v = Canvg.fromString(ctx, svgString, {
-        // 使用原始尺寸加边距，而不是乘以devicePixelRatio后的尺寸
-        scaleWidth: originalWidth,
-        scaleHeight: originalHeight,
+        scaleWidth: actualWidth,
+        scaleHeight: actualHeight,
         ignoreMouse: true,
         ignoreAnimation: false, // 保留动画效果
-        offsetX: margin, // 添加边距偏移
-        offsetY: margin  // 添加边距偏移
+        offsetX: 0,
+        offsetY: 0,
+        renderCallback: () => {
+          console.log('SVG渲染完成');
+        },
+        useImageCache: true,
+        ignoreDimensions: false,
+        ignoreClear: false
       });
-      
-      // 添加边框样式，模拟原始div的边框
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(margin, margin, viewBoxWidth, viewBoxHeight);
-      
-      // 设置背景色
-      ctx.fillStyle = options.backgroundColor || '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // 渲染并转换为图片数据URL
       v.render().then(() => {
         try {
+          // 添加边框（可选）
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(0, 0, actualWidth, actualHeight);
+          
           const dataUrl = canvas.toDataURL(
             options.imageType === 'jpeg' ? 'image/jpeg' : 'image/png',
             options.quality || 1.0
@@ -336,13 +353,13 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
  * @returns 图片数据URL
  */
 export const elementToImage = async (elementId: string, options: ImageOptions = {}): Promise<string> => {
-  const {
-    imageType = 'png',
-    quality = 1.0,
-    backgroundColor = '#ffffff',
-    onBeforeGenerate,
-    onAfterGenerate,
-    useCanvg = false
+  const { 
+    imageType = 'png', 
+    quality = 1.0, 
+    backgroundColor = '#ffffff', 
+    onBeforeGenerate, 
+    onAfterGenerate, 
+    useCanvg = false 
   } = options;
 
   try {
@@ -358,6 +375,11 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
     }
 
     let dataUrl = '';
+    
+    // 获取元素的尺寸
+    const elementRect = element.getBoundingClientRect();
+    const actualWidth = elementRect.width;
+    const actualHeight = elementRect.height;
     
     // 首先检查是否是网格容器
     if (isGridContainer(element)) {
@@ -385,9 +407,12 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
       const htmlToImageOptions = {
         backgroundColor,
         quality,
-        canvasWidth: element.clientWidth,
-        canvasHeight: element.clientHeight,
-        pixelRatio: window.devicePixelRatio || 1
+        canvasWidth: actualWidth,
+        canvasHeight: actualHeight,
+        pixelRatio: window.devicePixelRatio || 1,
+        style: {
+          imageRendering: 'auto'
+        }
       };
 
       // 根据图片类型选择不同的转换方法
@@ -413,8 +438,8 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
           const pixels = await htmlToImage.toPixelData(element, htmlToImageOptions);
           // 创建一个canvas来展示像素数据
           const canvas = document.createElement('canvas');
-          canvas.width = element.clientWidth;
-          canvas.height = element.clientHeight;
+          canvas.width = actualWidth;
+          canvas.height = actualHeight;
           const context = canvas.getContext('2d');
           if (context) {
             const imageData = context.createImageData(canvas.width, canvas.height);
