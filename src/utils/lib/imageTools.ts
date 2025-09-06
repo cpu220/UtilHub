@@ -263,16 +263,17 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
       const { width, height } = svgElement.getBoundingClientRect();
       
       // 获取SVG的viewBox属性，如果存在，可能包含更准确的内容尺寸
-      let viewBoxWidth = width
-      let viewBoxHeight = height;
+      // 根据用户反馈，将尺寸乘以0.5以修复比例问题
+      let viewBoxWidth = width * 0.5;
+      let viewBoxHeight = height * 0.5;
       
       const viewBox = svgElement.getAttribute('viewBox');
       if (viewBox) {
         const [, , vbWidth, vbHeight] = viewBox.split(' ').map(parseFloat);
         if (!isNaN(vbWidth) && !isNaN(vbHeight)) {
-          // 如果viewBox尺寸大于元素尺寸，使用viewBox尺寸
-          viewBoxWidth = Math.max(width, vbWidth);
-          viewBoxHeight = Math.max(height, vbHeight);
+          // 如果viewBox尺寸大于元素尺寸，使用viewBox尺寸，同样乘以0.5
+          viewBoxWidth = Math.max(width, vbWidth) * 0.5;
+          viewBoxHeight = Math.max(height, vbHeight) * 0.5;
         }
       }
       
@@ -300,6 +301,11 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
         offsetX: margin, // 添加边距偏移
         offsetY: margin  // 添加边距偏移
       });
+      
+      // 添加边框样式，模拟原始div的边框
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(margin, margin, viewBoxWidth, viewBoxHeight);
       
       // 设置背景色
       ctx.fillStyle = options.backgroundColor || '#ffffff';
