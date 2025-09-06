@@ -58,6 +58,13 @@ const createGridBackground = (container: HTMLElement, width: number, height: num
   svg.setAttribute('width', width.toString());
   svg.setAttribute('height', height.toString());
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  svg.setAttribute('border', 'solid 1px #ddd');
+
+
+
+
+
+
 
   // 添加米字格线条
   const addGridLine = (x1: string, y1: string, x2: string, y2: string) => {
@@ -75,6 +82,16 @@ const createGridBackground = (container: HTMLElement, width: number, height: num
   addGridLine((width / 2).toString(), '0', (width / 2).toString(), height.toString()); // 垂直线
   addGridLine('0', '0', width.toString(), height.toString()); // 对角线1
   addGridLine(width.toString(), '0', '0', height.toString()); // 对角线2
+
+
+  // top
+  // addGridLine('0', '0', width.toString(), '0') 
+  // // right
+  // addGridLine(width.toString(), '0', width.toString(), height.toString())
+  // // bottom
+  // addGridLine('0', height.toString(), width.toString(), height.toString())
+  // // left
+  // addGridLine('0', '0', '0', height.toString())
 
   container.appendChild(svg);
   return svgId;
@@ -115,7 +132,7 @@ export const renderHanziInContainer = (svgId: string, character: string, options
     ...defaultOptions,
     ...options,
   };
-  
+
   // 字符验证
   if (!character || character.length === 0) {
     return;
@@ -134,10 +151,10 @@ export const renderHanziInContainer = (svgId: string, character: string, options
   try {
     // 创建配置对象
     const writerOptions = { ..._opt };
-    
+
     // 如果需要使用本地字库，根据官方API方式设置charDataLoader
     if (_opt.useLocalData) {
-      writerOptions.charDataLoader = function() {
+      writerOptions.charDataLoader = function () {
         return loadLocalCharacterData(str);
       };
     }
@@ -152,11 +169,11 @@ export const renderHanziInContainer = (svgId: string, character: string, options
           const targetSvgId = createGridBackground(container, _opt.width, _opt.height, _opt.gridColor);
           const newWriter = HanziWriter.create(targetSvgId, str, writerOptions);
           writerInstances.set(svgId, newWriter);
-          
+
           if (_opt.delayBetweenLoops) {
             newWriter.loopCharacterAnimation();
           }
-          
+
           return newWriter;
         }
 
@@ -166,7 +183,7 @@ export const renderHanziInContainer = (svgId: string, character: string, options
       }
     } else {
       safelyClearContainer(container);
-      
+
       let targetSvgId = svgId;
       // 如果需要米字格，先创建背景
       if (_opt.useGridBackground) {
@@ -175,11 +192,11 @@ export const renderHanziInContainer = (svgId: string, character: string, options
 
       const writer = HanziWriter.create(targetSvgId, str, writerOptions);
       writerInstances.set(svgId, writer);
-      
+
       if (_opt.delayBetweenLoops) {
         writer.loopCharacterAnimation();
       }
-      
+
       return writer;
     }
 

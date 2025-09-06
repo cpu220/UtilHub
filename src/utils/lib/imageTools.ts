@@ -263,7 +263,7 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
       const { width, height } = svgElement.getBoundingClientRect();
       
       // 获取SVG的viewBox属性，如果存在，可能包含更准确的内容尺寸
-      let viewBoxWidth = width;
+      let viewBoxWidth = width
       let viewBoxHeight = height;
       
       const viewBox = svgElement.getAttribute('viewBox');
