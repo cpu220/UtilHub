@@ -7,9 +7,9 @@ import { ICharsheetConfig, IRenderOptions } from '../interface';
 import { GridConfig, DefaultRenderOptions } from './const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm } from './Component';
+import PreviewButton from './Component/previewButton';
 
 import { LEVEL4_LIST } from '../const';
-
 
 
 
@@ -48,7 +48,6 @@ const CustomCharsheetPage: React.FC = () => {
     }
   };
 
-  
 
 
   return (
@@ -67,14 +66,20 @@ const CustomCharsheetPage: React.FC = () => {
           buttonType="link"
           buttonText="打印"
         />
+
       </div>
 
 
       <DirectGridRenderer
         fontList={fontList}
-        renderOptions={customConfig.renderOptions} 
+        renderOptions={customConfig.renderOptions}
         config={customConfig.config}
       />
+      <PreviewButton
+        elementId="grid-container"
+        buttonType="link"
+      />
+
 
     </div>
   );

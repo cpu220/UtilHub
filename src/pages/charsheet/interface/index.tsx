@@ -81,6 +81,36 @@ export interface IPrintOptions {
 }
 
 /**
+ * 预览图片配置选项
+ */
+export interface IPreviewOptions {
+  /**
+   * 图片类型 (png, jpeg, svg等)
+   */
+  imageType?: 'png' | 'jpeg' | 'svg' | 'blob' | 'pixel';
+  
+  /**
+   * 图片质量 (仅jpeg格式有效)
+   */
+  quality?: number;
+  
+  /**
+   * 背景色
+   */
+  backgroundColor?: string;
+  
+  /**
+   * 图片生成前的回调函数
+   */
+  onBeforeGenerate?: () => void;
+  
+  /**
+   * 图片生成后的回调函数
+   */
+  onAfterGenerate?: (dataUrl: string) => void;
+}
+
+/**
  * 字帖工具相关接口
  */
 export namespace ICharsheetInterface {
@@ -94,4 +124,6 @@ export namespace ICharsheetInterface {
   export type HanziRenderOptions = IRenderOptions;
   /** 打印选项类型 */
   export type PrintConfig = IPrintOptions;
+  /** 预览图片选项类型 */
+  export type PreviewConfig = IPreviewOptions;
 }
