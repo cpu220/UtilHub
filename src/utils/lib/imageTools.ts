@@ -76,6 +76,7 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
           
           // 获取元素的位置和尺寸
           const elementRect = element.getBoundingClientRect();
+          // 计算相对位置
           const x = (elementRect.left - containerRect.left);
           const y = (elementRect.top - containerRect.top);
           const width = elementRect.width;
@@ -87,6 +88,16 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
             elementDataUrl = await convertSvgWithCanvg(element as unknown as SVGElement, options);
           } else {
             // 对于非SVG元素，使用html-to-image处理
+            // 创建一个临时克隆元素，用于修复边框渲染问题
+            const tempClone = element.cloneNode(true) as HTMLElement;
+            // 将克隆元素的右边框设置为0，避免边框叠加问题
+            tempClone.style.borderRight = '0';
+            
+            // 隐藏克隆元素
+            tempClone.style.position = 'absolute';
+            tempClone.style.left = '-9999px';
+            document.body.appendChild(tempClone);
+            
             const elementOptions = {
               backgroundColor: 'transparent',
               quality: options.quality,
@@ -94,7 +105,16 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
               canvasHeight: height,
               pixelRatio: pixelRatio
             };
-            elementDataUrl = await htmlToImage.toPng(element as unknown as HTMLElement, elementOptions);
+            
+            try {
+              elementDataUrl = await htmlToImage.toPng(tempClone, elementOptions);
+            } catch (error) {
+              // 如果克隆元素处理失败，回退到原始元素
+              elementDataUrl = await htmlToImage.toPng(element as unknown as HTMLElement, elementOptions);
+            } finally {
+              // 移除克隆元素
+              document.body.removeChild(tempClone);
+            }
           }
           
           // 将元素图片绘制到主canvas上
@@ -327,7 +347,7 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
       v.render().then(() => {
         try {
           // 添加边框（可选）
-          ctx.strokeStyle = '#000000';
+          ctx.strokeStyle = '#ddd';
           ctx.lineWidth = 1;
           ctx.strokeRect(0, 0, actualWidth, actualHeight);
           
