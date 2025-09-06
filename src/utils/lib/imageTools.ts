@@ -6,6 +6,125 @@ import * as htmlToImage from 'html-to-image';
 import { Canvg } from 'canvg';
 
 /**
+ * 处理网格容器，逐个转换子元素再合并为一个图片
+ * @param containerElement 网格容器元素
+ * @param options 转换选项
+ * @returns 合并后的图片数据URL
+ */
+const handleGridContainer = async (containerElement: HTMLElement, options: ImageOptions): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
+    try {
+      // 创建一个新的canvas来合并所有子元素
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      if (!context) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+      
+      // 获取容器的尺寸
+      const containerRect = containerElement.getBoundingClientRect();
+      canvas.width = containerRect.width * (window.devicePixelRatio || 1);
+      canvas.height = containerRect.height * (window.devicePixelRatio || 1);
+      
+      // 设置背景色
+      context.fillStyle = options.backgroundColor || '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 获取所有子SVG元素或网格项
+      const gridItems = Array.from(containerElement.querySelectorAll('.grid-item'));
+      const svgElements = Array.from(containerElement.querySelectorAll('svg'));
+      
+      // 如果有网格项，优先处理网格项
+      const elementsToProcess = gridItems.length > 0 ? gridItems : svgElements;
+      
+      if (elementsToProcess.length === 0) {
+        // 如果没有要处理的元素，返回空canvas
+        resolve(canvas.toDataURL('image/png'));
+        return;
+      }
+      
+      console.log(`开始处理网格容器，包含 ${elementsToProcess.length} 个元素`);
+      
+      // 定义处理单个元素的函数
+      const processElement = async (index: number): Promise<void> => {
+        if (index >= elementsToProcess.length) {
+          // 所有元素处理完毕，返回合并后的图片
+          resolve(canvas.toDataURL('image/png'));
+          return;
+        }
+        
+        const element = elementsToProcess[index];
+        
+        try {
+          let elementDataUrl = '';
+          
+          // 获取元素的位置和尺寸
+          const elementRect = element.getBoundingClientRect();
+          const x = (elementRect.left - containerRect.left) * (window.devicePixelRatio || 1);
+          const y = (elementRect.top - containerRect.top) * (window.devicePixelRatio || 1);
+          const width = elementRect.width * (window.devicePixelRatio || 1);
+          const height = elementRect.height * (window.devicePixelRatio || 1);
+          
+          // 检查是否是SVG元素
+          if (element.tagName.toLowerCase() === 'svg') {
+            // 对SVG元素使用canvg处理
+            elementDataUrl = await convertSvgWithCanvg(element as unknown as SVGElement, options);
+          } else {
+            // 对于非SVG元素，使用html-to-image处理
+            const elementOptions = {
+              backgroundColor: 'transparent',
+              quality: options.quality,
+              canvasWidth: elementRect.width,
+              canvasHeight: elementRect.height,
+              pixelRatio: window.devicePixelRatio || 1
+            };
+            elementDataUrl = await htmlToImage.toPng(element as unknown as HTMLElement, elementOptions);
+          }
+          
+          // 将元素图片绘制到主canvas上
+          const img = new Image();
+          img.onload = () => {
+            // 绘制图片到对应的位置
+            context.drawImage(img, x, y, width, height);
+            // 处理下一个元素
+            processElement(index + 1);
+          };
+          img.onerror = (error) => {
+            console.error(`处理第 ${index + 1} 个元素时出错:`, error);
+            // 即使出错，也继续处理下一个元素
+            processElement(index + 1);
+          };
+          img.src = elementDataUrl;
+        } catch (error) {
+          console.error(`处理第 ${index + 1} 个元素时出错:`, error);
+          // 即使出错，也继续处理下一个元素
+          processElement(index + 1);
+        }
+      };
+      
+      // 开始处理第一个元素
+      processElement(0);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+/**
+ * 检查元素是否为网格容器
+ * @param element 要检查的元素
+ * @returns 是否为网格容器
+ */
+const isGridContainer = (element: HTMLElement): boolean => {
+  // 检查元素是否有grid-container相关的标识
+  return element.id === 'grid-container' || 
+         element.classList.contains('grid-container') ||
+         (element.querySelector('.grid-row') !== null && element.querySelector('.grid-item') !== null);
+};
+
+/**
  * 图片生成配置选项
  */
 export interface ImageOptions {
@@ -131,12 +250,15 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
       
       // 使用canvg渲染SVG到canvas
       const v = Canvg.fromString(ctx, svgString, {
-        background: options.backgroundColor || '#ffffff',
         scaleWidth: canvas.width,
         scaleHeight: canvas.height,
         ignoreMouse: true,
         ignoreAnimation: false // 保留动画效果
       });
+      
+      // 设置背景色
+      ctx.fillStyle = options.backgroundColor || '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // 渲染并转换为图片数据URL
       v.render().then(() => {
@@ -186,23 +308,28 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
 
     let dataUrl = '';
     
-    // 检查是否是SVG元素或包含SVG元素，并且是否需要使用canvg处理
-     const svgElement = element.tagName.toLowerCase() === 'svg' 
-       ? (element as unknown as SVGElement)
-       : element.querySelector('svg');
-    
-    // 对于包含hanzi-writer生成的复杂SVG，优先使用canvg
-    const containsHanziWriterSvg = svgElement && (
-      svgElement.querySelector('[data-hanzi-writer]') !== null ||
-      svgElement.classList.contains('hanzi-writer') ||
-      svgElement.querySelector('path[data-hanzi-writer-path]') !== null
-    );
-    
-    // 如果是SVG元素，并且useCanvg为true或者检测到是hanzi-writer的SVG，则使用canvg处理
-    if (svgElement && (useCanvg || containsHanziWriterSvg)) {
-      console.log('使用canvg处理SVG，优化hanzi-writer生成的复杂路径');
-      dataUrl = await convertSvgWithCanvg(svgElement, options);
+    // 首先检查是否是网格容器
+    if (isGridContainer(element)) {
+      console.log('检测到网格容器，使用逐个转换再合并的方法');
+      dataUrl = await handleGridContainer(element, options);
     } else {
+      // 检查是否是SVG元素或包含SVG元素，并且是否需要使用canvg处理
+      const svgElement = element.tagName.toLowerCase() === 'svg' 
+        ? (element as unknown as SVGElement)
+        : element.querySelector('svg');
+      
+      // 对于包含hanzi-writer生成的复杂SVG，优先使用canvg
+      const containsHanziWriterSvg = svgElement && (
+        svgElement.querySelector('[data-hanzi-writer]') !== null ||
+        svgElement.classList.contains('hanzi-writer') ||
+        svgElement.querySelector('path[data-hanzi-writer-path]') !== null
+      );
+      
+      // 如果是SVG元素，并且useCanvg为true或者检测到是hanzi-writer的SVG，则使用canvg处理
+      if (svgElement && (useCanvg || containsHanziWriterSvg)) {
+        console.log('使用canvg处理SVG，优化hanzi-writer生成的复杂路径');
+        dataUrl = await convertSvgWithCanvg(svgElement, options);
+      } else {
       // 配置html-to-image选项
       const htmlToImageOptions = {
         backgroundColor,
@@ -248,6 +375,7 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
           break;
         default:
           dataUrl = await htmlToImage.toPng(element, htmlToImageOptions);
+      }
       }
     }
 

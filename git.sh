@@ -1,1 +1,1 @@
-git add . && git commit -m "test: 测试svg2image的逻辑"
+git add . && git commit -m "test: 容器转化成功，但字没展示全"
