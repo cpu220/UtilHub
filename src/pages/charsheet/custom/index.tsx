@@ -6,7 +6,7 @@ import { ICharsheetConfig, IRenderOptions } from '../interface';
 
 import { GridConfig, DefaultRenderOptions } from './const';
 import styles from './index.less';
-import { PrintButton, DirectGridRenderer, StyleConfigForm } from './Component';
+import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter } from './Component';
 import PreviewButton from './Component/previewButton';
 
 import { LEVEL4_LIST } from '../const';
@@ -79,7 +79,15 @@ const CustomCharsheetPage: React.FC = () => {
         elementId="grid-container"
         buttonType="link"
       />
-
+      
+      <div className={styles['result-container']} id="result"></div>
+      
+      <ImageConverter
+        sourceElementId="page-grid-container"
+        resultElementId="result"
+        buttonType="link"
+        buttonText="转换为图片"
+      />
 
     </div>
   );

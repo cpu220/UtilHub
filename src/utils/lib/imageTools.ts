@@ -25,8 +25,14 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
       
       // 获取容器的尺寸
       const containerRect = containerElement.getBoundingClientRect();
-      canvas.width = containerRect.width * (window.devicePixelRatio || 1);
-      canvas.height = containerRect.height * (window.devicePixelRatio || 1);
+      // 保存原始尺寸，不应用devicePixelRatio
+      const originalWidth = containerRect.width;
+      const originalHeight = containerRect.height;
+      // 设置canvas尺寸，应用devicePixelRatio
+      canvas.width = originalWidth * (window.devicePixelRatio || 1);
+      canvas.height = originalHeight * (window.devicePixelRatio || 1);
+      // 缩放上下文以匹配设备像素比
+      context.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
       
       // 设置背景色
       context.fillStyle = options.backgroundColor || '#ffffff';
@@ -62,10 +68,17 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
           
           // 获取元素的位置和尺寸
           const elementRect = element.getBoundingClientRect();
-          const x = (elementRect.left - containerRect.left) * (window.devicePixelRatio || 1);
-          const y = (elementRect.top - containerRect.top) * (window.devicePixelRatio || 1);
-          const width = elementRect.width * (window.devicePixelRatio || 1);
-          const height = elementRect.height * (window.devicePixelRatio || 1);
+          // 计算相对位置时不应用devicePixelRatio，只在最终绘制时应用
+          const x = (elementRect.left - containerRect.left);
+          const y = (elementRect.top - containerRect.top);
+          const width = elementRect.width;
+          const height = elementRect.height;
+          
+          // 应用devicePixelRatio到最终绘制坐标和尺寸
+          const scaledX = x * (window.devicePixelRatio || 1);
+          const scaledY = y * (window.devicePixelRatio || 1);
+          const scaledWidth = width * (window.devicePixelRatio || 1);
+          const scaledHeight = height * (window.devicePixelRatio || 1);
           
           // 检查是否是SVG元素
           if (element.tagName.toLowerCase() === 'svg') {
@@ -86,7 +99,8 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
           // 将元素图片绘制到主canvas上
           const img = new Image();
           img.onload = () => {
-            // 绘制图片到对应的位置
+            // 绘制图片到对应的位置，使用原始坐标和尺寸
+            // 因为context已经被缩放，所以这里使用未缩放的坐标和尺寸
             context.drawImage(img, x, y, width, height);
             // 处理下一个元素
             processElement(index + 1);
@@ -120,7 +134,9 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
 const isGridContainer = (element: HTMLElement): boolean => {
   // 检查元素是否有grid-container相关的标识
   return element.id === 'grid-container' || 
+         element.id === 'page-grid-container' ||
          element.classList.contains('grid-container') ||
+         element.classList.contains('page-grid-container') ||
          (element.querySelector('.grid-row') !== null && element.querySelector('.grid-item') !== null);
 };
 
@@ -243,17 +259,46 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
         return;
       }
       
-      // 设置canvas大小为SVG元素的尺寸
+      // 获取SVG元素的尺寸
       const { width, height } = svgElement.getBoundingClientRect();
-      canvas.width = width * (window.devicePixelRatio || 1);
-      canvas.height = height * (window.devicePixelRatio || 1);
+      
+      // 获取SVG的viewBox属性，如果存在，可能包含更准确的内容尺寸
+      let viewBoxWidth = width;
+      let viewBoxHeight = height;
+      
+      const viewBox = svgElement.getAttribute('viewBox');
+      if (viewBox) {
+        const [, , vbWidth, vbHeight] = viewBox.split(' ').map(parseFloat);
+        if (!isNaN(vbWidth) && !isNaN(vbHeight)) {
+          // 如果viewBox尺寸大于元素尺寸，使用viewBox尺寸
+          viewBoxWidth = Math.max(width, vbWidth);
+          viewBoxHeight = Math.max(height, vbHeight);
+        }
+      }
+      
+      // 为确保内容不被裁剪，增加一个小的边距
+      const margin = 10;
+      
+      // 保存原始尺寸，不应用devicePixelRatio
+      const originalWidth = viewBoxWidth + margin * 2;
+      const originalHeight = viewBoxHeight + margin * 2;
+      
+      // 设置canvas尺寸，应用devicePixelRatio
+      canvas.width = originalWidth * (window.devicePixelRatio || 1);
+      canvas.height = originalHeight * (window.devicePixelRatio || 1);
+      
+      // 缩放上下文以匹配设备像素比
+      ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
       
       // 使用canvg渲染SVG到canvas
       const v = Canvg.fromString(ctx, svgString, {
-        scaleWidth: canvas.width,
-        scaleHeight: canvas.height,
+        // 使用原始尺寸加边距，而不是乘以devicePixelRatio后的尺寸
+        scaleWidth: originalWidth,
+        scaleHeight: originalHeight,
         ignoreMouse: true,
-        ignoreAnimation: false // 保留动画效果
+        ignoreAnimation: false, // 保留动画效果
+        offsetX: margin, // 添加边距偏移
+        offsetY: margin  // 添加边距偏移
       });
       
       // 设置背景色
