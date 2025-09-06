@@ -108,6 +108,12 @@ export interface IPreviewOptions {
    * 图片生成后的回调函数
    */
   onAfterGenerate?: (dataUrl: string) => void;
+  
+  /**
+   * 是否强制使用canvg库处理SVG
+   * 对于复杂SVG，特别是hanzi-writer生成的SVG，推荐设置为true
+   */
+  useCanvg?: boolean;
 }
 
 /**

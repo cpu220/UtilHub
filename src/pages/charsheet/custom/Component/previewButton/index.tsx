@@ -72,6 +72,7 @@ const PreviewButton: React.FC<PreviewButtonProps> = ({
         imageType: 'png',
         quality: 1.0,
         backgroundColor: '#ffffff',
+        useCanvg: true, // 默认使用canvg处理SVG，特别是hanzi-writer生成的SVG
         onBeforeGenerate: () => {
           previewOptions.onBeforeGenerate?.();
         },

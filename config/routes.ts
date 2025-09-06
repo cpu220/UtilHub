@@ -74,7 +74,7 @@ export default [
   },
   {
     path: '/',
-    redirect: '/welcome',
+    redirect: '/charsheet/custom',
   },
   {
     path: '*',
