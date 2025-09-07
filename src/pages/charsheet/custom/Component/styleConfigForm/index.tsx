@@ -112,6 +112,11 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
           <Select
             style={{ width: 200 }}
             placeholder="请选择字库"
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label as string)?.toLowerCase().includes(input.toLowerCase()) ||
+              (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
+            }
             onChange={(value) => {
               const selectedLibrary = FONT_LIBRARY.find(lib => lib.name === value);
               if (selectedLibrary) {

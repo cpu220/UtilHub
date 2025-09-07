@@ -110,7 +110,7 @@ export const generateRandomChineseCharsGrid = (rows: number, cols: number): Arra
 
 export const generateRandomChineseCharsString = (count: number = 1): string => {
  
-  return Random.csentence(count)
+  return Random.cword(count, count)
 }
 
 /**

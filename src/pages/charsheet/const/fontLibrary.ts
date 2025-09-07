@@ -30,6 +30,10 @@ export const GRADE_4_FONT_LIBRARY: IFontLibrary[] = [
     }
 ]
 
+GRADE_4_FONT_LIBRARY.forEach(item => {
+    console.log(item.name, item.list.length)
+})
+
 /**
  * 字库总列表
  */
