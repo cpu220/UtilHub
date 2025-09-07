@@ -62,13 +62,20 @@ export class PDFExportTool {
         format: 'a4'
       });
 
+      // 像素到毫米的转换系数 (1px = 0.264583mm at 96dpi)
+      const pxToMm = 0.264583;
+      
+      // 计算内容在毫米单位下的原始尺寸
+      const contentWidthMm = contentWidth * pxToMm;
+      const contentHeightMm = contentHeight * pxToMm;
+      
       // 计算缩放比例，确保内容适合A4宽度
-      const scale = printableWidth / (contentWidth * 0.264583); // px to mm conversion
-      const scaledWidth = contentWidth * 0.264583 * scale;
-      const scaledHeight = contentHeight * 0.264583 * scale;
+      const scale = Math.min(printableWidth / contentWidthMm, 1); // 不放大，只缩小
+      const scaledWidthMm = contentWidthMm * scale;
+      const scaledHeightMm = contentHeightMm * scale;
 
       // 计算需要多少页
-      const pagesNeeded = Math.ceil(scaledHeight / printableHeight);
+      const pagesNeeded = Math.ceil(scaledHeightMm / printableHeight);
 
       // 创建canvas用于分页处理
       const canvas = document.createElement('canvas');
@@ -92,8 +99,9 @@ export class PDFExportTool {
           pdf.addPage();
         }
 
-        // 计算当前页的裁剪区域
-        const pageHeightInPx = printableHeight / (0.264583 * scale);
+        // 计算当前页的裁剪区域（像素单位）
+        const pageHeightMm = printableHeight;
+        const pageHeightInPx = pageHeightMm / (pxToMm * scale);
         const startY = pageIndex * pageHeightInPx;
         const endY = Math.min(startY + pageHeightInPx, contentHeight);
         const actualHeight = endY - startY;
@@ -121,8 +129,8 @@ export class PDFExportTool {
         const pageDataUrl = pageCanvas.toDataURL('image/png', quality);
 
         // 添加到PDF
-        const imgWidth = scaledWidth;
-        const imgHeight = actualHeight * 0.264583 * scale;
+        const imgWidth = scaledWidthMm;
+        const imgHeight = actualHeight * pxToMm * scale;
         const x = margin;
         const y = margin;
 

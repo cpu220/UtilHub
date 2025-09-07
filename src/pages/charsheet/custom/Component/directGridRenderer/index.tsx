@@ -38,14 +38,14 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             if (gridContainerRef.current) {
                 // 清空容器
                 gridContainerRef.current.innerHTML = '';
-                
+
                 // 直接生成并渲染网格
                 renderGridDirectly(fontList, config.defaultCol, config.defaultRow);
             }
         }, 100);
 
         return () => clearTimeout(timer);
-    }, [fontList, config.defaultCol, config.defaultRow, renderOptions,renderOptions.radicalColor, config.width, config.height]);
+    }, [fontList, config.defaultCol, config.defaultRow, renderOptions, renderOptions.radicalColor, config.width, config.height]);
 
     /**
      * 直接渲染网格，生成一个单元格就转换一个
@@ -58,19 +58,19 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
 
             // 根据用户要求的算法逻辑：先计算fontList长度，再根据行列参数计算行数
             const totalChars = charList.length;
-            
+
             // 计算可以整除的完整行数和余数
             const fullRows = Math.floor(totalChars / columns);
             const remainder = totalChars % columns;
-            
+
             // 总实际行数 = 完整行数 + (余数 > 0 ? 1 : 0)
             const actualRows = fullRows + (remainder > 0 ? 1 : 0);
-            
+
             // 使用实际需要的行数，但不超过传入的rowsCount限制
             const finalRows = Math.min(actualRows, rowsCount);
-            
+
             console.log(`字体列表长度: ${totalChars}, 列数: ${columns}, 完整行数: ${fullRows}, 余数: ${remainder}, 计算实际行数: ${actualRows}, 最终使用行数: ${finalRows}`);
-            
+
             // 创建行和单元格
             let currentIndex = 0;
             const renderPromises: Promise<void>[] = [];
@@ -79,11 +79,14 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                 const rowElement = document.createElement('div');
                 rowElement.id = `direct-grid-row-${i}`;
                 rowElement.className = styles['grid-row'];
-                
+
                 // 每5行增加更大的底部间距
-                if ((i + 1) % 5 === 0) {
+                if ((i + 1) % 15 === 0) {
+                    rowElement.style.marginBottom = '40px';
+                } else if ((i + 1) % 5 === 0) {
                     rowElement.style.marginBottom = '20px';
                 }
+
 
                 gridContainerRef.current.appendChild(rowElement);
 
@@ -91,7 +94,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                 for (let j = 0; j < columns && currentIndex < totalChars; j++) {
                     const char = charList[currentIndex];
                     const cellId = `direct-grid-item-${j}-${i}`;
-                    
+
                     // 创建单元格
                     const cellElement = document.createElement('div');
                     cellElement.id = cellId;
@@ -103,14 +106,14 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                     cellElement.style.display = 'flex';
                     cellElement.style.alignItems = 'center';
                     cellElement.style.justifyContent = 'center';
-                    
+
                     // 第一个元素不设置左边距
                     if (j === 0) {
                         cellElement.style.marginLeft = '0';
                     }
-                    
+
                     rowElement.appendChild(cellElement);
-                    
+
                     // 直接渲染汉字到单元格
                     // 使用Promise确保渲染完成
                     const renderPromise = new Promise<void>((resolve) => {
@@ -128,7 +131,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                             }
                         }, 50); // 小延迟确保DOM已经挂载
                     });
-                    
+
                     renderPromises.push(renderPromise);
                     currentIndex++;
                 }
