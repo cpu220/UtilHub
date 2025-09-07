@@ -83,7 +83,7 @@ const CustomCharsheetPage: React.FC = () => {
         sourceElementId="page-grid-container"
         buttonType="link"
         buttonText="预览导出效果"
-        previewVisible={!true}
+        previewVisible={true}
         fontLibraryName={currentFontLibrary.name}
       />
 

@@ -58,6 +58,8 @@ export interface IRenderOptions {
   fontWeight?: string | number;
   /** 字体样式，当renderMode为font时使用 */
   fontStyle?: 'normal' | 'italic' | 'oblique';
+  /** 字体大小比例，当renderMode为font时使用 */
+  fontSizeRatio?: number;
   /** 是否使用米字格背景 */
   useGridBackground: boolean;
   /** 米字格线条颜色 */

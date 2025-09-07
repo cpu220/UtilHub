@@ -41,6 +41,7 @@ const StrokeRenderOptions = {
   renderMode: 'stroke' as const,
   showOutline: false, // 显示汉字轮廓
   radicalColor: '#3889f2', // 偏旁颜色
+  fontSizeRatio: 0.75, // 默认字体大小比例
   // delayBetweenLoops: 2000, // 设置动画循环间隔
   // outlineColor: '#F0F0F0' // 设置轮廓颜色
 };
@@ -55,15 +56,32 @@ const FontRenderOptions = {
   fontSize: GridConfig.width, // 默认字体大小
   fontWeight: 'normal' as const, // 默认字体粗细
   fontStyle: 'normal' as const, // 默认字体样式
+  fontSizeRatio: 0.8, // 默认字体大小比例
   // 字体模式下文字颜色使用strokeColor，不需要单独的textColor字段
 };
 
 
 
 /**
+ * 字体选项接口定义
+ */
+export interface IFontOption {
+  /** 字体显示名称，用于在UI中展示给用户 */
+  label: string;
+  /** CSS字体族值，实际应用到样式中的字体定义 */
+  value: string;
+  /** 字体分类：system-系统预装字体，custom-自定义字体 */
+  category: 'system' | 'custom';
+  /** 字体粗细，可选配置，用于特定字体的显示优化 */
+  fontWeight?: number | string;
+  /** 字体大小比例因子，可选配置，用于调整不同字体的显示大小 */
+  fontSizeRatio?: number;
+}
+
+/**
  * 字体选项配置
  */
-export const FONT_OPTIONS = [
+export const FONT_OPTIONS: IFontOption[] = [
   {
     label: '宋体',
     value: '"SimSun", "Songti SC", serif',
@@ -102,7 +120,9 @@ export const FONT_OPTIONS = [
   {
     label: '瘦金体',
     value: '"瘦金体", serif',
-    category: 'custom'
+    category: 'custom',
+    fontSizeRatio: 0.9,
+    fontWeight: 400
   }
 ];
 

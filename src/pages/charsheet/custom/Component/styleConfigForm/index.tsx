@@ -78,15 +78,31 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
       newConfig.renderOptions.renderMode = allValues.renderMode;
       
       // 当切换到字体模式时，确保设置默认字体
-       if (allValues.renderMode === 'font') {
-         newConfig.renderOptions.fontFamily = allValues.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value;
-         newConfig.renderOptions.fontSize = allValues.fontSize || defaultRenderOptions.width;
-         newConfig.renderOptions.fontWeight = allValues.fontWeight || 'normal';
-         newConfig.renderOptions.fontStyle = allValues.fontStyle || 'normal';
-       }
+        if (allValues.renderMode === 'font') {
+          const defaultFontValue = allValues.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value;
+          newConfig.renderOptions.fontFamily = defaultFontValue;
+          newConfig.renderOptions.fontSize = allValues.fontSize || defaultRenderOptions.width;
+          
+          // 根据选择的字体设置对应的fontWeight
+          const selectedFont = FONT_OPTIONS.find(font => font.value === defaultFontValue);
+          newConfig.renderOptions.fontWeight = allValues.fontWeight || selectedFont?.fontWeight || 'normal';
+          
+          newConfig.renderOptions.fontStyle = allValues.fontStyle || 'normal';
+        }
     }
     if (allValues.fontFamily !== undefined) {
       newConfig.renderOptions.fontFamily = allValues.fontFamily;
+      
+      // 根据选择的字体自动设置对应的fontWeight和fontSizeRatio
+      const selectedFont = FONT_OPTIONS.find(font => font.value === allValues.fontFamily);
+      if (selectedFont) {
+        if (selectedFont.fontWeight) {
+          newConfig.renderOptions.fontWeight = selectedFont.fontWeight;
+        }
+        if (selectedFont.fontSizeRatio) {
+          newConfig.renderOptions.fontSizeRatio = selectedFont.fontSizeRatio;
+        }
+      }
     }
     if (allValues.fontWeight !== undefined) {
       newConfig.renderOptions.fontWeight = allValues.fontWeight;

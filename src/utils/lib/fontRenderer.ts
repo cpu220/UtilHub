@@ -11,6 +11,7 @@ export interface IFontRenderOptions extends IRenderOptions {
   fontSize?: number;
   fontWeight?: string | number;
   fontStyle?: 'normal' | 'italic' | 'oblique';
+  fontSizeRatio?: number;
   // textColor已移除，统一使用strokeColor作为文字颜色
 }
 
@@ -65,10 +66,11 @@ export class FontRenderer {
     textElement.setAttribute('dominant-baseline', 'central');
     textElement.setAttribute('alignment-baseline', 'central');
     
-    // 设置字体样式
+    // 设置字体样式 - 使用配置的字体大小比例
+    // const fontSize = options.fontSize || Math.min(options.width, options.height) * (options.fontSizeRatio || 0.8);
     // const fontSize = options.fontSize || Math.min(options.width, options.height) * 0.8;
-    const fontSize =  Math.min(options.width, options.height) * 0.75;
-    
+    const fontSize =  Math.min(options.width, options.height) *  (options.fontSizeRatio || 0.8);
+
     textElement.setAttribute('font-size', fontSize.toString());
     textElement.setAttribute('font-family', options.fontFamily);
     

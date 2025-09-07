@@ -196,7 +196,7 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
           
           
           <Dropdown.Button
-            type="line"
+            type="default"
             icon={<DownloadOutlined />}
             onClick={() => exportCharsheet()}
             menu={{ items: formatMenuItems }}
