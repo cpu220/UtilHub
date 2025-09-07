@@ -9,6 +9,7 @@ import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter } from './Component';
 
 import { FONT_LIBRARY } from '../const';
+import { IFontLibrary } from '../interface';
 
 
 
@@ -17,20 +18,32 @@ import { FONT_LIBRARY } from '../const';
  */
 const CustomCharsheetPage: React.FC = () => {
 
-  const [fontList, setFontList] = useState<string>(FONT_LIBRARY[0].list);
+  // 获取默认选中的字库
+  const getDefaultFontLibrary = () => FONT_LIBRARY.find(lib => lib.select) || FONT_LIBRARY[0];
+  
+  const [currentFontLibrary, setCurrentFontLibrary] = useState<IFontLibrary>(getDefaultFontLibrary());
   const [customConfig, setCustomConfig] = useState<{ config: ICharsheetConfig, renderOptions: IRenderOptions }>({
     config: { ...GridConfig },
     renderOptions: { ...DefaultRenderOptions }
   });
 
   const handleCreateFontList = () => {
-    const fontList = generateRandomChineseCharsString(153);
-    setFontList(fontList);
+    const randomFontList = generateRandomChineseCharsString(153);
+    // 创建一个临时的字库对象用于随机字库
+    setCurrentFontLibrary({
+      name: '随机字库',
+      list: randomFontList
+    });
   }
 
   // 处理配置变化的回调函数
   const handleConfigChange = (newConfig: { config: ICharsheetConfig; renderOptions: IRenderOptions }) => {
     setCustomConfig(newConfig);
+  };
+
+  // 处理字库选择变化的回调函数
+  const handleFontLibraryChange = (fontLibrary: IFontLibrary) => {
+    setCurrentFontLibrary(fontLibrary);
   };
 
 
@@ -56,6 +69,7 @@ const CustomCharsheetPage: React.FC = () => {
           defaultRenderOptions={DefaultRenderOptions}
           defaultConfig={GridConfig}
           onConfigChange={handleConfigChange}
+          onFontLibraryChange={handleFontLibraryChange}
         />
         <Button type="link" onClick={handleCreateFontList}>随机字库</Button>
 
@@ -70,7 +84,7 @@ const CustomCharsheetPage: React.FC = () => {
 
 
       <DirectGridRenderer
-        fontList={fontList}
+        fontList={currentFontLibrary.list}
         renderOptions={customConfig.renderOptions}
         config={customConfig.config}
       />

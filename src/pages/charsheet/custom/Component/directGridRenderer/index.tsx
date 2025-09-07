@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { message } from 'antd';
 import { renderHanziInContainer } from '@/utils';
 import { IGridItem, IGridData, IRenderOptions, ICharsheetConfig } from '../../../interface';
@@ -25,13 +25,18 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
 }) => {
     const gridContainerRef = useRef<HTMLDivElement>(null);
 
-    // 当fontList变化时，重新生成整个网格
+    // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
+    const renderKey = useMemo(() => {
+        return `${fontList}-${config.defaultCol}-${config.defaultRow}-${renderOptions.radicalColor}-${config.width}-${config.height}`;
+    }, [fontList, config.defaultCol, config.defaultRow, renderOptions.radicalColor, config.width, config.height]);
+
+    // 当关键渲染参数变化时，重新生成整个网格
     useEffect(() => {
         if (!fontList || fontList.length === 0) {
             message.error('字体列表为空');
             return;
         }
-        console.log(fontList)
+        console.log('字库变化，重新渲染:', fontList.substring(0, 10) + '...');
         message.info('正在生成新的字帖...');
 
         // 使用setTimeout确保DOM已准备好
@@ -46,7 +51,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
         }, 100);
 
         return () => clearTimeout(timer);
-    }, [fontList, config.defaultCol, config.defaultRow, renderOptions, renderOptions.radicalColor, config.width, config.height]);
+    }, [renderKey]); // 只依赖于 renderKey
 
     /**
      * 直接渲染网格，生成一个单元格就转换一个

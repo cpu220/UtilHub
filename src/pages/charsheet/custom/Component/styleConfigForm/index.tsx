@@ -1,13 +1,15 @@
 import React, { useRef, useEffect } from 'react';
-import { Form, ColorPicker, InputNumber } from 'antd';
+import { Form, ColorPicker, InputNumber, Select } from 'antd';
 import type { FormProps } from 'antd';
-import { ICharsheetConfig, IRenderOptions } from '../../../interface';
+import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '../../../interface';
+import { FONT_LIBRARY } from '../../../const';
 import styles from './index.less';
 
 interface StyleConfigFormProps {
   defaultRenderOptions: IRenderOptions;
   defaultConfig: ICharsheetConfig;
   onConfigChange: (newConfig: { config: ICharsheetConfig; renderOptions: IRenderOptions }) => void;
+  onFontLibraryChange: (fontLibrary: IFontLibrary) => void;
 }
 
 /**
@@ -18,7 +20,8 @@ interface StyleConfigFormProps {
 const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
   defaultRenderOptions,
   defaultConfig,
-  onConfigChange
+  onConfigChange,
+  onFontLibraryChange
 }) => {
   const [form] = Form.useForm();
   
@@ -72,12 +75,16 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     }, 200);
   };
 
+  // 获取默认选中的字库
+  const defaultFontLibrary = FONT_LIBRARY.find(lib => lib.select) || FONT_LIBRARY[0];
+
   // 表单初始值
   const initialValues: any = {
     radicalColor: defaultRenderOptions.radicalColor,
     rows: defaultConfig.defaultRow,
     cols: defaultConfig.defaultCol,
-    fontSize: defaultRenderOptions.width
+    fontSize: defaultRenderOptions.width,
+    fontLibrary: defaultFontLibrary.name
   };
 
   return (
@@ -100,6 +107,31 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
         </Form.Item>
         <Form.Item label="字体大小" name="fontSize">
           <InputNumber min={20} max={200} />
+        </Form.Item>
+        <Form.Item label="字库选择" name="fontLibrary">
+          <Select
+            style={{ width: 200 }}
+            placeholder="请选择字库"
+            onChange={(value) => {
+              const selectedLibrary = FONT_LIBRARY.find(lib => lib.name === value);
+              if (selectedLibrary) {
+                // 清除之前的防抖计时器
+                if (debounceTimerRef.current) {
+                  clearTimeout(debounceTimerRef.current);
+                }
+                // 使用防抖机制延迟触发字库变化
+                debounceTimerRef.current = setTimeout(() => {
+                  onFontLibraryChange(selectedLibrary);
+                }, 200);
+              }
+            }}
+          >
+            {FONT_LIBRARY.map(library => (
+              <Select.Option key={library.name} value={library.name}>
+                {library.name}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
       </Form>
     </div>
