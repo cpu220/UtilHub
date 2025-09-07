@@ -57,7 +57,7 @@ export interface IRenderOptions {
   /** 是否显示汉字轮廓 */
   showOutline: boolean;
   /** 轮廓颜色 */
-  outlineColor: string;
+  outlineColor?: string;
 }
 
 /**
@@ -132,4 +132,10 @@ export namespace ICharsheetInterface {
   export type PrintConfig = IPrintOptions;
   /** 预览图片选项类型 */
   export type PreviewConfig = IPreviewOptions;
+}
+
+export interface IFontLibrary {
+    name: string;
+    list: string;
+    select?: boolean;
 }

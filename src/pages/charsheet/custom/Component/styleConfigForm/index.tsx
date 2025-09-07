@@ -100,7 +100,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
           <ColorPicker />
         </Form.Item>
         <Form.Item label="行数" name="rows">
-          <InputNumber min={1} max={50} />
+          <InputNumber min={1} max={5000} />
         </Form.Item>
         <Form.Item label="列数" name="cols">
           <InputNumber min={1} max={20} />

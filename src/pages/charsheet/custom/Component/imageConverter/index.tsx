@@ -22,6 +22,11 @@ interface ImageConverterProps {
    * 按钮类型
    */
   buttonType?: 'primary' | 'default' | 'dashed' | 'link' | 'text';
+
+  /**
+   * 字库名称，用于文件命名
+   */
+  fontLibraryName?: string;
 }
 
 /**
@@ -31,7 +36,8 @@ interface ImageConverterProps {
 const ImageConverter: React.FC<ImageConverterProps> = ({
   sourceElementId,
   buttonText = '转换为图片',
-  buttonType = 'primary'
+  buttonType = 'primary',
+  fontLibraryName
 }) => {
   const [isConverting, setIsConverting] = useState(false);
   const [currentImageData, setCurrentImageData] = useState<string>('');
@@ -100,15 +106,19 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
       const formatName = format === 'png' ? 'PNG' : format === 'jpeg' ? 'JPG' : 'PDF';
       message.loading(`正在生成${formatName}字帖...`, 0);
       
+      // 生成包含字库名称的文件名
+      const libraryName = fontLibraryName || '字帖';
+      const timestamp = Date.now();
+      
       if (format === 'pdf') {
         // 使用PDF导出工具
         await PDFExportTool.exportToPDF({
           sourceElementId,
-          fileName: `字帖_${Date.now()}.pdf`
+          fileName: `${libraryName}_${timestamp}.pdf`
         });
       } else {
         // 使用图片导出工具
-        const fileName = `字帖_${Date.now()}.${format === 'png' ? 'png' : 'jpg'}`;
+        const fileName = `${libraryName}_${timestamp}.${format === 'png' ? 'png' : 'jpg'}`;
         
         if (format === 'png') {
           await ImageExportTool.exportToPNG({

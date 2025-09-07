@@ -13,7 +13,7 @@ export const CharsheetColors = {
 export const GridConfig: ICharsheetConfig = {
   width: 60,
   height: 60,
-  defaultRow: 25,
+  defaultRow: 250,
   defaultCol: 10
 };
 
@@ -29,6 +29,6 @@ export const DefaultRenderOptions: IRenderOptions = {
         useGridBackground: true, // 使用米字格背景
         gridColor: CharsheetColors.GRID_COLOR, // 设置米字格线条颜色
         // delayBetweenLoops: 2000, // 设置动画循环间隔
-        showOutline: true, // 显示汉字轮廓
-        outlineColor: '#F0F0F0' // 设置轮廓颜色
+        showOutline: false, // 显示汉字轮廓
+        // outlineColor: '#F0F0F0' // 设置轮廓颜色
 }

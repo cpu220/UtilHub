@@ -17,7 +17,7 @@ import { IFontLibrary } from '../interface';
  * 自定义字帖生成页面
  */
 const CustomCharsheetPage: React.FC = () => {
-  console.log(FONT_LIBRARY)
+ 
   // 获取默认选中的字库
   const getDefaultFontLibrary = () => FONT_LIBRARY.find(lib => lib.select) || FONT_LIBRARY[0];
   
@@ -31,7 +31,7 @@ const CustomCharsheetPage: React.FC = () => {
     const randomFontList = generateRandomChineseCharsString(153);
     // 创建一个临时的字库对象用于随机字库
     setCurrentFontLibrary({
-      name: '随机字库',
+      name: '随机常用字',
       list: randomFontList
     });
   }
@@ -94,6 +94,7 @@ const CustomCharsheetPage: React.FC = () => {
         sourceElementId="page-grid-container"
         buttonType="link"
         buttonText="预览导出效果"
+        fontLibraryName={currentFontLibrary.name}
       />
 
     </div>
