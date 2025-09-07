@@ -42,34 +42,42 @@ export interface IRenderOptions {
   width: number;
   /** 渲染高度 */
   height: number;
+  /** 字体大小 - 统一控制两种渲染引擎的字符大小 */
+  fontSize: number;
   /** 笔画宽度 */
   strokeWidth: number;
   /** 笔画颜色（字体模式下也用作文字颜色） */
   strokeColor: string;
   /** 部首颜色 */
   radicalColor?: string;
-  /** 渲染模式：stroke使用hanzi-writer笔画模式，font使用CSS字体模式 */
+  /** 渲染模式：stroke使用笔画渲染引擎，font使用CSS字体模式 */
   renderMode?: 'stroke' | 'font';
+  /** 渲染引擎：选择使用哪个笔画渲染引擎 */
+  renderEngine?: 'hanzi-writer' | 'cnchar-draw';
   /** 字体族，当renderMode为font时使用 */
   fontFamily?: string;
-  /** 字体大小，当renderMode为font时使用 */
-  fontSize?: number;
   /** 字体粗细，当renderMode为font时使用 */
   fontWeight?: string | number;
   /** 字体样式，当renderMode为font时使用 */
   fontStyle?: 'normal' | 'italic' | 'oblique';
   /** 字体大小比例，当renderMode为font时使用 */
   fontSizeRatio?: number;
+  /** 内边距 */
+  padding?: number;
+  /** 是否使用本地字库数据 */
+  useLocalData?: boolean;
+  /** 是否显示汉字轮廓 */
+  showOutline?: boolean;
+  /** 轮廓颜色 */
+  outlineColor?: string;
+  /** 动画循环间隔（毫秒） */
+  delayBetweenLoops?: number;
+  /** 是否启用动画循环 */
+  loopAnimation?: boolean;
   /** 是否使用米字格背景 */
   useGridBackground: boolean;
   /** 米字格线条颜色 */
   gridColor: string;
-  /** 动画循环间隔 */
-  delayBetweenLoops?: number;
-  /** 是否显示汉字轮廓 */
-  showOutline: boolean;
-  /** 轮廓颜色 */
-  outlineColor?: string;
 }
 
 /**

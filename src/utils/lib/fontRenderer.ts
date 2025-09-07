@@ -8,11 +8,11 @@ import { IRenderOptions } from '@/pages/charsheet/interface';
 export interface IFontRenderOptions extends IRenderOptions {
   renderMode: 'font';
   fontFamily: string;
-  fontSize?: number;
   fontWeight?: string | number;
   fontStyle?: 'normal' | 'italic' | 'oblique';
   fontSizeRatio?: number;
   // textColor已移除，统一使用strokeColor作为文字颜色
+  // fontSize继承自IRenderOptions，不需要重复定义
 }
 
 /**

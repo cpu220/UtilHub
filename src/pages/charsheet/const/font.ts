@@ -17,7 +17,10 @@ export const GridConfig: ICharsheetConfig = {
   defaultCol: 10
 };
 
-
+export const FONT_RENDER_ENGINE = {
+  CNCHAR_DRAW: 'cnchar-draw' as const,
+  HANZI_WRITER: 'hanzi-writer' as const,
+} as const;
 
 /**
  * 公共渲染配置（两种模式共用）
@@ -25,12 +28,14 @@ export const GridConfig: ICharsheetConfig = {
 const BaseRenderOptions = {
   width: GridConfig.width, // 设置合适的宽度
   height: GridConfig.height, // 设置合适的高度
+  fontSize: GridConfig.width, // 统一字体大小，默认等于宽度
   strokeWidth: 3, // 设置笔画宽度
   strokeColor: '#b8b8b8', // 笔画颜色（字体模式下也用作文字颜色）
   radicalColor: '#3889f2', // 偏旁颜色
   useGridBackground: true, // 使用米字格背景
   gridColor: CharsheetColors.GRID_COLOR, // 设置米字格线条颜色
-
+  padding: 5, // 内边距
+  useLocalData: true, // 使用本地字库数据
 };
 
 /**
@@ -39,9 +44,14 @@ const BaseRenderOptions = {
 const StrokeRenderOptions = {
   ...BaseRenderOptions,
   renderMode: 'stroke' as const,
+  
+  // 渲染引擎配置 - 在此处控制使用哪个渲染引擎
+  // renderEngine: FONT_RENDER_ENGINE.CNCHAR_DRAW, // 默认使用 cnchar-draw 渲染引擎
+  renderEngine: FONT_RENDER_ENGINE.HANZI_WRITER, // 可切换为 hanzi-writer 渲染引擎
+  
   showOutline: false, // 显示汉字轮廓
   radicalColor: '#3889f2', // 偏旁颜色
-  fontSizeRatio: 0.75, // 默认字体大小比例
+  fontSizeRatio:1, // 默认字体大小比例
   // delayBetweenLoops: 2000, // 设置动画循环间隔
   // outlineColor: '#F0F0F0' // 设置轮廓颜色
 };
@@ -59,7 +69,6 @@ const FontRenderOptions = {
   fontSizeRatio: 0.8, // 默认字体大小比例
   // 字体模式下文字颜色使用strokeColor，不需要单独的textColor字段
 };
-
 
 
 /**
@@ -125,6 +134,59 @@ export const FONT_OPTIONS: IFontOption[] = [
     fontWeight: 400
   }
 ];
+
+/**
+ * 根据渲染模式获取对应的默认配置
+ * @param renderMode 渲染模式
+ * @returns 对应模式的默认配置
+ */
+export const getRenderOptionsByMode = (renderMode: 'stroke' | 'font' = 'stroke'): IRenderOptions => {
+  switch (renderMode) {
+    case 'font':
+      return FontRenderOptions;
+    case 'stroke':
+    default:
+      return StrokeRenderOptions;
+  }
+};
+
+/**
+ * 智能合并渲染配置
+ * 根据当前renderMode自动选择正确的基础配置，然后合并用户自定义配置
+ * @param currentOptions 当前配置
+ * @param updates 更新的配置
+ * @returns 合并后的配置
+ */
+export const mergeRenderOptions = (currentOptions: IRenderOptions, updates: Partial<IRenderOptions>): IRenderOptions => {
+  // 如果renderMode发生变化，使用新模式的默认配置作为基础
+  const targetMode = updates.renderMode || currentOptions.renderMode || 'stroke';
+  const baseOptions = getRenderOptionsByMode(targetMode);
+  
+  // 合并配置：基础配置 -> 当前配置 -> 更新配置
+  const mergedOptions = {
+    ...baseOptions,
+    ...currentOptions,
+    ...updates
+  };
+  
+  // 确保关键属性的一致性
+  if (updates.renderMode && updates.renderMode !== currentOptions.renderMode) {
+    // 模式切换时，重置模式特定的属性
+    if (updates.renderMode === 'font') {
+      // 切换到字体模式时，确保字体相关属性使用FontRenderOptions的默认值
+      mergedOptions.fontSizeRatio = updates.fontSizeRatio ?? FontRenderOptions.fontSizeRatio;
+      mergedOptions.fontFamily = updates.fontFamily ?? FontRenderOptions.fontFamily;
+      mergedOptions.fontWeight = updates.fontWeight ?? FontRenderOptions.fontWeight;
+      mergedOptions.fontStyle = updates.fontStyle ?? FontRenderOptions.fontStyle;
+    } else if (updates.renderMode === 'stroke') {
+      // 切换到笔画模式时，确保笔画相关属性使用StrokeRenderOptions的默认值
+      mergedOptions.fontSizeRatio = updates.fontSizeRatio ?? StrokeRenderOptions.fontSizeRatio;
+      mergedOptions.renderEngine = updates.renderEngine ?? StrokeRenderOptions.renderEngine;
+    }
+  }
+  
+  return mergedOptions;
+};
 
 /**
  * 导出各模式配置

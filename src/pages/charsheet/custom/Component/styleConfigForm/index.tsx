@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { Form, ColorPicker, InputNumber, Select } from 'antd';
 import type { FormProps } from 'antd';
 import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '../../../interface';
-import { FONT_LIBRARY, FONT_OPTIONS } from '../../../const';
+import { FONT_LIBRARY, FONT_OPTIONS, mergeRenderOptions } from '../../../const';
 import styles from './index.less';
 
 interface StyleConfigFormProps {
@@ -56,61 +56,55 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
       newConfig.config.defaultCol = allValues.cols;
     }
     
-    // 更新renderOptions部分
+    // 构建renderOptions更新对象
+    const renderOptionsUpdates: Partial<IRenderOptions> = {};
+    
     if (allValues.strokeColor !== undefined) {
-      newConfig.renderOptions.strokeColor = allValues.strokeColor.toHexString ? allValues.strokeColor.toHexString() : allValues.strokeColor;
+      renderOptionsUpdates.strokeColor = allValues.strokeColor.toHexString ? allValues.strokeColor.toHexString() : allValues.strokeColor;
     }
     if (allValues.radicalColor !== undefined) {
-      newConfig.renderOptions.radicalColor = allValues.radicalColor.toHexString ? allValues.radicalColor.toHexString() : allValues.radicalColor;
+      renderOptionsUpdates.radicalColor = allValues.radicalColor.toHexString ? allValues.radicalColor.toHexString() : allValues.radicalColor;
     }
     if (allValues.fontSize !== undefined) {
-      newConfig.renderOptions.width = allValues.fontSize;
-      newConfig.renderOptions.height = allValues.fontSize;
+      renderOptionsUpdates.width = allValues.fontSize;
+      renderOptionsUpdates.height = allValues.fontSize;
+      renderOptionsUpdates.fontSize = allValues.fontSize;
       // 同时更新config的width和height，确保单元格尺寸与字体大小同步
       newConfig.config.width = allValues.fontSize;
       newConfig.config.height = allValues.fontSize;
-      // 同时更新字体模式下的字体大小
-      newConfig.renderOptions.fontSize = allValues.fontSize;
     }
     
-    // 更新字体相关配置 - 使用allValues确保renderMode始终被保留
+    // 处理renderMode变化
     if (allValues.renderMode !== undefined) {
-      newConfig.renderOptions.renderMode = allValues.renderMode;
-      
-      // 当切换到字体模式时，确保设置默认字体
-        if (allValues.renderMode === 'font') {
-          const defaultFontValue = allValues.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value;
-          newConfig.renderOptions.fontFamily = defaultFontValue;
-          newConfig.renderOptions.fontSize = allValues.fontSize || defaultRenderOptions.width;
-          
-          // 根据选择的字体设置对应的fontWeight
-          const selectedFont = FONT_OPTIONS.find(font => font.value === defaultFontValue);
-          newConfig.renderOptions.fontWeight = allValues.fontWeight || selectedFont?.fontWeight || 'normal';
-          
-          newConfig.renderOptions.fontStyle = allValues.fontStyle || 'normal';
-        }
+      renderOptionsUpdates.renderMode = allValues.renderMode;
     }
+    
+    // 处理字体相关配置
     if (allValues.fontFamily !== undefined) {
-      newConfig.renderOptions.fontFamily = allValues.fontFamily;
+      renderOptionsUpdates.fontFamily = allValues.fontFamily;
       
       // 根据选择的字体自动设置对应的fontWeight和fontSizeRatio
       const selectedFont = FONT_OPTIONS.find(font => font.value === allValues.fontFamily);
       if (selectedFont) {
-        if (selectedFont.fontWeight) {
-          newConfig.renderOptions.fontWeight = selectedFont.fontWeight;
+        if (selectedFont.fontWeight && allValues.fontWeight === undefined) {
+          renderOptionsUpdates.fontWeight = selectedFont.fontWeight;
         }
-        if (selectedFont.fontSizeRatio) {
-          newConfig.renderOptions.fontSizeRatio = selectedFont.fontSizeRatio;
+        if (selectedFont.fontSizeRatio && allValues.fontSizeRatio === undefined) {
+          renderOptionsUpdates.fontSizeRatio = selectedFont.fontSizeRatio;
         }
       }
     }
     if (allValues.fontWeight !== undefined) {
-      newConfig.renderOptions.fontWeight = allValues.fontWeight;
+      renderOptionsUpdates.fontWeight = allValues.fontWeight;
     }
     if (allValues.fontStyle !== undefined) {
-       newConfig.renderOptions.fontStyle = allValues.fontStyle;
-     }
-     // textColor已移除，统一使用strokeColor作为文字颜色
+      renderOptionsUpdates.fontStyle = allValues.fontStyle;
+    }
+    
+    // 使用智能配置合并函数
+    newConfig.renderOptions = mergeRenderOptions(newConfig.renderOptions, renderOptionsUpdates);
+    
+    // textColor已移除，统一使用strokeColor作为文字颜色
     
     // 清除之前的计时器
     if (debounceTimerRef.current) {
@@ -134,11 +128,10 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     radicalColor: defaultRenderOptions.radicalColor,
     rows: defaultConfig.defaultRow,
     cols: defaultConfig.defaultCol,
-    fontSize: defaultRenderOptions.width,
+    fontSize: defaultRenderOptions.fontSize || defaultRenderOptions.width,
     fontLibrary: defaultFontLibrary.name,
     renderMode: defaultRenderOptions.renderMode || 'stroke',
     fontFamily: defaultRenderOptions.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value
-    // textColor已移除，统一使用strokeColor
   };
 
   return (
@@ -202,6 +195,8 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
             <Select.Option value="font">字体模式</Select.Option>
           </Select>
         </Form.Item>
+        
+
         
         <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.renderMode !== currentValues.renderMode}>
           {({ getFieldValue }) => {

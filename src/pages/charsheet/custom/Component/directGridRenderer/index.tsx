@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { message } from 'antd';
-import { renderHanziInContainer, FontRenderer } from '@/utils';
+import { 
+  renderHanziInContainer, 
+  FontRenderer 
+} from '@/utils';
 import { IGridItem, IGridData, IRenderOptions, ICharsheetConfig } from '../../../interface';
 import { CharsheetColors } from '../../../const';
 import styles from './index.less';
@@ -24,7 +27,6 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
     config
 }) => {
     const gridContainerRef = useRef<HTMLDivElement>(null);
-
     // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
     const renderKey = useMemo(() => {
         return `${fontList}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
@@ -47,7 +49,6 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             message.error('字体列表为空');
             return;
         }
-        console.log('字库变化，重新渲染:', fontList.substring(0, 10) + '...');
         message.info('正在生成新的字帖...');
 
         // 使用setTimeout确保DOM已准备好
@@ -86,7 +87,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             // 使用实际需要的行数，但不超过传入的rowsCount限制
             const finalRows = Math.min(actualRows, rowsCount);
 
-            console.log(`字体列表长度: ${totalChars}, 列数: ${columns}, 完整行数: ${fullRows}, 余数: ${remainder}, 计算实际行数: ${actualRows}, 最终使用行数: ${finalRows}`);
+    
 
             // 创建行和单元格
             let currentIndex = 0;
@@ -118,7 +119,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                     cellElement.className = styles['grid-item'];
                     cellElement.style.width = `${config.width}px`;
                     cellElement.style.height = `${config.height}px`;
-                    cellElement.style.border = `1px solid ${CharsheetColors.BORDER_COLOR}`;
+                    // cellElement.style.border = `1px solid ${CharsheetColors.BORDER_COLOR}`;
                     cellElement.style.fontSize = `${config.width * 0.6}px`;
                     cellElement.style.display = 'flex';
                     cellElement.style.alignItems = 'center';
@@ -145,18 +146,17 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                                         fontFamily: renderOptions.fontFamily
                                     });
                                 } else {
-                                    // 使用默认的hanzi-writer笔画模式
+                                    // 使用统一适配器，根据 font.ts 中的配置自动选择渲染引擎
                                     renderHanziInContainer(cellId, char, renderOptions);
                                 }
                                 resolve();
                             } catch (error) {
-                                console.error(`渲染字符 ${char} 失败:`, error);
-                                // 失败时显示原字符
-                                if (document.getElementById(cellId)) {
-                                    (document.getElementById(cellId) as HTMLElement).innerText = char;
-                                }
-                                resolve();
-                            }
+                        // 降级处理：显示纯文字
+                        if (document.getElementById(cellId)) {
+                            (document.getElementById(cellId) as HTMLElement).innerText = char;
+                        }
+                        resolve();
+                    }
                         }, 50); // 小延迟确保DOM已经挂载
                     });
 
@@ -171,8 +171,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             });
 
         } catch (error) {
-            console.error('生成网格时出错:', error);
-            message.error('字帖生成失败，请重试');
+            message.error('生成字帖失败，请重试');
         }
     };
 

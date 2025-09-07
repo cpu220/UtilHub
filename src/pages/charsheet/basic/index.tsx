@@ -21,20 +21,20 @@ const BasicCharsheetPage: React.FC = () => {
   const [loops, setLoops] = useState<number>(1000);
 
   useEffect(() => {
-
     const options = {
       width: 400,
       height: 400,
+      fontSize: 400,
       strokeWidth: 5,
       radicalColor: '#168F16',
       strokeColor: '#000',
       useGridBackground: true,
+      renderEngine: 'hanzi-writer' as const,
       delayBetweenLoops: loops
     };
-
+    
     renderHanziInContainer('a1', character, options);
 
-    // 在组件卸载时清理资源
     return () => {
       cleanupHanziWriter('a1');
     };
@@ -43,20 +43,14 @@ const BasicCharsheetPage: React.FC = () => {
 
 
   const onFinish: FormProps<IFieldType>['onFinish'] = (values) => {
-
-    console.log('Success:', values);
     const newCharacter = values.character.trim();
     if (newCharacter.length >= 1) {
-      console.log(newCharacter[0]);
       setCharacter(newCharacter[0]);
       setLoops(Number(values.loops));
-
-
     } else {
       message.error('请输入一个汉字');
-      return
+      return;
     }
-
   };
 
 

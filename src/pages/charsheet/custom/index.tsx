@@ -4,7 +4,7 @@ import { message, Button } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
 import { ICharsheetConfig, IRenderOptions } from '../interface';
 
-import { GridConfig, StrokeRenderOptions } from '../const';
+import { GridConfig, getRenderOptionsByMode } from '../const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter } from './Component';
 
@@ -24,7 +24,7 @@ const CustomCharsheetPage: React.FC = () => {
   const [currentFontLibrary, setCurrentFontLibrary] = useState<IFontLibrary>(getDefaultFontLibrary());
   const [customConfig, setCustomConfig] = useState<{ config: ICharsheetConfig, renderOptions: IRenderOptions }>({
     config: { ...GridConfig },
-    renderOptions: { ...StrokeRenderOptions }
+    renderOptions: getRenderOptionsByMode('stroke') // 默认使用笔画模式
   });
 
   const handleCreateFontList = () => {
@@ -66,7 +66,7 @@ const CustomCharsheetPage: React.FC = () => {
     <div style={{ padding: '24px' }}>
       <div className={styles['button-container']}>
         <StyleConfigForm
-          defaultRenderOptions={StrokeRenderOptions}
+          defaultRenderOptions={getRenderOptionsByMode('stroke')}
           defaultConfig={GridConfig}
           onConfigChange={handleConfigChange}
           onFontLibraryChange={handleFontLibraryChange}
@@ -95,49 +95,7 @@ const CustomCharsheetPage: React.FC = () => {
         renderOptions={customConfig.renderOptions}
         config={customConfig.config}
       />
-     
-     <div id="font-test-content" style={{ padding: '20px', border: '1px solid #ccc', margin: '20px 0' }}>
-       <h3>字体测试区域</h3>
-       
-       <div style={{ marginBottom: '20px' }}>
-         <h4>青鸟华光简行楷测试：</h4>
-         <div style={{ 
-           fontFamily: '青鸟华光简行楷, cursive', 
-           fontSize: '24px', 
-           padding: '10px', 
-           border: '1px solid #ddd',
-           backgroundColor: '#f9f9f9'
-         }}>
-           青鸟华光简行楷字体测试：春江潮水连海平，海上明月共潮生。
-         </div>
-       </div>
-       
-       <div style={{ marginBottom: '20px' }}>
-         <h4>瘦金体测试：</h4>
-         <div style={{ 
-           fontFamily: '瘦金体, serif', 
-           fontSize: '24px', 
-           padding: '10px', 
-           border: '1px solid #ddd',
-           backgroundColor: '#f9f9f9'
-         }}>
-           瘦金体字体测试：滟滟随波千万里，何处春江无月明。
-         </div>
-       </div>
-       
-       <div>
-         <h4>系统默认字体对比：</h4>
-         <div style={{ 
-           fontFamily: 'serif', 
-           fontSize: '24px', 
-           padding: '10px', 
-           border: '1px solid #ddd',
-           backgroundColor: '#f0f0f0'
-         }}>
-           系统默认字体：江流宛转绕芳甸，月照花林皆似霰。
-         </div>
-       </div>
-     </div>
+
       
       
 

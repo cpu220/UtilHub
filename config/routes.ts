@@ -47,6 +47,7 @@ export default [
         name: 'custom',
         component: './charsheet/custom',
       },
+
     ],
   },
   {
