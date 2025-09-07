@@ -1,1 +1,1 @@
-git add . && git commit -m "test: 增加字体颜色选择器"
+git add . && git commit -m "test: 增加字体模式"

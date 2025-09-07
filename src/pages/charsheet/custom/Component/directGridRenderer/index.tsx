@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { message } from 'antd';
-import { renderHanziInContainer } from '@/utils';
+import { renderHanziInContainer, FontRenderer } from '@/utils';
 import { IGridItem, IGridData, IRenderOptions, ICharsheetConfig } from '../../../interface';
 import { CharsheetColors } from '../../../const';
 import styles from './index.less';
@@ -27,8 +27,8 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
 
     // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
     const renderKey = useMemo(() => {
-        return `${fontList}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}`;
-    }, [fontList, config.defaultCol, config.defaultRow, renderOptions.strokeColor, renderOptions.radicalColor, config.width, config.height]);
+        return `${fontList}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}-${renderOptions.textColor}`;
+    }, [fontList, config.defaultCol, config.defaultRow, renderOptions.strokeColor, renderOptions.radicalColor, config.width, config.height, renderOptions.renderMode, renderOptions.fontFamily, renderOptions.fontSize, renderOptions.fontWeight, renderOptions.fontStyle, renderOptions.textColor]);
 
     // 当关键渲染参数变化时，重新生成整个网格
     useEffect(() => {
@@ -125,7 +125,18 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                     const renderPromise = new Promise<void>((resolve) => {
                         setTimeout(() => {
                             try {
-                                renderHanziInContainer(cellId, char, renderOptions);
+                                // 根据渲染模式选择渲染方式
+                                if (renderOptions.renderMode === 'font' && renderOptions.fontFamily) {
+                                    // 使用字体渲染模式
+                                    FontRenderer.renderCharacterWithFont(cellId, char, {
+                                        ...renderOptions,
+                                        renderMode: 'font',
+                                        fontFamily: renderOptions.fontFamily
+                                    });
+                                } else {
+                                    // 使用默认的hanzi-writer笔画模式
+                                    renderHanziInContainer(cellId, char, renderOptions);
+                                }
                                 resolve();
                             } catch (error) {
                                 console.error(`渲染字符 ${char} 失败:`, error);

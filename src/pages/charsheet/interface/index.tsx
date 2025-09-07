@@ -44,10 +44,20 @@ export interface IRenderOptions {
   height: number;
   /** 笔画宽度 */
   strokeWidth: number;
-  /** 笔画颜色 */
+  /** 笔画颜色（字体模式下也用作文字颜色） */
   strokeColor: string;
   /** 部首颜色 */
   radicalColor?: string;
+  /** 渲染模式：stroke使用hanzi-writer笔画模式，font使用CSS字体模式 */
+  renderMode?: 'stroke' | 'font';
+  /** 字体族，当renderMode为font时使用 */
+  fontFamily?: string;
+  /** 字体大小，当renderMode为font时使用 */
+  fontSize?: number;
+  /** 字体粗细，当renderMode为font时使用 */
+  fontWeight?: string | number;
+  /** 字体样式，当renderMode为font时使用 */
+  fontStyle?: 'normal' | 'italic' | 'oblique';
   /** 是否使用米字格背景 */
   useGridBackground: boolean;
   /** 米字格线条颜色 */

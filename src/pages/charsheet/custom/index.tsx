@@ -4,7 +4,7 @@ import { message, Button } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
 import { ICharsheetConfig, IRenderOptions } from '../interface';
 
-import { GridConfig, DefaultRenderOptions } from '../const';
+import { GridConfig, StrokeRenderOptions } from '../const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter } from './Component';
 
@@ -24,7 +24,7 @@ const CustomCharsheetPage: React.FC = () => {
   const [currentFontLibrary, setCurrentFontLibrary] = useState<IFontLibrary>(getDefaultFontLibrary());
   const [customConfig, setCustomConfig] = useState<{ config: ICharsheetConfig, renderOptions: IRenderOptions }>({
     config: { ...GridConfig },
-    renderOptions: { ...DefaultRenderOptions }
+    renderOptions: { ...StrokeRenderOptions }
   });
 
   const handleCreateFontList = () => {
@@ -66,7 +66,7 @@ const CustomCharsheetPage: React.FC = () => {
     <div style={{ padding: '24px' }}>
       <div className={styles['button-container']}>
         <StyleConfigForm
-          defaultRenderOptions={DefaultRenderOptions}
+          defaultRenderOptions={StrokeRenderOptions}
           defaultConfig={GridConfig}
           onConfigChange={handleConfigChange}
           onFontLibraryChange={handleFontLibraryChange}

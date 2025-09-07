@@ -27,6 +27,8 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
   
   // 防抖计时器引用
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+
 
   // 清除防抖计时器
   useEffect(() => {
@@ -44,28 +46,55 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
       renderOptions: { ...defaultRenderOptions }
     };
     
+    // 使用allValues获取表单的完整状态，确保所有配置都被保留
+    
     // 更新config部分
-    if (changedValues.rows !== undefined) {
-      newConfig.config.defaultRow = changedValues.rows;
+    if (allValues.rows !== undefined) {
+      newConfig.config.defaultRow = allValues.rows;
     }
-    if (changedValues.cols !== undefined) {
-      newConfig.config.defaultCol = changedValues.cols;
+    if (allValues.cols !== undefined) {
+      newConfig.config.defaultCol = allValues.cols;
     }
     
     // 更新renderOptions部分
-    if (changedValues.strokeColor !== undefined) {
-      newConfig.renderOptions.strokeColor = changedValues.strokeColor.toHexString();
+    if (allValues.strokeColor !== undefined) {
+      newConfig.renderOptions.strokeColor = allValues.strokeColor.toHexString ? allValues.strokeColor.toHexString() : allValues.strokeColor;
     }
-    if (changedValues.radicalColor !== undefined) {
-      newConfig.renderOptions.radicalColor = changedValues.radicalColor.toHexString();
+    if (allValues.radicalColor !== undefined) {
+      newConfig.renderOptions.radicalColor = allValues.radicalColor.toHexString ? allValues.radicalColor.toHexString() : allValues.radicalColor;
     }
-    if (changedValues.fontSize !== undefined) {
-      newConfig.renderOptions.width = changedValues.fontSize;
-      newConfig.renderOptions.height = changedValues.fontSize;
+    if (allValues.fontSize !== undefined) {
+      newConfig.renderOptions.width = allValues.fontSize;
+      newConfig.renderOptions.height = allValues.fontSize;
       // 同时更新config的width和height，确保单元格尺寸与字体大小同步
-      newConfig.config.width = changedValues.fontSize;
-      newConfig.config.height = changedValues.fontSize;
+      newConfig.config.width = allValues.fontSize;
+      newConfig.config.height = allValues.fontSize;
+      // 同时更新字体模式下的字体大小
+      newConfig.renderOptions.fontSize = allValues.fontSize;
     }
+    
+    // 更新字体相关配置 - 使用allValues确保renderMode始终被保留
+    if (allValues.renderMode !== undefined) {
+      newConfig.renderOptions.renderMode = allValues.renderMode;
+      
+      // 当切换到字体模式时，确保设置默认字体
+      if (allValues.renderMode === 'font') {
+        newConfig.renderOptions.fontFamily = allValues.fontFamily || '"SimHei", "Heiti SC", "Microsoft YaHei", sans-serif';
+        newConfig.renderOptions.fontSize = allValues.fontSize || defaultRenderOptions.width;
+        newConfig.renderOptions.fontWeight = allValues.fontWeight || 'normal';
+        newConfig.renderOptions.fontStyle = allValues.fontStyle || 'normal';
+      }
+    }
+    if (allValues.fontFamily !== undefined) {
+      newConfig.renderOptions.fontFamily = allValues.fontFamily;
+    }
+    if (allValues.fontWeight !== undefined) {
+      newConfig.renderOptions.fontWeight = allValues.fontWeight;
+    }
+    if (allValues.fontStyle !== undefined) {
+       newConfig.renderOptions.fontStyle = allValues.fontStyle;
+     }
+     // textColor已移除，统一使用strokeColor作为文字颜色
     
     // 清除之前的计时器
     if (debounceTimerRef.current) {
@@ -78,6 +107,8 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     }, 200);
   };
 
+
+
   // 获取默认选中的字库
   const defaultFontLibrary = FONT_LIBRARY.find(lib => lib.select) || FONT_LIBRARY[0];
 
@@ -88,7 +119,10 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     rows: defaultConfig.defaultRow,
     cols: defaultConfig.defaultCol,
     fontSize: defaultRenderOptions.width,
-    fontLibrary: defaultFontLibrary.name
+    fontLibrary: defaultFontLibrary.name,
+    renderMode: defaultRenderOptions.renderMode || 'stroke',
+    fontFamily: defaultRenderOptions.fontFamily || '"SimHei", "Heiti SC", "Microsoft YaHei", sans-serif'
+    // textColor已移除，统一使用strokeColor
   };
 
   return (
@@ -144,6 +178,37 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
               </Select.Option>
             ))}
           </Select>
+        </Form.Item>
+        
+        <Form.Item label="渲染模式" name="renderMode">
+          <Select style={{ width: 120 }} placeholder="选择模式">
+            <Select.Option value="stroke">笔画模式</Select.Option>
+            <Select.Option value="font">字体模式</Select.Option>
+          </Select>
+        </Form.Item>
+        
+        <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.renderMode !== currentValues.renderMode}>
+          {({ getFieldValue }) => {
+            const renderMode = getFieldValue('renderMode');
+            return renderMode === 'font' ? (
+              <Form.Item 
+                label="字体选择" 
+                name="fontFamily"
+              >
+                <Select 
+                  style={{ width: 200 }} 
+                  placeholder="选择字体"
+                >
+                  <Select.Option value='"SimSun", "Songti SC", serif'>宋体</Select.Option>
+                  <Select.Option value='"SimHei", "Heiti SC", "Microsoft YaHei", sans-serif'>黑体</Select.Option>
+                  <Select.Option value='"FangSong", "STFangsong", serif'>仿宋</Select.Option>
+                  <Select.Option value='"KaiTi", "Kaiti SC", cursive'>楷体</Select.Option>
+                  <Select.Option value='"Microsoft YaHei", "PingFang SC", sans-serif'>微软雅黑</Select.Option>
+                  <Select.Option value='"PingFangSC-Regular", "PingFang SC", sans-serif'>苹方</Select.Option>
+                </Select>
+              </Form.Item>
+            ) : null;
+          }}
         </Form.Item>
       </Form>
     </div>
