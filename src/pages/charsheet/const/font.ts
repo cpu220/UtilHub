@@ -16,7 +16,7 @@ export const DefaultRenderOptions: IRenderOptions = {
         width: GridConfig.width, // 设置合适的宽度
         height: GridConfig.height, // 设置合适的高度
         strokeWidth: 3, // 设置笔画宽度
-        strokeColor: '#c3c3c3', // 设置笔画颜色
+        strokeColor: '#b8b8b8', // 设置笔画颜色
         radicalColor: '#3889f2', // 偏旁颜色
         useGridBackground: true, // 使用米字格背景
         gridColor: '#DDD', // 设置米字格线条颜色

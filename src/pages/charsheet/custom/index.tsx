@@ -4,7 +4,7 @@ import { message, Button } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
 import { ICharsheetConfig, IRenderOptions } from '../interface';
 
-import { GridConfig, DefaultRenderOptions } from './const';
+import { GridConfig, DefaultRenderOptions } from '../const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter } from './Component';
 

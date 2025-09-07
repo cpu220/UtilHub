@@ -100,34 +100,27 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
       message.loading(`正在生成${formatName}字帖...`, 0);
       
       if (format === 'pdf') {
-        // PDF导出逻辑
-        await exportAsPDF();
-        return;
+        // 使用PDF导出工具
+        await PDFExportTool.exportToPDF({
+          sourceElementId,
+          fileName: `字帖_${Date.now()}.pdf`
+        });
+      } else {
+        // 使用图片导出工具
+        const fileName = `字帖_${Date.now()}.${format === 'png' ? 'png' : 'jpg'}`;
+        
+        if (format === 'png') {
+          await ImageExportTool.exportToPNG({
+            sourceElementId,
+            fileName
+          });
+        } else {
+          await ImageExportTool.exportToJPG({
+            sourceElementId,
+            fileName
+          });
+        }
       }
-      
-      const options = {
-        imageType: format,
-        quality: format === 'png' ? 1.0 : 0.98,
-        backgroundColor: '#ffffff',
-        useCanvg: true,
-        // 对于JPG格式，强制设置白色背景
-        ...(format === 'jpeg' && {
-          style: {
-            backgroundColor: '#ffffff'
-          }
-        })
-      };
-
-      const dataUrl = await elementToImage(sourceElementId, options);
-      
-      // 创建下载链接
-      const link = document.createElement('a');
-      const extension = format === 'png' ? 'png' : 'jpg';
-      link.download = `字帖_${Date.now()}.${extension}`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
       
       message.destroy();
       message.success(`${formatName}字帖导出成功`);
@@ -138,26 +131,7 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
     }
   };
 
-  /**
-    * 导出PDF格式
-    */
-   const exportAsPDF = async () => {
-     try {
-       message.loading('正在生成PDF文件...', 0);
-       
-       await PDFExportTool.exportToPDF({
-         sourceElementId,
-         fileName: `字帖_${Date.now()}.pdf`
-       });
-       
-       message.destroy();
-       message.success('PDF文件导出成功');
-     } catch (error) {
-       console.error('导出PDF出错:', error);
-       message.destroy();
-       message.error('PDF导出失败');
-     }
-   };
+
 
   // 下拉菜单选项
    const formatMenuItems: MenuProps['items'] = [
