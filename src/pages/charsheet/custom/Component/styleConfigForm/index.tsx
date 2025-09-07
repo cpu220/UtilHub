@@ -53,6 +53,9 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     }
     
     // 更新renderOptions部分
+    if (changedValues.strokeColor !== undefined) {
+      newConfig.renderOptions.strokeColor = changedValues.strokeColor.toHexString();
+    }
     if (changedValues.radicalColor !== undefined) {
       newConfig.renderOptions.radicalColor = changedValues.radicalColor.toHexString();
     }
@@ -80,6 +83,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
 
   // 表单初始值
   const initialValues: any = {
+    strokeColor: defaultRenderOptions.strokeColor,
     radicalColor: defaultRenderOptions.radicalColor,
     rows: defaultConfig.defaultRow,
     cols: defaultConfig.defaultCol,
@@ -96,7 +100,10 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
         initialValues={initialValues}
         onValuesChange={handleFormChange}
       >
-        <Form.Item label="笔画颜色" name="radicalColor">
+        <Form.Item label="笔画颜色" name="strokeColor">
+          <ColorPicker />
+        </Form.Item>
+        <Form.Item label="偏旁颜色" name="radicalColor">
           <ColorPicker />
         </Form.Item>
         <Form.Item label="行数" name="rows">
