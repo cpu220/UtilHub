@@ -79,6 +79,13 @@ const CustomCharsheetPage: React.FC = () => {
           buttonType="link"
           buttonText="打印"
         />
+        <ImageConverter
+        sourceElementId="page-grid-container"
+        buttonType="link"
+        buttonText="预览导出效果"
+        previewVisible={!true}
+        fontLibraryName={currentFontLibrary.name}
+      />
 
       </div>
 
@@ -89,13 +96,50 @@ const CustomCharsheetPage: React.FC = () => {
         config={customConfig.config}
       />
      
+     <div id="font-test-content" style={{ padding: '20px', border: '1px solid #ccc', margin: '20px 0' }}>
+       <h3>字体测试区域</h3>
+       
+       <div style={{ marginBottom: '20px' }}>
+         <h4>青鸟华光简行楷测试：</h4>
+         <div style={{ 
+           fontFamily: '青鸟华光简行楷, cursive', 
+           fontSize: '24px', 
+           padding: '10px', 
+           border: '1px solid #ddd',
+           backgroundColor: '#f9f9f9'
+         }}>
+           青鸟华光简行楷字体测试：春江潮水连海平，海上明月共潮生。
+         </div>
+       </div>
+       
+       <div style={{ marginBottom: '20px' }}>
+         <h4>瘦金体测试：</h4>
+         <div style={{ 
+           fontFamily: '瘦金体, serif', 
+           fontSize: '24px', 
+           padding: '10px', 
+           border: '1px solid #ddd',
+           backgroundColor: '#f9f9f9'
+         }}>
+           瘦金体字体测试：滟滟随波千万里，何处春江无月明。
+         </div>
+       </div>
+       
+       <div>
+         <h4>系统默认字体对比：</h4>
+         <div style={{ 
+           fontFamily: 'serif', 
+           fontSize: '24px', 
+           padding: '10px', 
+           border: '1px solid #ddd',
+           backgroundColor: '#f0f0f0'
+         }}>
+           系统默认字体：江流宛转绕芳甸，月照花林皆似霰。
+         </div>
+       </div>
+     </div>
       
-      <ImageConverter
-        sourceElementId="page-grid-container"
-        buttonType="link"
-        buttonText="预览导出效果"
-        fontLibraryName={currentFontLibrary.name}
-      />
+      
 
     </div>
   );

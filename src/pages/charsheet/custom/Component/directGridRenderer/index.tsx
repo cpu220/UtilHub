@@ -27,8 +27,19 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
 
     // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
     const renderKey = useMemo(() => {
-        return `${fontList}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}-${renderOptions.textColor}`;
-    }, [fontList, config.defaultCol, config.defaultRow, renderOptions.strokeColor, renderOptions.radicalColor, config.width, config.height, renderOptions.renderMode, renderOptions.fontFamily, renderOptions.fontSize, renderOptions.fontWeight, renderOptions.fontStyle, renderOptions.textColor]);
+        return `${fontList}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
+    }, [fontList,
+        config.defaultCol,
+        config.defaultRow,
+        renderOptions.strokeColor,
+        renderOptions.radicalColor,
+        config.width, config.height,
+        renderOptions.renderMode,
+        renderOptions.fontFamily,
+        renderOptions.fontSize,
+        renderOptions.fontWeight,
+        renderOptions.fontStyle
+    ]);
 
     // 当关键渲染参数变化时，重新生成整个网格
     useEffect(() => {

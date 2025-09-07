@@ -27,6 +27,11 @@ interface ImageConverterProps {
    * 字库名称，用于文件命名
    */
   fontLibraryName?: string;
+
+  /**
+   * 预览可见性
+   */
+  previewVisible?: boolean;
 }
 
 /**
@@ -37,6 +42,7 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
   sourceElementId,
   buttonText = '转换为图片',
   buttonType = 'primary',
+  previewVisible = false,
   fontLibraryName
 }) => {
   const [isConverting, setIsConverting] = useState(false);
@@ -176,16 +182,21 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
     <div className={styles.imageConverter}>
       <Space direction="vertical" style={{ width: '100%' }}>
         <Space>
-          <Button
-            type={buttonType}
-            onClick={handleConvert}
-            loading={isConverting}
-          >
-            {buttonText}
-          </Button>
+          {
+            previewVisible && (
+              <Button
+                type={buttonType}
+                onClick={handleConvert}
+                loading={isConverting}
+              >
+                {buttonText}
+              </Button>
+            )
+          }
+          
           
           <Dropdown.Button
-            type="default"
+            type="line"
             icon={<DownloadOutlined />}
             onClick={() => exportCharsheet()}
             menu={{ items: formatMenuItems }}
@@ -195,10 +206,14 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
         </Space>
         
         {/* 内置结果容器 */}
-        <div 
-          ref={resultContainerRef}
-          className={styles.resultContainer}
-        />
+          {
+            previewVisible && (
+              <div 
+                ref={resultContainerRef}
+                className={styles.resultContainer}
+              />
+            )
+          }
       </Space>
     </div>
   );

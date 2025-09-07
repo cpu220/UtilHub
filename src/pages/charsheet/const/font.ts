@@ -61,6 +61,52 @@ const FontRenderOptions = {
 
 
 /**
+ * 字体选项配置
+ */
+export const FONT_OPTIONS = [
+  {
+    label: '宋体',
+    value: '"SimSun", "Songti SC", serif',
+    category: 'system'
+  },
+  {
+    label: '黑体',
+    value: '"SimHei", "Heiti SC", "Microsoft YaHei", sans-serif',
+    category: 'system'
+  },
+  {
+    label: '仿宋',
+    value: '"FangSong", "STFangsong", serif',
+    category: 'system'
+  },
+  {
+    label: '楷体',
+    value: '"KaiTi", "Kaiti SC", cursive',
+    category: 'system'
+  },
+  {
+    label: '微软雅黑',
+    value: '"Microsoft YaHei", "PingFang SC", sans-serif',
+    category: 'system'
+  },
+  {
+    label: '苹方',
+    value: '"PingFangSC-Regular", "PingFang SC", sans-serif',
+    category: 'system'
+  },
+  {
+    label: '青鸟华光简行楷',
+    value: '"青鸟华光简行楷", cursive',
+    category: 'custom'
+  },
+  {
+    label: '瘦金体',
+    value: '"瘦金体", serif',
+    category: 'custom'
+  }
+];
+
+/**
  * 导出各模式配置
  */
 export { BaseRenderOptions, StrokeRenderOptions, FontRenderOptions };

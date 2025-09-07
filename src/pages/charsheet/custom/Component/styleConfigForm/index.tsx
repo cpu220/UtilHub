@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { Form, ColorPicker, InputNumber, Select } from 'antd';
 import type { FormProps } from 'antd';
 import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '../../../interface';
-import { FONT_LIBRARY } from '../../../const';
+import { FONT_LIBRARY, FONT_OPTIONS } from '../../../const';
 import styles from './index.less';
 
 interface StyleConfigFormProps {
@@ -78,12 +78,12 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
       newConfig.renderOptions.renderMode = allValues.renderMode;
       
       // 当切换到字体模式时，确保设置默认字体
-      if (allValues.renderMode === 'font') {
-        newConfig.renderOptions.fontFamily = allValues.fontFamily || '"SimHei", "Heiti SC", "Microsoft YaHei", sans-serif';
-        newConfig.renderOptions.fontSize = allValues.fontSize || defaultRenderOptions.width;
-        newConfig.renderOptions.fontWeight = allValues.fontWeight || 'normal';
-        newConfig.renderOptions.fontStyle = allValues.fontStyle || 'normal';
-      }
+       if (allValues.renderMode === 'font') {
+         newConfig.renderOptions.fontFamily = allValues.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value;
+         newConfig.renderOptions.fontSize = allValues.fontSize || defaultRenderOptions.width;
+         newConfig.renderOptions.fontWeight = allValues.fontWeight || 'normal';
+         newConfig.renderOptions.fontStyle = allValues.fontStyle || 'normal';
+       }
     }
     if (allValues.fontFamily !== undefined) {
       newConfig.renderOptions.fontFamily = allValues.fontFamily;
@@ -121,7 +121,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     fontSize: defaultRenderOptions.width,
     fontLibrary: defaultFontLibrary.name,
     renderMode: defaultRenderOptions.renderMode || 'stroke',
-    fontFamily: defaultRenderOptions.fontFamily || '"SimHei", "Heiti SC", "Microsoft YaHei", sans-serif'
+    fontFamily: defaultRenderOptions.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value
     // textColor已移除，统一使用strokeColor
   };
 
@@ -196,16 +196,15 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
                 name="fontFamily"
               >
                 <Select 
-                  style={{ width: 200 }} 
-                  placeholder="选择字体"
-                >
-                  <Select.Option value='"SimSun", "Songti SC", serif'>宋体</Select.Option>
-                  <Select.Option value='"SimHei", "Heiti SC", "Microsoft YaHei", sans-serif'>黑体</Select.Option>
-                  <Select.Option value='"FangSong", "STFangsong", serif'>仿宋</Select.Option>
-                  <Select.Option value='"KaiTi", "Kaiti SC", cursive'>楷体</Select.Option>
-                  <Select.Option value='"Microsoft YaHei", "PingFang SC", sans-serif'>微软雅黑</Select.Option>
-                  <Select.Option value='"PingFangSC-Regular", "PingFang SC", sans-serif'>苹方</Select.Option>
-                </Select>
+                style={{ width: 200 }} 
+                placeholder="选择字体"
+              >
+                {FONT_OPTIONS.map(font => (
+                  <Select.Option key={font.value} value={font.value}>
+                    {font.label}
+                  </Select.Option>
+                ))}
+              </Select>
               </Form.Item>
             ) : null;
           }}
