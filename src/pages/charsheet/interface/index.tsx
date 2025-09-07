@@ -32,6 +32,8 @@ export interface ICharsheetConfig {
   defaultRow: number;
   /** 默认列数 */
   defaultCol: number;
+  /** 字体大小 */
+  fontSize: number;
 }
 
 /**

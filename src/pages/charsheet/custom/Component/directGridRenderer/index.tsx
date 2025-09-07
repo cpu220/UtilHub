@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { message } from 'antd';
-import { 
-  renderHanziInContainer, 
-  FontRenderer 
+import {
+    renderHanziInContainer,
+    FontRenderer
 } from '@/utils';
 import { IGridItem, IGridData, IRenderOptions, ICharsheetConfig } from '../../../interface';
-import { CharsheetColors } from '../../../const';
+import { CharsheetColors, FONT_SCALE } from '../../../const';
 import styles from './index.less';
 
 interface DirectGridRendererProps {
@@ -87,7 +87,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             // 使用实际需要的行数，但不超过传入的rowsCount限制
             const finalRows = Math.min(actualRows, rowsCount);
 
-    
+
 
             // 创建行和单元格
             let currentIndex = 0;
@@ -100,9 +100,10 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
 
                 // 每5行增加更大的底部间距
                 if ((i + 1) % 15 === 0) {
-                    rowElement.style.marginBottom = '40px';
+                    rowElement.style.marginBottom = `${40 * FONT_SCALE}px`
+
                 } else if ((i + 1) % 5 === 0) {
-                    rowElement.style.marginBottom = '20px';
+                    rowElement.style.marginBottom = `${20 * FONT_SCALE}px`;
                 }
 
 
@@ -151,12 +152,12 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                                 }
                                 resolve();
                             } catch (error) {
-                        // 降级处理：显示纯文字
-                        if (document.getElementById(cellId)) {
-                            (document.getElementById(cellId) as HTMLElement).innerText = char;
-                        }
-                        resolve();
-                    }
+                                // 降级处理：显示纯文字
+                                if (document.getElementById(cellId)) {
+                                    (document.getElementById(cellId) as HTMLElement).innerText = char;
+                                }
+                                resolve();
+                            }
                         }, 50); // 小延迟确保DOM已经挂载
                     });
 

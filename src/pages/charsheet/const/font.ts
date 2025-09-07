@@ -1,6 +1,11 @@
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
 
 /**
+ * 字体缩放比例，控制页面展示尺寸的
+ */
+export const FONT_SCALE = 2;
+
+/**
  * 字帖颜色常量
  */
 export const CharsheetColors = {
@@ -11,11 +16,13 @@ export const CharsheetColors = {
 
 // 字帖单元格默认配置参数
 export const GridConfig: ICharsheetConfig = {
-  width: 60,
-  height: 60,
+  width: 120,
+  height: 120,
+  fontSize: 120,
   defaultRow: 250,
   defaultCol: 10
 };
+ 
 
 export const FONT_RENDER_ENGINE = {
   CNCHAR_DRAW: 'cnchar-draw' as const,
@@ -28,7 +35,7 @@ export const FONT_RENDER_ENGINE = {
 const BaseRenderOptions = {
   width: GridConfig.width, // 设置合适的宽度
   height: GridConfig.height, // 设置合适的高度
-  fontSize: GridConfig.width, // 统一字体大小，默认等于宽度
+  fontSize: GridConfig.fontSize, // 统一字体大小，默认等于宽度
   strokeWidth: 3, // 设置笔画宽度
   strokeColor: '#b8b8b8', // 笔画颜色（字体模式下也用作文字颜色）
   radicalColor: '#3889f2', // 偏旁颜色
@@ -44,14 +51,14 @@ const BaseRenderOptions = {
 const StrokeRenderOptions = {
   ...BaseRenderOptions,
   renderMode: 'stroke' as const,
-  
+
   // 渲染引擎配置 - 在此处控制使用哪个渲染引擎
   // renderEngine: FONT_RENDER_ENGINE.CNCHAR_DRAW, // 默认使用 cnchar-draw 渲染引擎
   renderEngine: FONT_RENDER_ENGINE.HANZI_WRITER, // 可切换为 hanzi-writer 渲染引擎
-  
+
   showOutline: false, // 显示汉字轮廓
   radicalColor: '#3889f2', // 偏旁颜色
-  fontSizeRatio:1, // 默认字体大小比例
+  fontSizeRatio: 1, // 默认字体大小比例
   // delayBetweenLoops: 2000, // 设置动画循环间隔
   // outlineColor: '#F0F0F0' // 设置轮廓颜色
 };
@@ -143,9 +150,11 @@ export const FONT_OPTIONS: IFontOption[] = [
 export const getRenderOptionsByMode = (renderMode: 'stroke' | 'font' = 'stroke'): IRenderOptions => {
   switch (renderMode) {
     case 'font':
+      console.log('FontRenderOptions', FontRenderOptions);
       return FontRenderOptions;
     case 'stroke':
     default:
+      console.log('StrokeRenderOptions', StrokeRenderOptions);
       return StrokeRenderOptions;
   }
 };
@@ -161,14 +170,14 @@ export const mergeRenderOptions = (currentOptions: IRenderOptions, updates: Part
   // 如果renderMode发生变化，使用新模式的默认配置作为基础
   const targetMode = updates.renderMode || currentOptions.renderMode || 'stroke';
   const baseOptions = getRenderOptionsByMode(targetMode);
-  
+
   // 合并配置：基础配置 -> 当前配置 -> 更新配置
   const mergedOptions = {
     ...baseOptions,
     ...currentOptions,
     ...updates
   };
-  
+
   // 确保关键属性的一致性
   if (updates.renderMode && updates.renderMode !== currentOptions.renderMode) {
     // 模式切换时，重置模式特定的属性
@@ -184,7 +193,7 @@ export const mergeRenderOptions = (currentOptions: IRenderOptions, updates: Part
       mergedOptions.renderEngine = updates.renderEngine ?? StrokeRenderOptions.renderEngine;
     }
   }
-  
+
   return mergedOptions;
 };
 

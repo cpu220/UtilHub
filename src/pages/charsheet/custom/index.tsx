@@ -17,7 +17,7 @@ import { IFontLibrary } from '../interface';
  * 自定义字帖生成页面
  */
 const CustomCharsheetPage: React.FC = () => {
- 
+  console.log('CustomCharsheetPage。GridConfig', GridConfig);
   // 获取默认选中的字库
   const getDefaultFontLibrary = () => FONT_LIBRARY.find(lib => lib.select) || FONT_LIBRARY[0];
   

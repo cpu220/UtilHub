@@ -133,7 +133,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     renderMode: defaultRenderOptions.renderMode || 'stroke',
     fontFamily: defaultRenderOptions.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value
   };
-
+  console.log('initialValues', initialValues);
   return (
     <div id="style-option-container" className={styles['style-option-container']}>
       <Form
