@@ -28,8 +28,8 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
       const originalWidth = containerRect.width;
       const originalHeight = containerRect.height;
       
-      // 提高清晰度：使用更高的设备像素比倍数
-      const pixelRatio = window.devicePixelRatio || 1;
+      // 提高清晰度：使用更高的设备像素比倍数，至少为2倍
+      const pixelRatio = Math.max(window.devicePixelRatio || 1, 2);
       
       // 设置canvas尺寸，应用设备像素比
       canvas.width = originalWidth * pixelRatio;
@@ -41,6 +41,8 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
       // 启用高质量图像渲染
       context.imageSmoothingEnabled = true;
       context.imageSmoothingQuality = 'high';
+      // 设置默认字体以确保文字渲染清晰
+      context.font = 'normal normal normal 16px sans-serif';
       
       // 设置背景色
       context.fillStyle = options.backgroundColor || '#ffffff';
@@ -304,8 +306,8 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
         }
       }
       
-      // 提高清晰度：使用设备像素比
-      const pixelRatio = window.devicePixelRatio || 1;
+      // 提高清晰度：使用更高的设备像素比倍数，至少为2倍
+      const pixelRatio = Math.max(window.devicePixelRatio || 1, 2);
       
       // 设置canvas的实际像素尺寸
       canvas.width = actualWidth * pixelRatio;
@@ -317,6 +319,8 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
       // 启用高质量图像渲染
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
+      // 设置默认字体以确保文字渲染清晰
+      ctx.font = 'normal normal normal 16px sans-serif';
       
       // 设置背景色 - 在渲染SVG之前先填充背景
       ctx.fillStyle = options.backgroundColor || '#ffffff';
@@ -334,13 +338,7 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
         ignoreMouse: true,
         ignoreAnimation: false, // 保留动画效果
         offsetX: 0,
-        offsetY: 0,
-        renderCallback: () => {
-          console.log('SVG渲染完成');
-        },
-        useImageCache: true,
-        ignoreDimensions: false,
-        ignoreClear: false
+        offsetY: 0
       });
       
       // 渲染并转换为图片数据URL
@@ -423,15 +421,17 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
         console.log('使用canvg处理SVG，优化hanzi-writer生成的复杂路径');
         dataUrl = await convertSvgWithCanvg(svgElement, options);
       } else {
-      // 配置html-to-image选项
+      // 配置html-to-image选项，提高清晰度
       const htmlToImageOptions = {
         backgroundColor,
-        quality,
+        quality: Math.max(quality, 0.95), // 确保最低质量为0.95
         canvasWidth: actualWidth,
         canvasHeight: actualHeight,
-        pixelRatio: window.devicePixelRatio || 1,
+        pixelRatio: Math.max(window.devicePixelRatio || 1, 2), // 至少使用2倍像素比
         style: {
-          imageRendering: 'auto'
+          imageRendering: 'optimizeQuality',
+          textRendering: 'optimizeLegibility',
+          fontSmooth: 'always'
         }
       };
 
