@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, message, App } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter } from '@/utils';
 import { IGridItem, IGridData, IRenderOptions } from '../../../interface';
-import { GridConfig } from '../../const';
+import { GridConfig, CharsheetColors } from '../../../const';
 import styles from './index.less';
-import { LEVEL4_LIST } from '../../../const';
+ 
 
 interface GridRendererProps {
     fontList: string;
@@ -145,7 +145,7 @@ const GridRenderer: React.FC<GridRendererProps> = ({
                 style={{
                     width: GridConfig.width + 'px',
                     height: GridConfig.height + 'px',
-                    border: '1px solid #ddd',
+                    border: `1px solid ${CharsheetColors.BORDER_COLOR}`,
                     fontSize: `${GridConfig.width * 0.6}px`,
                 }}
             >

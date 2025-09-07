@@ -8,7 +8,7 @@ import { GridConfig, DefaultRenderOptions } from '../const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter } from './Component';
 
-import { LEVEL4_LIST } from '../const';
+import { FONT_LIBRARY } from '../const';
 
 
 
@@ -17,7 +17,7 @@ import { LEVEL4_LIST } from '../const';
  */
 const CustomCharsheetPage: React.FC = () => {
 
-  const [fontList, setFontList] = useState<string>(LEVEL4_LIST);
+  const [fontList, setFontList] = useState<string>(FONT_LIBRARY[0].list);
   const [customConfig, setCustomConfig] = useState<{ config: ICharsheetConfig, renderOptions: IRenderOptions }>({
     config: { ...GridConfig },
     renderOptions: { ...DefaultRenderOptions }

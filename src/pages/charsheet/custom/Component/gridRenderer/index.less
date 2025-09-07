@@ -1,16 +1,17 @@
 
-.grid-item {
-    display: flex;
-    justify-content: center;
-    align-items: center; 
-    border: 1px solid; // 默认黑色边框
-    border-color:#ddd;
-    margin-left: 6px; // 默认居左5px 
-    // 每一行的第一个元素不设置左边距，并且可以设置不同边框颜色
-    &:first-child {
-        margin-left: 0; 
-    }
+@import '../../../const/colors.less';
 
+.grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  border: 1px solid; // 默认黑色边框
+  border-color: @charsheet-border-color;
+  margin-left: 6px; // 默认居左5px 
+  // 每一行的第一个元素不设置左边距，并且可以设置不同边框颜色
+  &:first-child {
+    margin-left: 0; 
+  }
 }
 
 .grid-row {

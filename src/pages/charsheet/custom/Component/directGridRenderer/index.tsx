@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import { renderHanziInContainer } from '@/utils';
 import { IGridItem, IGridData, IRenderOptions, ICharsheetConfig } from '../../../interface';
+import { CharsheetColors } from '../../../const';
 import styles from './index.less';
 
 interface DirectGridRendererProps {
@@ -101,7 +102,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                     cellElement.className = styles['grid-item'];
                     cellElement.style.width = `${config.width}px`;
                     cellElement.style.height = `${config.height}px`;
-                    cellElement.style.border = '1px solid #ddd';
+                    cellElement.style.border = `1px solid ${CharsheetColors.BORDER_COLOR}`;
                     cellElement.style.fontSize = `${config.width * 0.6}px`;
                     cellElement.style.display = 'flex';
                     cellElement.style.alignItems = 'center';

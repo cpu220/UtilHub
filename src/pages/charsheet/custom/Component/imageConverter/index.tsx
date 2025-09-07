@@ -4,6 +4,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import { PDFExportTool } from '@/utils/lib/pdfExportTool';
 import { ImageExportTool } from '@/utils/lib/imageExportTool';
 import { elementToImage } from '@/utils';
+import { CharsheetColors } from '../../../const';
 import styles from './index.less';
 
 interface ImageConverterProps {
@@ -72,7 +73,7 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
         const img = document.createElement('img');
         img.src = dataUrl;
         img.style.maxWidth = '100%';
-        img.style.border = '1px solid #ddd';
+        img.style.border = `1px solid ${CharsheetColors.BORDER_COLOR}`;
         img.style.borderRadius = '4px';
         img.style.marginTop = '16px';
         
