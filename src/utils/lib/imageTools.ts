@@ -349,6 +349,29 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
           ctx.lineWidth = 1;
           ctx.strokeRect(0, 0, actualWidth, actualHeight);
           
+          // 对于JPG格式，需要确保背景不透明
+          if (options.imageType === 'jpeg') {
+            // 创建一个新的canvas来确保JPG有白色背景
+            const jpegCanvas = document.createElement('canvas');
+            const jpegCtx = jpegCanvas.getContext('2d');
+            
+            if (jpegCtx) {
+              jpegCanvas.width = canvas.width;
+              jpegCanvas.height = canvas.height;
+              
+              // 填充白色背景
+              jpegCtx.fillStyle = options.backgroundColor || '#ffffff';
+              jpegCtx.fillRect(0, 0, jpegCanvas.width, jpegCanvas.height);
+              
+              // 绘制原始canvas内容
+              jpegCtx.drawImage(canvas, 0, 0);
+              
+              const dataUrl = jpegCanvas.toDataURL('image/jpeg', options.quality || 0.98);
+              resolve(dataUrl);
+              return;
+            }
+          }
+          
           const dataUrl = canvas.toDataURL(
             options.imageType === 'jpeg' ? 'image/jpeg' : 'image/png',
             options.quality || 1.0

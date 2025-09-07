@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Button, message } from 'antd';
+import React, { useState, useRef } from 'react';
+import { Button, message, Space, Dropdown, MenuProps } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import { elementToImage } from '@/utils';
 import styles from './index.less';
 
@@ -8,11 +9,6 @@ interface ImageConverterProps {
    * 要转换为图片的元素ID
    */
   sourceElementId: string;
-
-  /**
-   * 显示结果图片的容器ID
-   */
-  resultElementId: string;
 
   /**
    * 按钮文本
@@ -27,15 +23,17 @@ interface ImageConverterProps {
 
 /**
  * 图片转换器组件
- * 将指定元素转换为图片并显示在结果容器中
+ * 将指定元素转换为图片并显示在内置结果容器中，支持PNG和JPG格式导出
  */
 const ImageConverter: React.FC<ImageConverterProps> = ({
   sourceElementId,
-  resultElementId,
   buttonText = '转换为图片',
   buttonType = 'primary'
 }) => {
   const [isConverting, setIsConverting] = useState(false);
+  const [currentImageData, setCurrentImageData] = useState<string>('');
+  const [exportFormat, setExportFormat] = useState<'png' | 'jpeg'>('png');
+  const resultContainerRef = useRef<HTMLDivElement>(null);
 
   /**
    * 处理转换点击事件
@@ -61,12 +59,12 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
 
       // 执行图片生成操作
       const dataUrl = await elementToImage(sourceElementId, options);
+      setCurrentImageData(dataUrl);
 
-      // 获取结果容器并显示图片
-      const resultContainer = document.getElementById(resultElementId);
-      if (resultContainer) {
+      // 显示图片在内置结果容器中
+      if (resultContainerRef.current) {
         // 清空结果容器
-        resultContainer.innerHTML = '';
+        resultContainerRef.current.innerHTML = '';
         
         // 创建图片元素
         const img = document.createElement('img');
@@ -77,7 +75,7 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
         img.style.marginTop = '16px';
         
         // 添加图片到结果容器
-        resultContainer.appendChild(img);
+        resultContainerRef.current.appendChild(img);
       }
 
       message.destroy();
@@ -91,15 +89,95 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
     }
   };
 
+  /**
+   * 导出字帖图片
+   */
+  const exportCharsheet = async (format: 'png' | 'jpeg' = exportFormat) => {
+    try {
+      const formatName = format === 'png' ? 'PNG' : 'JPG';
+      message.loading(`正在生成${formatName}字帖...`, 0);
+      
+      const options = {
+        imageType: format,
+        quality: format === 'png' ? 1.0 : 0.98,
+        backgroundColor: '#ffffff',
+        useCanvg: true,
+        // 对于JPG格式，强制设置白色背景
+        ...(format === 'jpeg' && {
+          style: {
+            backgroundColor: '#ffffff'
+          }
+        })
+      };
+
+      const dataUrl = await elementToImage(sourceElementId, options);
+      
+      // 创建下载链接
+      const link = document.createElement('a');
+      const extension = format === 'png' ? 'png' : 'jpg';
+      link.download = `字帖_${Date.now()}.${extension}`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      message.destroy();
+      message.success(`${formatName}字帖导出成功`);
+    } catch (error) {
+      console.error('导出字帖出错:', error);
+      message.destroy();
+      message.error('字帖导出失败');
+    }
+  };
+
+  // 下拉菜单选项
+  const formatMenuItems: MenuProps['items'] = [
+    {
+      key: 'png',
+      label: 'PNG格式 (推荐)',
+      onClick: () => {
+        setExportFormat('png');
+        exportCharsheet('png');
+      }
+    },
+    {
+      key: 'jpeg',
+      label: 'JPG格式',
+      onClick: () => {
+        setExportFormat('jpeg');
+        exportCharsheet('jpeg');
+      }
+    }
+  ];
+
   return (
     <div className={styles.imageConverter}>
-      <Button
-        type={buttonType}
-        onClick={handleConvert}
-        loading={isConverting}
-      >
-        {buttonText}
-      </Button>
+      <Space direction="vertical" style={{ width: '100%' }}>
+        <Space>
+          <Button
+            type={buttonType}
+            onClick={handleConvert}
+            loading={isConverting}
+          >
+            {buttonText}
+          </Button>
+          
+          <Dropdown.Button
+            type="default"
+            icon={<DownloadOutlined />}
+            onClick={() => exportCharsheet()}
+            menu={{ items: formatMenuItems }}
+          >
+            导出字帖 ({exportFormat.toUpperCase()})
+          </Dropdown.Button>
+        </Space>
+        
+        {/* 内置结果容器 */}
+        <div 
+          ref={resultContainerRef}
+          className={styles.resultContainer}
+        />
+      </Space>
     </div>
   );
 };
