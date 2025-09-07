@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Button, message, Space, Dropdown, MenuProps } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
+import { PDFExportTool } from '@/utils/lib/pdfExportTool';
+import { ImageExportTool } from '@/utils/lib/imageExportTool';
 import { elementToImage } from '@/utils';
 import styles from './index.less';
 
@@ -32,7 +34,7 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
 }) => {
   const [isConverting, setIsConverting] = useState(false);
   const [currentImageData, setCurrentImageData] = useState<string>('');
-  const [exportFormat, setExportFormat] = useState<'png' | 'jpeg'>('png');
+  const [exportFormat, setExportFormat] = useState<'png' | 'jpeg' | 'pdf'>('png');
   const resultContainerRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -92,10 +94,16 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
   /**
    * 导出字帖图片
    */
-  const exportCharsheet = async (format: 'png' | 'jpeg' = exportFormat) => {
+  const exportCharsheet = async (format: 'png' | 'jpeg' | 'pdf' = exportFormat) => {
     try {
-      const formatName = format === 'png' ? 'PNG' : 'JPG';
+      const formatName = format === 'png' ? 'PNG' : format === 'jpeg' ? 'JPG' : 'PDF';
       message.loading(`正在生成${formatName}字帖...`, 0);
+      
+      if (format === 'pdf') {
+        // PDF导出逻辑
+        await exportAsPDF();
+        return;
+      }
       
       const options = {
         imageType: format,
@@ -130,25 +138,54 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
     }
   };
 
+  /**
+    * 导出PDF格式
+    */
+   const exportAsPDF = async () => {
+     try {
+       message.loading('正在生成PDF文件...', 0);
+       
+       await PDFExportTool.exportToPDF({
+         sourceElementId,
+         fileName: `字帖_${Date.now()}.pdf`
+       });
+       
+       message.destroy();
+       message.success('PDF文件导出成功');
+     } catch (error) {
+       console.error('导出PDF出错:', error);
+       message.destroy();
+       message.error('PDF导出失败');
+     }
+   };
+
   // 下拉菜单选项
-  const formatMenuItems: MenuProps['items'] = [
-    {
-      key: 'png',
-      label: 'PNG格式 (推荐)',
-      onClick: () => {
-        setExportFormat('png');
-        exportCharsheet('png');
-      }
-    },
-    {
-      key: 'jpeg',
-      label: 'JPG格式',
-      onClick: () => {
-        setExportFormat('jpeg');
-        exportCharsheet('jpeg');
-      }
-    }
-  ];
+   const formatMenuItems: MenuProps['items'] = [
+     {
+       key: 'png',
+       label: 'PNG格式 (推荐)',
+       onClick: () => {
+         setExportFormat('png');
+         exportCharsheet('png');
+       }
+     },
+     {
+       key: 'jpeg',
+       label: 'JPG格式',
+       onClick: () => {
+         setExportFormat('jpeg');
+         exportCharsheet('jpeg');
+       }
+     },
+     {
+       key: 'pdf',
+       label: 'PDF格式',
+       onClick: () => {
+         setExportFormat('pdf');
+         exportCharsheet('pdf');
+       }
+     }
+   ];
 
   return (
     <div className={styles.imageConverter}>
