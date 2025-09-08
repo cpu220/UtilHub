@@ -1,1 +1,1 @@
-git add . && git commit -m "feat: 调整pdf分页裁剪逻辑"
+git add . && git commit -m "feat: 结构拆分，pdf导出和内容处理器解耦"

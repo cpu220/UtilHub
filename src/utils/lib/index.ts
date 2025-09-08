@@ -19,6 +19,9 @@ export {
   cnchar
 } from './cncharTools';
 
+// 内容处理器相关导出
+export * from './contentProcessors';
+
 // 汉字渲染适配器导出（这个是主要的统一接口，替代原来的 fontTools）
 export {
   renderHanziInContainer,  // 使用适配器版本替代原来的 fontTools 版本
