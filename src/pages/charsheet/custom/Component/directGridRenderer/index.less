@@ -20,16 +20,16 @@
 
 .grid-row {
     display: flex;
-    margin-bottom: 5px * @charsheet-font-scale;
+    margin-bottom: calc(10px * @charsheet-font-scale);
 }
 
 /* 每5行增加更大的底部间距 */
 .grid-row:nth-child(5n) {
-    margin-bottom: 20px * @charsheet-font-scale;
+    margin-bottom: calc(15px * @charsheet-font-scale);
 }
 
 .grid-row:nth-child(15n) {
-    margin-bottom: 40px * @charsheet-font-scale;    
+    margin-bottom: calc(20px * @charsheet-font-scale);    
 }
 
 .page-grid-container {

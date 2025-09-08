@@ -120,6 +120,7 @@ const ImageConverter: React.FC<ImageConverterProps> = ({
         // 使用PDF导出工具
         await PDFExportTool.exportToPDF({
           sourceElementId,
+          scale: 1,
           fileName: `${libraryName}_${timestamp}.pdf`
         });
       } else {

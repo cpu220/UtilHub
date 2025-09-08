@@ -6,6 +6,12 @@ export interface PDFExportOptions {
   fileName?: string;
   quality?: number;
   backgroundColor?: string;
+  /**
+   * 额外的缩放比例，用于解决内容过大被裁剪的问题
+   * 例如：0.5 表示缩放到50%
+   * 默认值：1.0（不缩放）
+   */
+  scale?: number;
 }
 
 export class PDFExportTool {
@@ -17,7 +23,8 @@ export class PDFExportTool {
       sourceElementId,
       fileName = `字帖_${Date.now()}.pdf`,
       quality = 1.0,
-      backgroundColor = '#ffffff'
+      backgroundColor = '#ffffff',
+      scale: userScale = 1.0
     } = options;
 
     try {
@@ -69,10 +76,14 @@ export class PDFExportTool {
       const contentWidthMm = contentWidth * pxToMm;
       const contentHeightMm = contentHeight * pxToMm;
       
-      // 计算缩放比例，确保内容适合A4宽度
-      const scale = Math.min(printableWidth / contentWidthMm, 1); // 不放大，只缩小
-      const scaledWidthMm = contentWidthMm * scale;
-      const scaledHeightMm = contentHeightMm * scale;
+      // 计算自动缩放比例，确保内容适合A4宽度
+      const autoScale = Math.min(printableWidth / contentWidthMm, 1); // 不放大，只缩小
+      // 应用用户指定的额外缩放比例
+      const finalScale = autoScale * userScale;
+      const scaledWidthMm = contentWidthMm * finalScale;
+      const scaledHeightMm = contentHeightMm * finalScale;
+      
+      console.log(`PDF导出缩放信息: 自动缩放=${autoScale.toFixed(3)}, 用户缩放=${userScale}, 最终缩放=${finalScale.toFixed(3)}`);
 
       // 计算需要多少页
       const pagesNeeded = Math.ceil(scaledHeightMm / printableHeight);
@@ -101,7 +112,7 @@ export class PDFExportTool {
 
         // 计算当前页的裁剪区域（像素单位）
         const pageHeightMm = printableHeight;
-        const pageHeightInPx = pageHeightMm / (pxToMm * scale);
+        const pageHeightInPx = pageHeightMm / (pxToMm * finalScale);
         const startY = pageIndex * pageHeightInPx;
         const endY = Math.min(startY + pageHeightInPx, contentHeight);
         const actualHeight = endY - startY;
@@ -130,7 +141,7 @@ export class PDFExportTool {
 
         // 添加到PDF
         const imgWidth = scaledWidthMm;
-        const imgHeight = actualHeight * pxToMm * scale;
+        const imgHeight = actualHeight * pxToMm * finalScale;
         const x = margin;
         const y = margin;
 
