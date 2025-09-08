@@ -13,7 +13,7 @@ export const GRADE_4_LOWER_LEARNING_LIST = '杂篱徐疏锄剥构冠序朴素率
 export const GRADE_4_FONT_LIBRARY: IFontLibrary[] = [
     {
         name: '4年级 上学期 写字表',
-        list: GRADE_4_UPPER_WRITING_LIST+GRADE_4_LOWER_WRITING_LIST+GRADE_4_UPPER_LEARNING_LIST+GRADE_4_LOWER_LEARNING_LIST,
+        list: GRADE_4_UPPER_WRITING_LIST,
         select: true
     },
     {

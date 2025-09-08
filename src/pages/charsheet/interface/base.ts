@@ -1,6 +1,6 @@
 /**
- * 字帖相关接口定义
- * 统一管理字帖功能中用到的所有TypeScript类型
+ * 字帖相关基础接口定义
+ * 统一管理字帖功能中用到的所有基础TypeScript类型
  */
 
 /**
@@ -139,6 +139,15 @@ export interface IPreviewOptions {
 }
 
 /**
+ * 字体库接口
+ */
+export interface IFontLibrary {
+    name: string;
+    list: string;
+    select?: boolean;
+}
+
+/**
  * 字帖工具相关接口
  */
 export namespace ICharsheetInterface {
@@ -154,10 +163,4 @@ export namespace ICharsheetInterface {
   export type PrintConfig = IPrintOptions;
   /** 预览图片选项类型 */
   export type PreviewConfig = IPreviewOptions;
-}
-
-export interface IFontLibrary {
-    name: string;
-    list: string;
-    select?: boolean;
 }

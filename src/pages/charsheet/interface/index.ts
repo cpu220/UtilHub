@@ -3,6 +3,9 @@
  * 按功能模块分类导出，便于维护和使用
  */
 
+// 基础接口
+export * from './base';
+
 // 通用接口
 export * from './common';
 

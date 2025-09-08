@@ -106,7 +106,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
                     currentPageContainer.style.pageBreakAfter = 'always'; // CSS分页提示
                     currentPageContainer.style.marginBottom = '20px';
                     // 添加红色边框用于调试PDF分页区域
-                    currentPageContainer.style.border = 'solid 1px #f00';
+                    // currentPageContainer.style.border = 'solid 1px #f00';
                     currentPageContainer.style.padding = '5px';
                     currentPageContainer.setAttribute('data-page-index', currentPageIndex.toString()); // 添加数据属性便于调试
                     gridContainerRef.current!.appendChild(currentPageContainer);
