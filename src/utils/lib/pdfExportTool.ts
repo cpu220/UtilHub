@@ -206,13 +206,27 @@ export class PDFExportTool {
           // 获取elementToImage使用的实际像素比（至少2倍）
           const actualPixelRatio = Math.max(window.devicePixelRatio || 1, 2);
           
+          // 获取容器的完整尺寸（包括padding、border等）
+          const containerStyle = window.getComputedStyle(currentContainer);
+          const paddingTop = parseFloat(containerStyle.paddingTop) || 0;
+          const paddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
+          const borderTop = parseFloat(containerStyle.borderTopWidth) || 0;
+          const borderBottom = parseFloat(containerStyle.borderBottomWidth) || 0;
+          const marginBottom = parseFloat(containerStyle.marginBottom) || 0;
+          
           // 相对于grid-container的位置（DOM坐标）
           const relativeTopDOM = containerRect.top - gridContainerRect.top;
           const containerHeightDOM = containerRect.height;
           
+          // 添加额外的样式空间到高度计算中
+          const extraHeight = paddingTop + paddingBottom + borderTop + borderBottom;
+          const totalHeightDOM = containerHeightDOM + (pageIndex === pageContainers.length - 1 ? marginBottom : 0);
+          
+          console.log(`容器${currentContainer.id}样式信息: padding=${paddingTop}+${paddingBottom}, border=${borderTop}+${borderBottom}, margin-bottom=${marginBottom}, 额外高度=${extraHeight}`);
+          
           // 转换为图片坐标系（乘以像素比）
           const relativeTop = relativeTopDOM * actualPixelRatio;
-          const containerHeight = containerHeightDOM * actualPixelRatio;
+          const containerHeight = totalHeightDOM * actualPixelRatio;
           
           startY = relativeTop;
           endY = relativeTop + containerHeight;
@@ -220,10 +234,18 @@ export class PDFExportTool {
           
           console.log(`像素比转换: DOM坐标(${relativeTopDOM.toFixed(1)}, ${containerHeightDOM.toFixed(1)}) -> 图片坐标(${relativeTop.toFixed(1)}, ${containerHeight.toFixed(1)})，像素比=${actualPixelRatio}`);
           
-          // 确保不超出整页图片边界
+          // 确保不超出整页图片边界，但要考虑容器的padding等样式
           if (endY > contentHeight) {
-            endY = contentHeight;
-            actualHeight = endY - startY;
+            console.log(`警告：容器${currentContainer.id}底部超出图片边界，原始endY=${endY.toFixed(1)}, 图片高度=${contentHeight}`);
+            // 对于最后一页，尝试包含容器的完整内容（包括padding）
+            if (pageIndex === pageContainers.length - 1) {
+              console.log(`最后一页特殊处理：保持容器完整高度`);
+              // 保持容器的完整高度，不进行裁剪
+            } else {
+              endY = contentHeight;
+              actualHeight = endY - startY;
+              console.log(`中间页裁剪：调整endY=${endY.toFixed(1)}, actualHeight=${actualHeight.toFixed(1)}`);
+            }
           }
           
           console.log(`容器${currentContainer.id}: 相对grid-container位置=${relativeTop.toFixed(1)}, 高度=${containerHeight.toFixed(1)}, 裁剪区域Y=${startY.toFixed(1)}-${endY.toFixed(1)}`);
@@ -290,7 +312,7 @@ export class PDFExportTool {
         // }
 
         // 调试：在新标签页中展示图片内容
-        PDFExportTool.debugShowPageImage(pageDataUrl, pageContainers[pageIndex].id, pageIndex + 1);
+        // PDFExportTool.debugShowPageImage(pageDataUrl, pageContainers[pageIndex].id, pageIndex + 1);
         
         pdf.addImage(pageDataUrl, 'PNG', x, y, imgWidth, imgHeight);
         console.log(`第${pageIndex + 1}页已添加到PDF，尺寸: ${imgWidth.toFixed(1)}x${imgHeight.toFixed(1)}mm，页面高度: ${requiredPageHeight > a4Height ? requiredPageHeight.toFixed(1) : a4Height}mm`);
