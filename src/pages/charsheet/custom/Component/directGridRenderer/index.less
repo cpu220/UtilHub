@@ -25,12 +25,12 @@
 
 /* 每5行增加更大的底部间距 */
 .grid-row:nth-child(5n) {
-    margin-bottom: calc(15px * @charsheet-font-scale);
+    margin-bottom: calc(20px * @charsheet-font-scale);
 }
 
-.grid-row:nth-child(15n) {
-    margin-bottom: calc(20px * @charsheet-font-scale);    
-}
+// .grid-row:nth-child(15n) {
+//     margin-bottom: calc(20px * @charsheet-font-scale);    
+// }
 
 .page-grid-container {
     border-radius: 10px;
@@ -39,6 +39,25 @@
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     overflow: auto;
+}
+
+/* 页面容器样式 - 用于PDF分页 */
+.page-container {
+    display: block;
+    width: 100%;
+    margin-bottom: 20px;
+    /* PDF导出时的分页提示 */
+    page-break-after: always;
+    /* 确保容器内容完整显示 */
+    overflow: visible;
+}
+
+/* PDF导出时的特殊样式 */
+.page-grid-container.pdf-export .page-container {
+    margin-bottom: 40px;
+    padding: 10px 0;
+    border: 1px dashed #ccc;
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .loading-indicator {

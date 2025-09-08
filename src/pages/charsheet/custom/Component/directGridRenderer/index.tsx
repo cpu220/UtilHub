@@ -89,25 +89,54 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
 
 
 
-            // 创建行和单元格
+            // 创建行和单元格，每15行为一个页面容器
             let currentIndex = 0;
             const renderPromises: Promise<void>[] = [];
+            const rowsPerPage = 15; // 每页15行
+            let currentPageContainer: HTMLDivElement | null = null;
+            let currentPageIndex = 0;
 
             for (let i = 0; i < finalRows && currentIndex < totalChars; i++) {
+                // 每15行创建一个新的页面容器
+                // 暂时设定，currentPageContainer 为pdf分页的一页内容。以currentPageContainer 为分页依据
+                if (i % rowsPerPage === 0) {
+                    currentPageContainer = document.createElement('div');
+                    currentPageContainer.id = `page-container-${currentPageIndex}`;
+                    currentPageContainer.className = `${styles['page-container']} page-container`; // 添加CSS模块化类名和全局类名
+                    currentPageContainer.style.pageBreakAfter = 'always'; // CSS分页提示
+                    currentPageContainer.style.marginBottom = '20px';
+                    // 添加红色边框用于调试PDF分页区域
+                    currentPageContainer.style.border = 'solid 1px #f00';
+                    currentPageContainer.style.padding = '5px';
+                    currentPageContainer.setAttribute('data-page-index', currentPageIndex.toString()); // 添加数据属性便于调试
+                    gridContainerRef.current!.appendChild(currentPageContainer);
+                    console.log(`创建页面容器: page-container-${currentPageIndex}`);
+                    currentPageIndex++;
+                }
+
                 const rowElement = document.createElement('div');
                 rowElement.id = `direct-grid-row-${i}`;
                 rowElement.className = styles['grid-row'];
 
                 // 每5行增加更大的底部间距
-                if ((i + 1) % 15 === 0) {
-                    rowElement.style.marginBottom = `${40 * FONT_SCALE}px`
+                // if ((i + 1) % 15 === 0) {
+                //     rowElement.style.marginBottom = `${40 * FONT_SCALE}px`
 
-                } else if ((i + 1) % 5 === 0) {
+                // } else if ((i + 1) % 5 === 0) {
+                //     rowElement.style.marginBottom = `${20 * FONT_SCALE}px`;
+                // }
+
+                if ((i + 1) % 5 === 0) {
                     rowElement.style.marginBottom = `${20 * FONT_SCALE}px`;
                 }
 
-
-                gridContainerRef.current.appendChild(rowElement);
+                // 将行添加到当前页面容器中
+                if (currentPageContainer) {
+                    currentPageContainer.appendChild(rowElement);
+                } else {
+                    // 兜底：如果没有页面容器，直接添加到网格容器
+                    gridContainerRef.current!.appendChild(rowElement);
+                }
 
                 // 优先满足列数
                 for (let j = 0; j < columns && currentIndex < totalChars; j++) {

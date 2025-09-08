@@ -3,7 +3,7 @@ import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions }
 /**
  * 字体缩放比例，控制页面展示尺寸的
  */
-export const FONT_SCALE = 2;
+export const FONT_SCALE = 1;
 
 /**
  * 字帖颜色常量
@@ -16,13 +16,13 @@ export const CharsheetColors = {
 
 // 字帖单元格默认配置参数
 export const GridConfig: ICharsheetConfig = {
-  width: 120,
-  height: 120,
-  fontSize: 120,
+  width: 60 * FONT_SCALE,
+  height: 60 * FONT_SCALE,
+  fontSize: 60 * FONT_SCALE,
   defaultRow: 250,
   defaultCol: 10
 };
- 
+
 
 export const FONT_RENDER_ENGINE = {
   CNCHAR_DRAW: 'cnchar-draw' as const,

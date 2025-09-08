@@ -6,7 +6,7 @@ import { ICharsheetConfig, IRenderOptions } from '../interface';
 
 import { GridConfig, getRenderOptionsByMode } from '../const';
 import styles from './index.less';
-import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter } from './Component';
+import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter, ScrollController } from './Component';
 
 import { FONT_LIBRARY } from '../const';
 import { IFontLibrary } from '../interface';
@@ -83,7 +83,7 @@ const CustomCharsheetPage: React.FC = () => {
         sourceElementId="page-grid-container"
         buttonType="link"
         buttonText="预览导出效果"
-        previewVisible={true}
+        previewVisible={!true}
         fontLibraryName={currentFontLibrary.name}
       />
 
@@ -96,8 +96,8 @@ const CustomCharsheetPage: React.FC = () => {
         config={customConfig.config}
       />
 
-      
-      
+      {/* 滚动控制器 - 悬浮在右下角 */}
+      <ScrollController showThreshold={300} />
 
     </div>
   );
