@@ -28,6 +28,39 @@
     margin-bottom: calc(20px * @charsheet-font-scale);
 }
 
+/* 左右分栏模板样式 */
+.lr-row-container {
+    display: flex;
+    width: 100%;
+    margin-bottom: calc(10px * @charsheet-font-scale);
+}
+
+.lr-row-container:nth-child(5n) {
+    margin-bottom: calc(20px * @charsheet-font-scale);
+}
+
+.left-column, .right-column {
+    display: flex;
+    width: 50%;
+    justify-content: flex-start;
+}
+
+.right-column {
+    margin-left: 20px;
+}
+
+/* 左右分栏中的单元格样式 */
+.lr-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.lr-cell:not(:first-child) {
+    margin-left: 6px;
+}
+
 // .grid-row:nth-child(15n) {
 //     margin-bottom: calc(20px * @charsheet-font-scale);    
 // }

@@ -6,31 +6,39 @@ import {
 } from '@/utils';
 import { IGridItem, IGridData, IRenderOptions, ICharsheetConfig } from '../../../interface';
 import { CharsheetColors, FONT_SCALE } from '../../../const';
+import {
+    TemplateType,
+    createTemplate,
+    TemplateRenderParams
+} from './templates';
 import styles from './index.less';
 
 interface DirectGridRendererProps {
     fontList: string;
     renderOptions: IRenderOptions;
     config: ICharsheetConfig;
+    templateType?: TemplateType; // 新增：模板类型选择
 }
 
 // 使用const.tsx中定义的网格配置
 
 /**
  * 直接网格渲染器组件
- * 优化的网格渲染逻辑，采用生成一个网格就转换一个的方式
- * 当fontList变更时，完全重新生成网格内容
+ * 支持多种模板的网格渲染逻辑，采用模板系统实现不同布局
+ * 当fontList或templateType变更时，完全重新生成网格内容
  */
 const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
     fontList,
     renderOptions,
-    config
+    config,
+    templateType = TemplateType.LEFT_RIGHT // 默认使用标准模板
 }) => {
     const gridContainerRef = useRef<HTMLDivElement>(null);
     // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
     const renderKey = useMemo(() => {
-        return `${fontList}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
+        return `${fontList}-${templateType}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
     }, [fontList,
+        templateType,
         config.defaultCol,
         config.defaultRow,
         renderOptions.strokeColor,
@@ -49,161 +57,64 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             message.error('字体列表为空');
             return;
         }
-        message.info('正在生成新的字帖...');
+        
+        message.info(`正在生成新的字帖 (${templateType})...`);
 
         // 使用setTimeout确保DOM已准备好
         const timer = setTimeout(() => {
-            if (gridContainerRef.current) {
-                // 清空容器
-                gridContainerRef.current.innerHTML = '';
-
-                // 直接生成并渲染网格
-                renderGridDirectly(fontList, config.defaultCol, config.defaultRow);
-            }
+            renderWithTemplate();
         }, 100);
 
         return () => clearTimeout(timer);
     }, [renderKey]); // 只依赖于 renderKey
 
     /**
-     * 直接渲染网格，生成一个单元格就转换一个
+     * 使用模板系统渲染网格
      */
-    const renderGridDirectly = (charList: string, columns: number, rowsCount: number) => {
+    const renderWithTemplate = async () => {
+        if (!gridContainerRef.current) {
+            message.error('网格容器不存在');
+            return;
+        }
+
         try {
-            if (!gridContainerRef.current) {
-                throw new Error('网格容器不存在');
+            // 创建模板实例
+            const template = createTemplate(templateType);
+            if (!template) {
+                message.error(`不支持的模板类型: ${templateType}`);
+                return;
             }
 
-            // 根据用户要求的算法逻辑：先计算fontList长度，再根据行列参数计算行数
-            const totalChars = charList.length;
+            // 准备渲染参数
+            const renderParams: TemplateRenderParams = {
+                charList: fontList,
+                columns: config.defaultCol,
+                rowsCount: config.defaultRow,
+                renderOptions,
+                config,
+                containerRef: gridContainerRef
+            };
 
-            // 计算可以整除的完整行数和余数
-            const fullRows = Math.floor(totalChars / columns);
-            const remainder = totalChars % columns;
-
-            // 总实际行数 = 完整行数 + (余数 > 0 ? 1 : 0)
-            const actualRows = fullRows + (remainder > 0 ? 1 : 0);
-
-            // 使用实际需要的行数，但不超过传入的rowsCount限制
-            const finalRows = Math.min(actualRows, rowsCount);
-
-
-
-            // 创建行和单元格，每15行为一个页面容器
-            let currentIndex = 0;
-            const renderPromises: Promise<void>[] = [];
-            const rowsPerPage = 15; // 每页15行
-            let currentPageContainer: HTMLDivElement | null = null;
-            let currentPageIndex = 0;
-
-            for (let i = 0; i < finalRows && currentIndex < totalChars; i++) {
-                // 每15行创建一个新的页面容器
-                // 暂时设定，currentPageContainer 为pdf分页的一页内容。以currentPageContainer 为分页依据
-                if (i % rowsPerPage === 0) {
-                    currentPageContainer = document.createElement('div');
-                    currentPageContainer.id = `page-container-${currentPageIndex}`;
-                    currentPageContainer.className = `${styles['page-container']} page-container`; // 添加CSS模块化类名和全局类名
-                    currentPageContainer.style.pageBreakAfter = 'always'; // CSS分页提示
-                    currentPageContainer.style.marginBottom = '20px';
-                    // 添加红色边框用于调试PDF分页区域
-                    // currentPageContainer.style.border = 'solid 1px #f00';
-                    currentPageContainer.style.padding = '5px';
-                    currentPageContainer.setAttribute('data-page-index', currentPageIndex.toString()); // 添加数据属性便于调试
-                    gridContainerRef.current!.appendChild(currentPageContainer);
-                    console.log(`创建页面容器: page-container-${currentPageIndex}`);
-                    currentPageIndex++;
-                }
-
-                const rowElement = document.createElement('div');
-                rowElement.id = `direct-grid-row-${i}`;
-                rowElement.className = styles['grid-row'];
-
-                // 每5行增加更大的底部间距
-                // if ((i + 1) % 15 === 0) {
-                //     rowElement.style.marginBottom = `${40 * FONT_SCALE}px`
-
-                // } else if ((i + 1) % 5 === 0) {
-                //     rowElement.style.marginBottom = `${20 * FONT_SCALE}px`;
-                // }
-
-                if ((i + 1) % 5 === 0) {
-                    rowElement.style.marginBottom = `${20 * FONT_SCALE}px`;
-                }
-
-                // 将行添加到当前页面容器中
-                if (currentPageContainer) {
-                    currentPageContainer.appendChild(rowElement);
-                } else {
-                    // 兜底：如果没有页面容器，直接添加到网格容器
-                    gridContainerRef.current!.appendChild(rowElement);
-                }
-
-                // 优先满足列数
-                for (let j = 0; j < columns && currentIndex < totalChars; j++) {
-                    const char = charList[currentIndex];
-                    const cellId = `direct-grid-item-${j}-${i}`;
-
-                    // 创建单元格
-                    const cellElement = document.createElement('div');
-                    cellElement.id = cellId;
-                    cellElement.className = styles['grid-item'];
-                    cellElement.style.width = `${config.width}px`;
-                    cellElement.style.height = `${config.height}px`;
-                    // cellElement.style.border = `1px solid ${CharsheetColors.BORDER_COLOR}`;
-                    cellElement.style.fontSize = `${config.width * 0.6}px`;
-                    cellElement.style.display = 'flex';
-                    cellElement.style.alignItems = 'center';
-                    cellElement.style.justifyContent = 'center';
-
-                    // 第一个元素不设置左边距
-                    if (j === 0) {
-                        cellElement.style.marginLeft = '0';
-                    }
-
-                    rowElement.appendChild(cellElement);
-
-                    // 直接渲染汉字到单元格
-                    // 使用Promise确保渲染完成
-                    const renderPromise = new Promise<void>((resolve) => {
-                        setTimeout(() => {
-                            try {
-                                // 根据渲染模式选择渲染方式
-                                if (renderOptions.renderMode === 'font' && renderOptions.fontFamily) {
-                                    // 使用字体渲染模式
-                                    FontRenderer.renderCharacterWithFont(cellId, char, {
-                                        ...renderOptions,
-                                        renderMode: 'font',
-                                        fontFamily: renderOptions.fontFamily
-                                    });
-                                } else {
-                                    // 使用统一适配器，根据 font.ts 中的配置自动选择渲染引擎
-                                    renderHanziInContainer(cellId, char, renderOptions);
-                                }
-                                resolve();
-                            } catch (error) {
-                                // 降级处理：显示纯文字
-                                if (document.getElementById(cellId)) {
-                                    (document.getElementById(cellId) as HTMLElement).innerText = char;
-                                }
-                                resolve();
-                            }
-                        }, 50); // 小延迟确保DOM已经挂载
-                    });
-
-                    renderPromises.push(renderPromise);
-                    currentIndex++;
-                }
+            // 执行渲染
+            const result = await template.render(renderParams);
+            
+            if (result.success) {
+                // 等待所有渲染完成
+                Promise.all(result.renderPromises).then(() => {
+                    message.success(`字帖生成完成 (${template.name})`);
+                    console.log(`渲染完成: ${result.totalPages}页, ${result.totalCells}个单元格`);
+                });
+            } else {
+                message.error(`字帖生成失败: ${result.error}`);
             }
-
-            // 等待所有渲染完成
-            Promise.all(renderPromises).then(() => {
-                message.success('字帖生成完成');
-            });
-
         } catch (error) {
-            message.error('生成字帖失败，请重试');
+            console.error('模板渲染失败:', error);
+            message.error('字帖生成失败，请重试');
         }
     };
+
+    // 原有的renderGridDirectly方法已被模板系统替代
+    // 如需兼容性支持，可以通过StandardGridTemplate实现
 
     return (
         <div>
