@@ -3,7 +3,8 @@
  * 提供通用的打印功能，支持选择性打印指定HTML元素
  */
 
-import { renderPrintTemplate } from '@/pages/charsheet/template/templateLoader';
+import { renderPrintTemplate } from './templateLoader';
+import { cloneElementWithComputedStyles } from './styleManager';
 
 /**
  * 打印配置选项
@@ -47,35 +48,13 @@ export interface PrintOptions {
 
 /**
  * 获取元素的所有计算样式并应用为内联样式
+ * 使用统一样式管理系统
  * @param element 要处理的DOM元素
  * @returns 处理后的元素克隆
  */
 const cloneElementWithInlineStyles = (element: HTMLElement): HTMLElement => {
-  // 克隆元素
-  const clone = element.cloneNode(true) as HTMLElement;
-  
-  // 获取元素的计算样式
-  const computedStyle = window.getComputedStyle(element);
-  
-  // 将计算样式应用为内联样式
-  let styleText = '';
-  for (let i = 0; i < computedStyle.length; i++) {
-    const prop = computedStyle[i];
-    const value = computedStyle.getPropertyValue(prop);
-    styleText += `${prop}: ${value}; `;
-  }
-  clone.style.cssText = styleText;
-  
-  // 递归处理所有子元素
-  Array.from(clone.children).forEach(child => {
-    if (child instanceof HTMLElement) {
-      // 递归克隆子元素，保留其样式
-      const styledChild = cloneElementWithInlineStyles(child);
-      clone.replaceChild(styledChild, child);
-    }
-  });
-  
-  return clone;
+  // 使用统一样式管理系统，确保样式一致性
+  return cloneElementWithComputedStyles(element, true);
 };
 
 /**

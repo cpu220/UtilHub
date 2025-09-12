@@ -39,3 +39,22 @@ export {
 export {
   renderHanziInContainer as renderHanzi
 } from './hanziRenderer';
+
+// 统一样式管理工具
+export {
+  StyleManager,
+  styleManager,
+  getPrintStyles,
+  applyUnifiedStyles,
+  getComputedStyles,
+  cloneElementWithComputedStyles,
+  createPrintDocument,
+  computedStyleToInline,
+  optimizeForPrint
+} from './styleManager';
+
+// 模板加载工具
+export {
+  renderPrintTemplate,
+  preloadTemplate
+} from './templateLoader';

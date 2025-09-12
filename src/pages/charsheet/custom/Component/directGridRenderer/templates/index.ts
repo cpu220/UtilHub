@@ -17,3 +17,14 @@ export { SingleRowTemplate } from './SingleRowTemplate';
 // 导出工厂类和便捷函数
 export { GridTemplateFactory, templateFactory } from './TemplateFactory';
 export { createTemplate, getAllTemplateInfo } from './TemplateFactory';
+
+// 导出统一样式管理工具（从utils重新导出）
+export {
+  StyleManager,
+  styleManager,
+  getPrintStyles,
+  applyUnifiedStyles,
+  getComputedStyles,
+  cloneElementWithComputedStyles,
+  createPrintDocument
+} from '@/utils';

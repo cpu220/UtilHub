@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, type ButtonProps } from 'antd';
 import { printElementById } from '@/utils';
 import { IPrintOptions } from '../../../interface';
-import { TemplateType, getCombinedPrintStyles } from '../directGridRenderer/templates';
+import { TemplateType, getPrintStyles } from '../directGridRenderer/templates';
 import styles from './index.less';
 
 interface PrintButtonProps {
@@ -62,8 +62,8 @@ const PrintButton: React.FC<PrintButtonProps> = ({
         title: '',
         showPreview: false,
         styles: [
-          // 动态加载模板打印样式
-          getCombinedPrintStyles([templateType]),
+          // 使用统一样式管理系统，自动从web样式获取
+          // getPrintStyles会自动获取元素的计算样式
           ...(printOptions.styles || []),
         ],
         onBeforePrint: () => {

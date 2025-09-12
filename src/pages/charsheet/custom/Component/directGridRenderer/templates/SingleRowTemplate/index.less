@@ -57,52 +57,12 @@
   margin-left: 0;
 }
 
-/* 打印样式 */
+/* 打印优化样式 - 仅添加打印特有的属性 */
 @media print {
-  .single-row-with-stroke-container {
-    display: block !important;
-    width: 100% !important;
-    page-break-inside: avoid;
-    margin-bottom: 15px !important;
-  }
-  
-  .stroke-order-container {
-    display: flex !important;
-    align-items: flex-start !important;
-    flex-wrap: wrap !important;
-    margin-bottom: 6px !important;
-    color: #666 !important;
-    line-height: 1.2 !important;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    gap: 2px !important;
-    page-break-inside: avoid;
-  }
-  
-  .stroke-svg {
-    border: 1px solid #EEE !important;
-    margin-right: 3px !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .stroke-arrow {
-    margin: 0 4px !important;
-    color: #999 !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .single-row-container {
-    display: flex !important;
-    width: 100% !important;
-    page-break-inside: avoid;
-    margin-bottom: 5px !important;
-  }
-  
+  .single-row-with-stroke-container,
+  .stroke-order-container,
+  .single-row-container,
   .single-row-item {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    box-sizing: border-box !important;
     page-break-inside: avoid;
-    margin: 2px;
   }
 }

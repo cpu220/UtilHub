@@ -27,22 +27,10 @@
   margin-right: calc(12px * var(--charsheet-font-scale, 1));
 }
 
-/* 打印样式 */
+/* 打印优化样式 - 仅添加打印特有的属性 */
 @media print {
-  .grid-row {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    justify-content: center !important;
-    width: 100% !important;
-    page-break-inside: avoid;
-  }
-  
+  .grid-row,
   .grid-item {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
     page-break-inside: avoid;
-    margin: 2px;
-    box-sizing: border-box !important;
   }
 }

@@ -14,103 +14,101 @@
 
 ## 使用方法
 
-### 1. 基本使用
+### 1. 统一样式管理（推荐）
+
+现在使用统一样式管理系统，以web样式为主，自动同步到打印和导出：
 
 ```typescript
-import { loadTemplateStyles, TemplateType } from './templates';
+import { getPrintStyles, applyUnifiedStyles } from './templates';
 
-// 加载模板样式
-loadTemplateStyles(TemplateType.STANDARD);
-loadTemplateStyles(TemplateType.LEFT_RIGHT);
+// 获取元素的打印样式（自动从web样式获取）
+const printDocument = getPrintStyles('element-id');
+
+// 应用统一样式到元素
+const styledElement = applyUnifiedStyles(element);
 ```
 
-### 2. 获取打印样式
+### 2. 模板样式开发
 
-```typescript
-import { getCombinedPrintStyles, TemplateType } from './templates';
+开发新模板时，只需维护web样式：
 
-// 获取单个模板的打印样式
-const printStyles = getCombinedPrintStyles([TemplateType.LEFT_RIGHT]);
+```less
+/* 只需编写web样式 */
+.my-template-container {
+  display: flex;
+  gap: 10px;
+  margin: 20px;
+}
 
-// 获取多个模板的合并打印样式
-const combinedStyles = getCombinedPrintStyles([
-  TemplateType.STANDARD,
-  TemplateType.LEFT_RIGHT
-]);
+/* 打印优化 - 仅添加打印特有属性 */
+@media print {
+  .my-template-container {
+    page-break-inside: avoid;
+  }
+}
 ```
 
 ### 3. 在组件中使用
 
 ```typescript
-// DirectGridRenderer 中自动加载
-useEffect(() => {
-  loadTemplateStyles(templateType);
-}, [templateType]);
-
-// PrintButton 中动态获取样式
-const printStyles = getCombinedPrintStyles([templateType]);
+// 样式会自动从web获取，无需手动加载
+// 打印时会自动应用web样式
 ```
 
 ## 添加新模板样式
 
-### 1. 定义样式配置
+### 1. 创建模板目录和样式文件
 
-在 `templateStyles.ts` 中添加新的样式配置：
+按照统一的目录结构创建新模板：
+
+```
+templates/
+├── FourGridTemplate/           # 新模板目录
+│   ├── index.tsx              # 模板组件
+│   └── index.less             # 样式文件
+```
+
+### 2. 编写样式文件
+
+在 `FourGridTemplate/index.less` 中只需编写web样式：
+
+```less
+/* 四宫格模板样式 */
+.four-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.four-grid-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+}
+
+/* 打印优化 - 仅添加打印特有属性 */
+@media print {
+  .four-grid-container,
+  .four-grid-cell {
+    page-break-inside: avoid;
+  }
+}
+```
+
+### 3. 添加模板类型
+
+在 `types.ts` 中添加新的模板类型：
 
 ```typescript
-// 1. 在 TemplateType 枚举中添加新类型
 export enum TemplateType {
   STANDARD = 'standard',
   LEFT_RIGHT = 'left_right',
+  SINGLE_ROW = 'single_row',
   FOUR_GRID = 'four_grid', // 新增
 }
-
-// 2. 定义样式配置
-const FOUR_GRID_TEMPLATE_STYLES: TemplateStyleConfig = {
-  type: TemplateType.FOUR_GRID,
-  name: '四宫格模板',
-  screenStyles: `
-    .four-grid-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 10px;
-      width: 100%;
-    }
-    
-    .four-grid-cell {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #ddd;
-    }
-  `,
-  printStyles: `
-    @media print {
-      .four-grid-container {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        grid-template-rows: 1fr 1fr !important;
-        gap: 5px !important;
-        page-break-inside: avoid;
-      }
-      
-      .four-grid-cell {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        page-break-inside: avoid;
-      }
-    }
-  `
-};
-
-// 3. 注册到样式映射中
-const TEMPLATE_STYLES_MAP = new Map<TemplateType, TemplateStyleConfig>([
-  [TemplateType.STANDARD, STANDARD_TEMPLATE_STYLES],
-  [TemplateType.LEFT_RIGHT, LEFT_RIGHT_TEMPLATE_STYLES],
-  [TemplateType.FOUR_GRID, FOUR_GRID_TEMPLATE_STYLES], // 新增
-]);
 ```
 
 ### 2. 创建模板实现类
@@ -166,38 +164,35 @@ export interface TemplateStyleConfig {
 
 ## API 参考
 
-### TemplateStyleManager
+### StyleManager（统一样式管理）
 
 ```typescript
-class TemplateStyleManager {
-  // 加载模板样式
-  loadTemplateStyles(templateType: TemplateType): void
+class StyleManager {
+  // 获取元素的打印样式
+  getPrintStyles(elementId: string): string
   
-  // 获取打印样式
-  getTemplatePrintStyles(templateType: TemplateType): string
-  
-  // 获取合并的打印样式
-  getCombinedPrintStyles(templateTypes: TemplateType[]): string
-  
-  // 卸载模板样式
-  unloadTemplateStyles(templateType: TemplateType): void
-  
-  // 注册新模板样式
-  registerTemplateStyle(styleConfig: TemplateStyleConfig): void
+  // 应用统一样式到元素
+  applyUnifiedStyles(element: HTMLElement): HTMLElement
 }
 ```
 
 ### 便捷函数
 
 ```typescript
-// 加载模板样式
-loadTemplateStyles(templateType: TemplateType): void
+// 获取打印样式（自动从web样式获取）
+getPrintStyles(elementId: string): string
 
-// 获取模板打印样式
-getTemplatePrintStyles(templateType: TemplateType): string
+// 应用统一样式
+applyUnifiedStyles(element: HTMLElement): HTMLElement
 
-// 获取合并的打印样式
-getCombinedPrintStyles(templateTypes: TemplateType[]): string
+// 获取计算样式
+getComputedStyles(element: HTMLElement): CSSStyleDeclaration
+
+// 克隆元素并应用计算样式
+cloneElementWithComputedStyles(element: HTMLElement): HTMLElement
+
+// 创建打印文档
+createPrintDocument(element: HTMLElement, title?: string): string
 ```
 
 ## 最佳实践
