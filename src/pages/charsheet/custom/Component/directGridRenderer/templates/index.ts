@@ -12,6 +12,7 @@ export { BaseGridTemplate } from './BaseGridTemplate';
 // 导出具体模板实现
 export { StandardGridTemplate } from './StandardGridTemplate';
 export { LeftRightGridTemplate } from './LeftRightGridTemplate';
+export { SingleRowTemplate } from './SingleRowTemplate';
 
 // 导出工厂类和便捷函数
 export { GridTemplateFactory, templateFactory } from './TemplateFactory';

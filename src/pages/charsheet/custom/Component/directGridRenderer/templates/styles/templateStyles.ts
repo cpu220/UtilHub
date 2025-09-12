@@ -74,6 +74,56 @@ const STANDARD_TEMPLATE_STYLES: TemplateStyleConfig = {
 };
 
 /**
+ * 单行网格模板样式
+ */
+const SINGLE_ROW_TEMPLATE_STYLES: TemplateStyleConfig = {
+  type: TemplateType.SINGLE_ROW,
+  name: '单行网格',
+  screenStyles: `
+    .single-row-container {
+      display: flex;
+      width: 100%;
+      margin-bottom: calc(10px * var(--charsheet-font-scale, 1));
+    }
+    
+    .single-row-container:nth-child(5n) {
+      margin-bottom: calc(20px * var(--charsheet-font-scale, 1));
+    }
+    
+    .single-row-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: calc(6px * var(--charsheet-font-scale, 1));
+      box-sizing: border-box;
+    }
+    
+    .single-row-item:first-child {
+      margin-left: 0;
+    }
+  `,
+  printStyles: `
+    @media print {
+      .single-row-container {
+        display: flex !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        margin-bottom: 10px !important;
+      }
+      
+      .single-row-item {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid;
+        margin: 2px;
+      }
+    }
+  `
+};
+
+/**
  * 左右分栏模板样式
  */
 const LEFT_RIGHT_TEMPLATE_STYLES: TemplateStyleConfig = {
@@ -194,7 +244,8 @@ const COMMON_STYLES: string = `
  */
 const TEMPLATE_STYLES_MAP = new Map<TemplateType, TemplateStyleConfig>([
   [TemplateType.STANDARD, STANDARD_TEMPLATE_STYLES],
-  [TemplateType.LEFT_RIGHT, LEFT_RIGHT_TEMPLATE_STYLES]
+  [TemplateType.LEFT_RIGHT, LEFT_RIGHT_TEMPLATE_STYLES],
+  [TemplateType.SINGLE_ROW, SINGLE_ROW_TEMPLATE_STYLES]
 ]);
 
 /**

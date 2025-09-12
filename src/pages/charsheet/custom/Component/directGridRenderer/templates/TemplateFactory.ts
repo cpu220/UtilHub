@@ -10,6 +10,7 @@ import {
 } from './types';
 import { StandardGridTemplate } from './StandardGridTemplate';
 import { LeftRightGridTemplate } from './LeftRightGridTemplate';
+import { SingleRowTemplate } from './SingleRowTemplate';
 
 /**
  * 网格模板工厂实现
@@ -41,6 +42,9 @@ export class GridTemplateFactory implements ITemplateFactory {
     
     // 注册左右分栏模板
     this.templates.set(TemplateType.LEFT_RIGHT, () => new LeftRightGridTemplate());
+    
+    // 注册单行网格模板
+    this.templates.set(TemplateType.SINGLE_ROW, () => new SingleRowTemplate());
     
     console.log('已注册默认模板:', Array.from(this.templates.keys()));
   }

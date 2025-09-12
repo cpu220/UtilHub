@@ -11,6 +11,7 @@ import { IRenderOptions, ICharsheetConfig } from '../../../../interface';
 export enum TemplateType {
   STANDARD = 'standard',        // 标准单列网格模板
   LEFT_RIGHT = 'left_right',    // 左右分栏模板
+  SINGLE_ROW = 'single_row',    // 单行网格模板（第一个汉字，后面米字格）
   // 后续可扩展更多模板类型
   // FOUR_GRID = 'four_grid',   // 四宫格模板
   // CUSTOM = 'custom'          // 自定义模板
