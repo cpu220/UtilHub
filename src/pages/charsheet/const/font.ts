@@ -3,7 +3,7 @@ import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions }
 /**
  * 字体缩放比例，控制页面展示尺寸的
  */
-export const FONT_SCALE = 2;
+export const FONT_SCALE = 1;
 
 /**
  * 字帖颜色常量
