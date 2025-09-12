@@ -49,7 +49,8 @@ export class SingleRowTemplate extends BaseGridTemplate {
       this.clearContainer(container);
 
       const totalChars = charList.length;
-      const actualRows = this.calculateRows(totalChars, columns, rowsCount);
+      // 单行模板：每行显示一个字符，所以行数等于字符数量
+      const actualRows = Math.min(totalChars, rowsCount);
       const rowsPerPage = 8; // 单行模板每页12行
       const totalPages = Math.ceil(actualRows / rowsPerPage);
       const renderPromises: Promise<void>[] = [];
@@ -157,7 +158,7 @@ export class SingleRowTemplate extends BaseGridTemplate {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.style.width = `${strokeSize}px`;
     svg.style.height = `${strokeSize}px`;
-    svg.style.border = '1px solid #EEE';
+    // svg.style.border = '1px solid #EEE';
     svg.style.marginRight = '3px';
     svg.style.flexShrink = '0';
     
@@ -189,11 +190,11 @@ export class SingleRowTemplate extends BaseGridTemplate {
     const strokeSize = Math.floor(GridConfig.fontSize * this.STROKE_ORDER_FONT_RATIO);
     strokeOrderDiv.style.cssText = `
       display: flex;
-      align-items: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
       margin-bottom: 8px;
       min-height: ${strokeSize + 4}px;
-      overflow-x: auto;
-      overflow-y: hidden;
+      gap: 2px;
     `;
     
     if (!character) {

@@ -91,13 +91,15 @@ const SINGLE_ROW_TEMPLATE_STYLES: TemplateStyleConfig = {
     }
     
     .stroke-order-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-      color: #666;
-      line-height: 1.2;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
+       display: flex;
+       align-items: flex-start;
+       flex-wrap: wrap;
+       margin-bottom: 8px;
+       color: #666;
+       line-height: 1.2;
+       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       gap: 2px;
+     }
     
     .single-row-container {
       display: flex;
