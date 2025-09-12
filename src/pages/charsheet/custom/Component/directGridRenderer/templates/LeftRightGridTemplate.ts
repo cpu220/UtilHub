@@ -9,6 +9,7 @@ import {
   TemplateRenderParams,
   TemplateRenderResult
 } from './types';
+import { getGridColor } from '../../../../const/colorManager';
 import styles from '../index.less';
 
 /**
@@ -120,7 +121,7 @@ export class LeftRightGridTemplate extends BaseGridTemplate {
    * 添加田字格背景到SVG
    */
   private addGridBackgroundToSVG(svg: SVGElement, options: any): void {
-    const { width, height, gridColor = '#DDD' } = options;
+    const { width, height, gridColor = getGridColor() } = options;
     const strokeWidth = Math.max(0.5, Math.min(1, width / 100));
     const halfWidth = Math.round(width / 2) + 0.5;
     const halfHeight = Math.round(height / 2) + 0.5;

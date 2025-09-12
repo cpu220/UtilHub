@@ -113,6 +113,7 @@ const CustomCharsheetPage: React.FC = () => {
           printOptions={printOptions}
           buttonType="link"
           buttonText="打印"
+          templateType={currentTemplateType}
         />
         <ImageConverter
         sourceElementId="page-grid-container"

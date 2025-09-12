@@ -9,7 +9,8 @@ import { CharsheetColors, FONT_SCALE } from '../../../const';
 import {
     TemplateType,
     createTemplate,
-    TemplateRenderParams
+    TemplateRenderParams,
+    loadTemplateStyles
 } from './templates';
 import styles from './index.less';
 
@@ -59,6 +60,9 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             message.error('字体列表为空');
             return;
         }
+        
+        // 动态加载模板样式
+        loadTemplateStyles(templateType);
         
         message.info(`正在生成新的字帖 (${templateType})...`);
 

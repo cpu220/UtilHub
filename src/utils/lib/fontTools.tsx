@@ -4,6 +4,7 @@
  */
 
 import HanziWriter from 'hanzi-writer';
+import { getGridColor } from '@/pages/charsheet/const/colorManager';
 
 // 默认配置选项
 const defaultOptions = {
@@ -264,7 +265,7 @@ export const renderHanziInContainer = (svgId: string, character: string, options
       font-size: ${Math.floor(fallbackFontSize * 0.8)}px;
       color: ${_opt.strokeColor || '#333'};
       font-family: serif;
-      border: ${_opt.useGridBackground ? '1px solid ' + (_opt.gridColor || '#DDD') : 'none'};
+      border: ${_opt.useGridBackground ? '1px solid ' + (_opt.gridColor || getGridColor()) : 'none'};
     ">${str}</div>`;
     
     return null;

@@ -4,6 +4,7 @@
  */
 
 import { IRenderOptions } from '@/pages/charsheet/interface';
+import { getGridColor } from '@/pages/charsheet/const/colorManager';
 
 export interface IFontRenderOptions extends IRenderOptions {
   renderMode: 'font';
@@ -103,7 +104,7 @@ export class FontRenderer {
     svg: SVGElement,
     options: IFontRenderOptions
   ): void {
-    const { width, height, gridColor = '#DDD' } = options;
+    const { width, height, gridColor = getGridColor() } = options;
     
     // 计算合适的线条宽度，确保在不同尺寸下都清晰可见
     const strokeWidth = Math.max(0.5, Math.min(1, width / 100));

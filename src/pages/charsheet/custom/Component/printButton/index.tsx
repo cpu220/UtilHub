@@ -2,15 +2,16 @@ import React from 'react';
 import { Button, type ButtonProps } from 'antd';
 import { printElementById } from '@/utils';
 import { IPrintOptions } from '../../../interface';
+import { TemplateType, getCombinedPrintStyles } from '../directGridRenderer/templates';
 import styles from './index.less';
 
 interface PrintButtonProps {
   /**
-   * 要打印的元素ID
+   * 要打印的HTML元素ID
    */
   elementId: string;
   /**
-   * 打印选项配置
+   * 打印配置选项
    */
   printOptions?: Partial<IPrintOptions>;
   /**
@@ -22,9 +23,13 @@ interface PrintButtonProps {
    */
   buttonType?: ButtonProps['type'];
   /**
-   * 点击事件前置处理函数
+   * 点击前的回调函数
    */
   onBeforeClick?: () => void;
+  /**
+   * 当前使用的模板类型（用于动态加载样式）
+   */
+  templateType?: TemplateType;
 }
 
 /**
@@ -37,6 +42,7 @@ const PrintButton: React.FC<PrintButtonProps> = ({
   buttonText = '打印',
   buttonType = 'link',
   onBeforeClick,
+  templateType = TemplateType.STANDARD,
 }) => {
   /**
    * 处理打印点击事件
@@ -56,48 +62,8 @@ const PrintButton: React.FC<PrintButtonProps> = ({
         title: '',
         showPreview: false,
         styles: [
-          // 打印专用样式
-          `
-          .grid-item {
-            page-break-inside: avoid;
-            margin: 2px;
-          }
-          .grid-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-          }
-          /* 左右分栏模板打印样式 */
-          .lr-row-container {
-            display: flex !important;
-            width: 100% !important;
-            page-break-inside: avoid;
-            margin-bottom: 10px !important;
-            flex-wrap: nowrap !important;
-          }
-          .left-column, .right-column {
-            display: flex !important;
-            width: 50% !important;
-            justify-content: flex-start !important;
-            flex-wrap: nowrap !important;
-            page-break-inside: avoid;
-          }
-          .right-column {
-            margin-left: 20px !important;
-          }
-          .lr-cell {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            box-sizing: border-box !important;
-            page-break-inside: avoid;
-            flex-shrink: 0;
-            margin: 2px;
-          }
-          .lr-cell:not(:first-child) {
-            margin-left: 6px !important;
-          }
-          `,
+          // 动态加载模板打印样式
+          getCombinedPrintStyles([templateType]),
           ...(printOptions.styles || []),
         ],
         onBeforePrint: () => {

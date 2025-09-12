@@ -1,18 +1,17 @@
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
+import { CharsheetColors as DynamicCharsheetColors, getFontScale } from './colorManager';
 
 /**
  * 字体缩放比例，控制页面展示尺寸的
+ * 从CSS变量中动态获取
  */
-export const FONT_SCALE = 1;
+export const FONT_SCALE = getFontScale();
 
 /**
  * 字帖颜色常量
+ * 动态从colors.less中的CSS变量获取，确保颜色一致性
  */
-export const CharsheetColors = {
-  // 边框和米字格颜色
-  BORDER_COLOR: '#ddd',
-  GRID_COLOR: '#DDD'
-} as const;
+export const CharsheetColors = DynamicCharsheetColors;
 
 // 字帖单元格默认配置参数
 export const GridConfig: ICharsheetConfig = {
