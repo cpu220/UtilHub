@@ -3,14 +3,14 @@
  * 实现左右两栏布局，每栏独立显示字符和米字格
  */
 
-import { BaseGridTemplate } from './BaseGridTemplate';
+import { BaseGridTemplate } from '../BaseGridTemplate';
 import {
   TemplateType,
   TemplateRenderParams,
   TemplateRenderResult
-} from './types';
-import { getGridColor } from '../../../../const/colorManager';
-import styles from '../index.less';
+} from '../types';
+import { getGridColor } from '../../../../../const/colorManager';
+import styles from './index.less';
 
 /**
  * 左右分栏网格模板实现

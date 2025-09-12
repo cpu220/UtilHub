@@ -3,17 +3,17 @@
  * 每行第一个格子显示汉字，后面全是米字格
  */
 
-import { BaseGridTemplate } from './BaseGridTemplate';
+import { BaseGridTemplate } from '../BaseGridTemplate';
 import {
   TemplateType,
   TemplateRenderParams,
   TemplateRenderResult
-} from './types';
-import { getGridColor } from '../../../../const/colorManager';
-import { GridConfig } from '../../../../const/font';
+} from '../types';
+import { getGridColor } from '../../../../../const/colorManager';
+import { GridConfig } from '../../../../../const/font';
 // @ts-ignore
 import HanziWriter from 'hanzi-writer';
-import styles from '../index.less';
+import styles from './index.less';
 
 /**
  * 单行网格模板实现
@@ -156,11 +156,9 @@ export class SingleRowTemplate extends BaseGridTemplate {
    */
   private renderStrokeSVG(strokePaths: string[], strokeSize: number): SVGElement {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', styles['stroke-svg']);
     svg.style.width = `${strokeSize}px`;
     svg.style.height = `${strokeSize}px`;
-    // svg.style.border = '1px solid #EEE';
-    svg.style.marginRight = '3px';
-    svg.style.flexShrink = '0';
     
     const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     
@@ -184,18 +182,11 @@ export class SingleRowTemplate extends BaseGridTemplate {
    */
   private async createStrokeOrderElement(character: string, config: any): Promise<HTMLDivElement> {
     const strokeOrderDiv = document.createElement('div');
-    strokeOrderDiv.className = 'stroke-order-container';
+    strokeOrderDiv.className = styles['stroke-order-container'];
     
-    // 设置样式
+    // 设置动态高度
     const strokeSize = Math.floor(GridConfig.fontSize * this.STROKE_ORDER_FONT_RATIO);
-    strokeOrderDiv.style.cssText = `
-      display: flex;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-      min-height: ${strokeSize + 4}px;
-      gap: 2px;
-    `;
+    strokeOrderDiv.style.minHeight = `${strokeSize + 4}px`;
     
     if (!character) {
       return strokeOrderDiv;
@@ -216,17 +207,13 @@ export class SingleRowTemplate extends BaseGridTemplate {
         strokeOrderDiv.appendChild(strokeSVG);
         
         // 添加箭头分隔符（除了最后一个）
-        if (i < strokes.length - 1) {
-          const arrow = document.createElement('span');
-          arrow.style.cssText = `
-            margin: 0 4px;
-            color: #999;
-            font-size: ${Math.floor(strokeSize * 0.5)}px;
-            flex-shrink: 0;
-          `;
-          arrow.textContent = '→';
-          strokeOrderDiv.appendChild(arrow);
-        }
+         if (i < strokes.length - 1) {
+           const arrow = document.createElement('span');
+           arrow.className = styles['stroke-arrow'];
+           arrow.style.fontSize = `${Math.floor(strokeSize * 0.5)}px`;
+           arrow.textContent = '→';
+           strokeOrderDiv.appendChild(arrow);
+         }
       }
     } catch (error) {
       console.warn(`创建笔画顺序显示失败:`, error);
@@ -241,12 +228,7 @@ export class SingleRowTemplate extends BaseGridTemplate {
    */
   private async createRowWithStrokeOrder(rowIndex: number, character: string, config: any): Promise<HTMLDivElement> {
     const rowContainer = document.createElement('div');
-    rowContainer.className = 'single-row-with-stroke-container';
-    rowContainer.style.cssText = `
-      display: block;
-      width: 100%;
-      margin-bottom: calc(15px * var(--charsheet-font-scale, 1));
-    `;
+    rowContainer.className = styles['single-row-with-stroke-container'];
     
     // 创建笔画顺序显示
     const strokeOrderElement = await this.createStrokeOrderElement(character, config);

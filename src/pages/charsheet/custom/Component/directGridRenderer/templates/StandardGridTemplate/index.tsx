@@ -3,12 +3,12 @@
  * 实现原有的单列网格布局逻辑
  */
 
-import { BaseGridTemplate } from './BaseGridTemplate';
+import { BaseGridTemplate } from '../BaseGridTemplate';
 import {
   TemplateType,
   TemplateRenderParams,
   TemplateRenderResult
-} from './types';
+} from '../types';
 
 /**
  * 标准网格模板实现

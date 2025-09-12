@@ -1,0 +1,74 @@
+/* 左右分栏网格模板样式 */
+
+/* 左右分栏行容器 */
+.lr-row-container {
+  display: flex;
+  width: 100%;
+  margin-bottom: calc(10px * var(--charsheet-font-scale, 1));
+}
+
+.lr-row-container:nth-child(5n) {
+  margin-bottom: calc(20px * var(--charsheet-font-scale, 1));
+}
+
+/* 左右栏容器 */
+.left-column,
+.right-column {
+  display: flex;
+  width: 50%;
+  justify-content: flex-start;
+}
+
+.right-column {
+  margin-left: 20px;
+}
+
+/* 左右分栏单元格 */
+.lr-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.lr-cell:not(:first-child) {
+  margin-left: 6px;
+}
+
+/* 打印样式 */
+@media print {
+  .lr-row-container {
+    display: flex !important;
+    width: 100% !important;
+    page-break-inside: avoid;
+    margin-bottom: 10px !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  .left-column,
+  .right-column {
+    display: flex !important;
+    width: 50% !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    page-break-inside: avoid;
+  }
+  
+  .right-column {
+    margin-left: 20px !important;
+  }
+  
+  .lr-cell {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid;
+    flex-shrink: 0;
+    margin: 2px;
+  }
+  
+  .lr-cell:not(:first-child) {
+    margin-left: 6px !important;
+  }
+}

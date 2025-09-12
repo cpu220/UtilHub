@@ -1,0 +1,48 @@
+/* 标准网格模板样式 */
+
+/* 网格行 */
+.grid-row {
+  display: flex;
+  margin-bottom: calc(10px * var(--charsheet-font-scale, 1));
+}
+
+.grid-row:nth-child(5n) {
+  margin-bottom: calc(20px * var(--charsheet-font-scale, 1));
+}
+
+/* 网格单元格 */
+.grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: calc(6px * var(--charsheet-font-scale, 1));
+  box-sizing: border-box;
+}
+
+.grid-item:first-child {
+  margin-left: 0;
+}
+
+.grid-item:nth-child(5n) {
+  margin-right: calc(12px * var(--charsheet-font-scale, 1));
+}
+
+/* 打印样式 */
+@media print {
+  .grid-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    width: 100% !important;
+    page-break-inside: avoid;
+  }
+  
+  .grid-item {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    page-break-inside: avoid;
+    margin: 2px;
+    box-sizing: border-box !important;
+  }
+}
