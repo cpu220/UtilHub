@@ -31,7 +31,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
     fontList,
     renderOptions,
     config,
-    templateType = TemplateType.LEFT_RIGHT // 默认使用标准模板
+    templateType = TemplateType.STANDARD // 默认使用标准模板
 }) => {
     const gridContainerRef = useRef<HTMLDivElement>(null);
     // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染

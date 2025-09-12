@@ -7,6 +7,7 @@ import { ICharsheetConfig, IRenderOptions } from '../interface';
 import { GridConfig, getRenderOptionsByMode } from '../const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter, ScrollController } from './Component';
+import { TemplateType } from './Component/directGridRenderer/templates';
 
 import { FONT_LIBRARY } from '../const';
 import { IFontLibrary } from '../interface';
@@ -26,6 +27,7 @@ const CustomCharsheetPage: React.FC = () => {
     config: { ...GridConfig },
     renderOptions: getRenderOptionsByMode('stroke') // 默认使用笔画模式
   });
+  const [currentTemplateType, setCurrentTemplateType] = useState<TemplateType>(TemplateType.STANDARD);
 
   const handleCreateFontList = () => {
     const randomFontList = generateRandomChineseCharsString(153);
@@ -44,6 +46,12 @@ const CustomCharsheetPage: React.FC = () => {
   // 处理字库选择变化的回调函数
   const handleFontLibraryChange = (fontLibrary: IFontLibrary) => {
     setCurrentFontLibrary(fontLibrary);
+  };
+
+  // 处理模板类型变化的回调函数
+  const handleTemplateChange = (templateType: TemplateType) => {
+    setCurrentTemplateType(templateType);
+    message.info(`已切换到${templateType === TemplateType.STANDARD ? '标准网格' : '左右分栏'}模板`);
   };
 
 
@@ -70,6 +78,8 @@ const CustomCharsheetPage: React.FC = () => {
           defaultConfig={GridConfig}
           onConfigChange={handleConfigChange}
           onFontLibraryChange={handleFontLibraryChange}
+          onTemplateChange={handleTemplateChange}
+          defaultTemplateType={currentTemplateType}
         />
         <Button type="link" onClick={handleCreateFontList}>随机字库</Button>
 
@@ -94,6 +104,7 @@ const CustomCharsheetPage: React.FC = () => {
         fontList={currentFontLibrary.list}
         renderOptions={customConfig.renderOptions}
         config={customConfig.config}
+        templateType={currentTemplateType}
       />
 
       {/* 滚动控制器 - 悬浮在右下角 */}

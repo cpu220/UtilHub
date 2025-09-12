@@ -115,9 +115,12 @@ const createStyledHtmlForElement = (elementId: string): string => {
             if (element.matches(rule.selectorText)) {
               extraStyles += `${rule.selectorText} { ${rule.style.cssText} }\n`;
             }
-            // 特殊处理网格相关样式（grid-row, grid-item）
+            // 特殊处理网格相关样式（grid-row, grid-item, 左右分栏样式）
             if (rule.selectorText.includes('.grid-row') || rule.selectorText.includes('.grid-item') || 
-                rule.selectorText.includes('#grid-container') || rule.selectorText.includes('#' + elementIdName)) {
+                rule.selectorText.includes('#grid-container') || rule.selectorText.includes('#' + elementIdName) ||
+                rule.selectorText.includes('.lr-row-container') || rule.selectorText.includes('.left-column') ||
+                rule.selectorText.includes('.right-column') || rule.selectorText.includes('.lr-cell') ||
+                rule.selectorText.includes('.page-container') || rule.selectorText.includes('.page-grid-container')) {
               extraStyles += `${rule.selectorText} { ${rule.style.cssText} }\n`;
             }
           }
@@ -155,6 +158,46 @@ const createStyledHtmlForElement = (elementId: string): string => {
         justify-content: center;
         page-break-inside: avoid;
         margin: 2px;
+      }
+      /* 左右分栏打印专用样式 */
+      .lr-row-container {
+        display: flex !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        margin-bottom: 10px !important;
+        flex-wrap: nowrap !important;
+      }
+      .left-column, .right-column {
+        display: flex !important;
+        width: 50% !important;
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important;
+        page-break-inside: avoid;
+      }
+      .right-column {
+        margin-left: 20px !important;
+      }
+      .lr-cell {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid;
+        flex-shrink: 0;
+        margin: 2px;
+      }
+      .lr-cell:not(:first-child) {
+        margin-left: 6px !important;
+      }
+      .page-container {
+        page-break-after: always !important;
+        width: 100% !important;
+      }
+      .page-grid-container {
+        width: 100% !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 10px !important;
       }
       /* 打印专用重置样式 */
       body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }

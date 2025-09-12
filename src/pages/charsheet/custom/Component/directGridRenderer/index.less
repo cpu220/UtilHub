@@ -24,7 +24,7 @@
 }
 
 /* 每5行增加更大的底部间距 */
-.grid-row:nth-child(5n) {
+.grid-row:nth-child(6n) {
     margin-bottom: calc(20px * @charsheet-font-scale);
 }
 
@@ -59,6 +59,56 @@
 
 .lr-cell:not(:first-child) {
     margin-left: 6px;
+}
+
+/* 打印专用样式 - 修复左右分栏在打印时的布局问题 */
+@media print {
+    .lr-row-container {
+        display: flex !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        margin-bottom: 10px !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    .left-column, .right-column {
+        display: flex !important;
+        width: 50% !important;
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important;
+        page-break-inside: avoid;
+    }
+    
+    .right-column {
+        margin-left: 20px !important;
+    }
+    
+    .lr-cell {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid;
+        flex-shrink: 0;
+    }
+    
+    .lr-cell:not(:first-child) {
+        margin-left: 6px !important;
+    }
+    
+    /* 确保页面容器在打印时正确显示 */
+    .page-container {
+        page-break-after: always !important;
+        width: 100% !important;
+    }
+    
+    /* 防止网格容器在打印时被截断 */
+    .page-grid-container {
+        width: 100% !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 10px !important;
+    }
 }
 
 // .grid-row:nth-child(15n) {

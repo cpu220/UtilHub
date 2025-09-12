@@ -3,6 +3,7 @@ import { Form, ColorPicker, InputNumber, Select } from 'antd';
 import type { FormProps } from 'antd';
 import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '../../../interface';
 import { FONT_LIBRARY, FONT_OPTIONS, mergeRenderOptions } from '../../../const';
+import { TemplateType, getAllTemplateInfo } from '../directGridRenderer/templates';
 import styles from './index.less';
 
 interface StyleConfigFormProps {
@@ -10,6 +11,8 @@ interface StyleConfigFormProps {
   defaultConfig: ICharsheetConfig;
   onConfigChange: (newConfig: { config: ICharsheetConfig; renderOptions: IRenderOptions }) => void;
   onFontLibraryChange: (fontLibrary: IFontLibrary) => void;
+  onTemplateChange?: (templateType: TemplateType) => void; // 新增：模板变化回调
+  defaultTemplateType?: TemplateType; // 新增：默认模板类型
 }
 
 /**
@@ -21,7 +24,9 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
   defaultRenderOptions,
   defaultConfig,
   onConfigChange,
-  onFontLibraryChange
+  onFontLibraryChange,
+  onTemplateChange,
+  defaultTemplateType = TemplateType.STANDARD
 }) => {
   const [form] = Form.useForm();
   
@@ -122,6 +127,9 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
   // 获取默认选中的字库
   const defaultFontLibrary = FONT_LIBRARY.find(lib => lib.select) || FONT_LIBRARY[0];
 
+  // 获取所有可用模板信息
+  const templateOptions = getAllTemplateInfo();
+
   // 表单初始值
   const initialValues: any = {
     strokeColor: defaultRenderOptions.strokeColor,
@@ -131,7 +139,8 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     fontSize: defaultRenderOptions.fontSize || defaultRenderOptions.width,
     fontLibrary: defaultFontLibrary.name,
     renderMode: defaultRenderOptions.renderMode || 'stroke',
-    fontFamily: defaultRenderOptions.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value
+    fontFamily: defaultRenderOptions.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value,
+    templateType: defaultTemplateType
   };
   console.log('initialValues', initialValues);
   return (
@@ -184,6 +193,24 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
             {FONT_LIBRARY.map(library => (
               <Select.Option key={library.name} value={library.name}>
                 {library.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+        
+        <Form.Item label="模板类型" name="templateType">
+          <Select
+            style={{ width: 150 }}
+            placeholder="请选择模板"
+            onChange={(value: TemplateType) => {
+              if (onTemplateChange) {
+                onTemplateChange(value);
+              }
+            }}
+          >
+            {templateOptions.map(template => (
+              <Select.Option key={template.type} value={template.type}>
+                {template.name}
               </Select.Option>
             ))}
           </Select>

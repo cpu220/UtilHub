@@ -67,6 +67,36 @@ const PrintButton: React.FC<PrintButtonProps> = ({
             flex-wrap: wrap;
             justify-content: center;
           }
+          /* 左右分栏模板打印样式 */
+          .lr-row-container {
+            display: flex !important;
+            width: 100% !important;
+            page-break-inside: avoid;
+            margin-bottom: 10px !important;
+            flex-wrap: nowrap !important;
+          }
+          .left-column, .right-column {
+            display: flex !important;
+            width: 50% !important;
+            justify-content: flex-start !important;
+            flex-wrap: nowrap !important;
+            page-break-inside: avoid;
+          }
+          .right-column {
+            margin-left: 20px !important;
+          }
+          .lr-cell {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+            page-break-inside: avoid;
+            flex-shrink: 0;
+            margin: 2px;
+          }
+          .lr-cell:not(:first-child) {
+            margin-left: 6px !important;
+          }
           `,
           ...(printOptions.styles || []),
         ],

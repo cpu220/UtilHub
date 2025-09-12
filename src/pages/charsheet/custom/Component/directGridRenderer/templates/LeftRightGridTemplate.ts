@@ -257,7 +257,9 @@ export class LeftRightGridTemplate extends BaseGridTemplate {
       const finalRows = this.calculateRows(totalChars, columns, rowsCount);
       
       const renderPromises: Promise<void>[] = [];
-      const pageConfig = this.getDefaultPageConfig();
+      const pageConfig = this.getDefaultPageConfig({
+        rowsPerPage:12,
+      });
       
       let currentIndex = 0;
       let currentPageContainer: HTMLDivElement | null = null;

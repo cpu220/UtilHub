@@ -31,13 +31,14 @@ export abstract class BaseGridTemplate implements IGridTemplate {
   /**
    * 默认页面容器配置
    */
-  protected getDefaultPageConfig(): PageContainerConfig {
+  protected getDefaultPageConfig(config?:{}): PageContainerConfig { 
     return {
-      rowsPerPage: 15,
+      rowsPerPage: 12,
       pageBreakAfter: true,
       marginBottom: '20px',
       padding: '5px',
-      debugBorder: false
+      debugBorder: false,
+      ...config
     };
   }
 
@@ -140,10 +141,10 @@ export abstract class BaseGridTemplate implements IGridTemplate {
     
     // 设置特殊间距
     if (config.specialSpacing) {
-      if (config.specialSpacing.every5th && (rowIndex + 1) % 5 === 0) {
+      if (config.specialSpacing.every5th && (rowIndex + 1) % 6 === 0) {
         rowElement.style.marginBottom = config.specialSpacing.every5th;
       }
-      if (config.specialSpacing.every15th && (rowIndex + 1) % 15 === 0) {
+      if (config.specialSpacing.every15th && (rowIndex + 1) % 12 === 0) {
         rowElement.style.marginBottom = config.specialSpacing.every15th;
       }
     }
