@@ -129,14 +129,16 @@ const SINGLE_ROW_TEMPLATE_STYLES: TemplateStyleConfig = {
       }
       
       .stroke-order-container {
-        display: flex !important;
-        align-items: center !important;
-        margin-bottom: 6px !important;
-        color: #666 !important;
-        line-height: 1.2 !important;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-        page-break-inside: avoid;
-      }
+         display: flex !important;
+         align-items: flex-start !important;
+         flex-wrap: wrap !important;
+         margin-bottom: 6px !important;
+         color: #666 !important;
+         line-height: 1.2 !important;
+         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+         gap: 2px !important;
+         page-break-inside: avoid;
+       }
       
       .single-row-container {
         display: flex !important;
