@@ -1,3 +1,8 @@
+/**
+ * 图片导出工具
+ * 提供将HTML元素导出为各种图片格式的功能
+ * 支持PNG、JPG、JPEG、WebP等格式，并提供质量控制和背景色设置
+ */
 import { elementToImage } from '@/utils';
 
 export type ImageFormat = 'png' | 'jpg' | 'jpeg' | 'webp';

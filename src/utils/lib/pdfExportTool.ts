@@ -1,3 +1,9 @@
+/**
+ * PDF导出工具
+ * 提供将HTML内容导出为PDF文件的功能
+ * 支持多页面内容处理、质量控制、背景色设置和调试功能
+ * 与内容处理器配合，支持不同模板类型的PDF导出
+ */
 import { jsPDF } from 'jspdf';
 import { processContent } from './contentProcessors/processorFactory';
 import { PDFExportOptions } from '../../pages/charsheet/interface';
