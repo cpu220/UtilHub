@@ -4,6 +4,7 @@
  */
 import * as htmlToImage from 'html-to-image';
 import { Canvg } from 'canvg';
+import { cloneElementWithComputedStyles } from './styleManager';
 
 /**
  * 处理网格容器，逐个转换子元素再合并为一个图片
@@ -410,12 +411,26 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
     }
 
     // 获取要转换的元素
-    const element = document.getElementById(elementId);
-    if (!element) {
+    const originalElement = document.getElementById(elementId);
+    if (!originalElement) {
       throw new Error(`Element with id ${elementId} not found`);
     }
 
+    // 使用统一样式管理系统克隆元素并应用计算样式
+    // 这确保了CSS样式被正确内联化，解决PDF导出样式不一致的问题
+    const element = cloneElementWithComputedStyles(originalElement as HTMLElement, true);
+    
+    // 创建临时容器并添加克隆的元素
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '-9999px';
+    tempContainer.appendChild(element);
+    document.body.appendChild(tempContainer);
+    
     let dataUrl = '';
+    
+    try {
     
     // 获取元素的尺寸
     const elementRect = element.getBoundingClientRect();
@@ -504,6 +519,13 @@ export const elementToImage = async (elementId: string, options: ImageOptions = 
     }
 
     return dataUrl;
+    
+    } finally {
+      // 清理临时容器
+      if (tempContainer && tempContainer.parentNode) {
+        document.body.removeChild(tempContainer);
+      }
+    }
   } catch (error) {
     console.error('Error converting element to image:', error);
     throw error;

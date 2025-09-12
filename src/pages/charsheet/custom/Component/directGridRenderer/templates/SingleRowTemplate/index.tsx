@@ -11,8 +11,7 @@ import {
 } from '../types';
 import { getGridColor } from '../../../../../const/colorManager';
 import { GridConfig } from '../../../../../const/font';
-// @ts-ignore
-import HanziWriter from 'hanzi-writer';
+import { createGridSVG, createEmptyGridInContainer, createStrokeOrderContainer } from '@/utils';
 import styles from './index.less';
 
 /**
@@ -133,95 +132,7 @@ export class SingleRowTemplate extends BaseGridTemplate {
     }
   }
 
-  /**
-   * 获取汉字的笔画数据
-   */
-  private async getStrokeData(character: string): Promise<any[]> {
-    try {
-      if (!character || character.length === 0) {
-        return [];
-      }
-      
-      // 使用HanziWriter获取笔画数据
-      const charData = await HanziWriter.loadCharacterData(character);
-      return charData?.strokes || [];
-    } catch (error) {
-      console.warn(`获取字符"${character}"的笔画数据失败:`, error);
-      return [];
-    }
-  }
 
-  /**
-   * 渲染单个笔画SVG
-   */
-  private renderStrokeSVG(strokePaths: string[], strokeSize: number): SVGElement {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', styles['stroke-svg']);
-    svg.style.width = `${strokeSize}px`;
-    svg.style.height = `${strokeSize}px`;
-    
-    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    
-    // 设置变换属性，使字符在指定尺寸下渲染
-    const transformData = HanziWriter.getScalingTransform(strokeSize, strokeSize);
-    group.setAttributeNS(null, 'transform', transformData.transform);
-    svg.appendChild(group);
-    
-    strokePaths.forEach((strokePath: string) => {
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttributeNS(null, 'd', strokePath);
-      path.style.fill = '#555';
-      group.appendChild(path);
-    });
-    
-    return svg;
-  }
-
-  /**
-   * 创建笔画顺序显示元素
-   */
-  private async createStrokeOrderElement(character: string, config: any): Promise<HTMLDivElement> {
-    const strokeOrderDiv = document.createElement('div');
-    strokeOrderDiv.className = styles['stroke-order-container'];
-    
-    // 设置动态高度
-    const strokeSize = Math.floor(GridConfig.fontSize * this.STROKE_ORDER_FONT_RATIO);
-    strokeOrderDiv.style.minHeight = `${strokeSize + 4}px`;
-    
-    if (!character) {
-      return strokeOrderDiv;
-    }
-    
-    try {
-      const strokes = await this.getStrokeData(character);
-      
-      if (strokes.length === 0) {
-        strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor(strokeSize * 0.6)}px;">暂无笔画数据</span>`;
-        return strokeOrderDiv;
-      }
-      
-      // 创建笔画顺序显示：逐步累积的笔画SVG
-      for (let i = 0; i < strokes.length; i++) {
-        const strokesPortion = strokes.slice(0, i + 1);
-        const strokeSVG = this.renderStrokeSVG(strokesPortion, strokeSize);
-        strokeOrderDiv.appendChild(strokeSVG);
-        
-        // 添加箭头分隔符（除了最后一个）
-         if (i < strokes.length - 1) {
-           const arrow = document.createElement('span');
-           arrow.className = styles['stroke-arrow'];
-           arrow.style.fontSize = `${Math.floor(strokeSize * 0.5)}px`;
-           arrow.textContent = '→';
-           strokeOrderDiv.appendChild(arrow);
-         }
-      }
-    } catch (error) {
-      console.warn(`创建笔画顺序显示失败:`, error);
-      strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor(strokeSize * 0.6)}px;">笔画加载失败</span>`;
-    }
-    
-    return strokeOrderDiv;
-  }
 
   /**
    * 创建包含笔画顺序的行容器
@@ -230,8 +141,14 @@ export class SingleRowTemplate extends BaseGridTemplate {
     const rowContainer = document.createElement('div');
     rowContainer.className = styles['single-row-with-stroke-container'];
     
-    // 创建笔画顺序显示
-    const strokeOrderElement = await this.createStrokeOrderElement(character, config);
+    // 使用统一的笔画顺序API
+    const strokeSize = Math.floor(GridConfig.fontSize * this.STROKE_ORDER_FONT_RATIO);
+    const strokeOrderElement = await createStrokeOrderContainer(character, {
+      strokeSize,
+      containerClassName: styles['stroke-order-container'],
+      arrowClassName: styles['stroke-arrow'],
+      strokeSvgClassName: styles['stroke-svg']
+    });
     rowContainer.appendChild(strokeOrderElement);
     
     // 创建网格行
@@ -255,7 +172,10 @@ export class SingleRowTemplate extends BaseGridTemplate {
           };
           
           if (renderOptions.renderMode === 'font' && renderOptions.fontFamily) {
-            this.createEmptyGridSVG(cellId, renderOptions);
+            createEmptyGridInContainer(cellId, renderOptions.width, renderOptions.height, renderOptions.gridColor, {
+              useDashedLines: false,
+              showBorder: true
+            });
           } else {
             this.renderCharacterToCell(cellId, '田', gridOnlyOptions);
           }
@@ -268,82 +188,5 @@ export class SingleRowTemplate extends BaseGridTemplate {
     });
   }
 
-  /**
-   * 创建只有米字格的SVG
-   */
-  private createEmptyGridSVG(cellId: string, options: any): void {
-    const container = document.getElementById(cellId);
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', options.width.toString());
-    svg.setAttribute('height', options.height.toString());
-    svg.setAttribute('viewBox', `0 0 ${options.width} ${options.height}`);
-    
-    this.addGridBackgroundToSVG(svg, options);
-    container.appendChild(svg);
-  }
 
-  /**
-   * 添加米字格背景到SVG
-   */
-  private addGridBackgroundToSVG(svg: SVGElement, options: any): void {
-    const { width, height, gridColor = getGridColor() } = options;
-    const strokeWidth = Math.max(0.5, Math.min(1, width / 100));
-    const halfWidth = Math.round(width / 2) + 0.5;
-    const halfHeight = Math.round(height / 2) + 0.5;
-    
-    // 背景矩形
-    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    background.setAttribute('x', '0.5');
-    background.setAttribute('y', '0.5');
-    background.setAttribute('width', (width - 1).toString());
-    background.setAttribute('height', (height - 1).toString());
-    background.setAttribute('fill', 'white');
-    background.setAttribute('stroke', gridColor);
-    background.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(background);
-    
-    // 水平中线
-    const horizontalLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    horizontalLine.setAttribute('x1', '0');
-    horizontalLine.setAttribute('y1', halfHeight.toString());
-    horizontalLine.setAttribute('x2', width.toString());
-    horizontalLine.setAttribute('y2', halfHeight.toString());
-    horizontalLine.setAttribute('stroke', gridColor);
-    horizontalLine.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(horizontalLine);
-    
-    // 垂直中线
-    const verticalLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    verticalLine.setAttribute('x1', halfWidth.toString());
-    verticalLine.setAttribute('y1', '0');
-    verticalLine.setAttribute('x2', halfWidth.toString());
-    verticalLine.setAttribute('y2', height.toString());
-    verticalLine.setAttribute('stroke', gridColor);
-    verticalLine.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(verticalLine);
-    
-    // 对角线1（左上到右下）
-    const diagonal1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    diagonal1.setAttribute('x1', '0');
-    diagonal1.setAttribute('y1', '0');
-    diagonal1.setAttribute('x2', width.toString());
-    diagonal1.setAttribute('y2', height.toString());
-    diagonal1.setAttribute('stroke', gridColor);
-    diagonal1.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(diagonal1);
-    
-    // 对角线2（右上到左下）
-    const diagonal2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    diagonal2.setAttribute('x1', width.toString());
-    diagonal2.setAttribute('y1', '0');
-    diagonal2.setAttribute('x2', '0');
-    diagonal2.setAttribute('y2', height.toString());
-    diagonal2.setAttribute('stroke', gridColor);
-    diagonal2.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(diagonal2);
-  }
 }

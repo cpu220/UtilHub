@@ -27,7 +27,7 @@ const CustomCharsheetPage: React.FC = () => {
     config: { ...GridConfig },
     renderOptions: getRenderOptionsByMode('stroke') // 默认使用笔画模式
   });
-  const [currentTemplateType, setCurrentTemplateType] = useState<TemplateType>(TemplateType.STANDARD);
+  const [currentTemplateType, setCurrentTemplateType] = useState<TemplateType>(TemplateType.SINGLE_ROW);
   const [isRendering, setIsRendering] = useState<boolean>(false);
   const [renderStats, setRenderStats] = useState<{ totalPages: number; totalCells: number } | null>(null);
 
@@ -119,7 +119,7 @@ const CustomCharsheetPage: React.FC = () => {
         sourceElementId="page-grid-container"
         buttonType="link"
         buttonText="预览导出效果"
-        previewVisible={!true}
+        previewVisible={true}
         fontLibraryName={currentFontLibrary.name}
       />
 

@@ -10,6 +10,7 @@ import {
   TemplateRenderResult
 } from '../types';
 import { getGridColor } from '../../../../../const/colorManager';
+import { createEmptyGridInContainer } from '@/utils';
 import styles from './index.less';
 
 /**
@@ -82,7 +83,10 @@ export class LeftRightGridTemplate extends BaseGridTemplate {
           // 使用空字符渲染，只显示田字格背景
           if (renderOptions.renderMode === 'font' && renderOptions.fontFamily) {
             // 字体模式：创建只有田字格的SVG
-            this.createEmptyGridSVG(cellId, renderOptions);
+            createEmptyGridInContainer(cellId, renderOptions.width, renderOptions.height, renderOptions.gridColor, {
+              useDashedLines: false,
+              showBorder: true
+            });
           } else {
             // 笔画模式：使用cnchar-draw的showCharacter: false选项
             this.renderCharacterToCell(cellId, '田', gridOnlyOptions);
@@ -96,87 +100,7 @@ export class LeftRightGridTemplate extends BaseGridTemplate {
     });
   }
 
-  /**
-   * 创建只有田字格的SVG（用于字体模式）
-   */
-  private createEmptyGridSVG(cellId: string, options: any): void {
-    const container = document.getElementById(cellId);
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    // 创建SVG容器
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', options.width.toString());
-    svg.setAttribute('height', options.height.toString());
-    svg.setAttribute('viewBox', `0 0 ${options.width} ${options.height}`);
-    
-    // 添加田字格背景
-    this.addGridBackgroundToSVG(svg, options);
-    
-    container.appendChild(svg);
-  }
 
-  /**
-   * 添加田字格背景到SVG
-   */
-  private addGridBackgroundToSVG(svg: SVGElement, options: any): void {
-    const { width, height, gridColor = getGridColor() } = options;
-    const strokeWidth = Math.max(0.5, Math.min(1, width / 100));
-    const halfWidth = Math.round(width / 2) + 0.5;
-    const halfHeight = Math.round(height / 2) + 0.5;
-    
-    // 创建背景矩形
-    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    background.setAttribute('x', '0.5');
-    background.setAttribute('y', '0.5');
-    background.setAttribute('width', (width - 1).toString());
-    background.setAttribute('height', (height - 1).toString());
-    background.setAttribute('fill', 'white');
-    background.setAttribute('stroke', gridColor);
-    background.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(background);
-    
-    // 水平中线
-    const horizontalLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    horizontalLine.setAttribute('x1', '0');
-    horizontalLine.setAttribute('y1', halfHeight.toString());
-    horizontalLine.setAttribute('x2', width.toString());
-    horizontalLine.setAttribute('y2', halfHeight.toString());
-    horizontalLine.setAttribute('stroke', gridColor);
-    horizontalLine.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(horizontalLine);
-    
-    // 垂直中线
-    const verticalLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    verticalLine.setAttribute('x1', halfWidth.toString());
-    verticalLine.setAttribute('y1', '0');
-    verticalLine.setAttribute('x2', halfWidth.toString());
-    verticalLine.setAttribute('y2', height.toString());
-    verticalLine.setAttribute('stroke', gridColor);
-    verticalLine.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(verticalLine);
-    
-    // 对角线1（左上到右下）
-    const diagonal1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    diagonal1.setAttribute('x1', '0');
-    diagonal1.setAttribute('y1', '0');
-    diagonal1.setAttribute('x2', width.toString());
-    diagonal1.setAttribute('y2', height.toString());
-    diagonal1.setAttribute('stroke', gridColor);
-    diagonal1.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(diagonal1);
-    
-    // 对角线2（右上到左下）
-    const diagonal2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    diagonal2.setAttribute('x1', width.toString());
-    diagonal2.setAttribute('y1', '0');
-    diagonal2.setAttribute('x2', '0');
-    diagonal2.setAttribute('y2', height.toString());
-    diagonal2.setAttribute('stroke', gridColor);
-    diagonal2.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(diagonal2);
-  }
 
   /**
    * 创建单栏内的格子（第一个是汉字，后面是田字格）

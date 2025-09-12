@@ -5,11 +5,18 @@ export * from './imageTools'
 export * from './fontManager'
 export * from './fontRenderer'
 
-// 从 fontTools 导出非冲突的方法
+// 从 hanziWriterRenderer 导出非冲突的方法和米字格工具
 export {
   preloadLocalCharacterData as preloadHanziWriterData,
-  cleanupHanziWriter as cleanupHanziWriterOriginal
-} from './fontTools';
+  cleanupHanziWriter as cleanupHanziWriterOriginal,
+  createGridSVG,
+  addGridLinesToSVG,
+  createEmptyGridInContainer,
+  safelyClearContainer,
+  getCharacterStrokeData,
+  createStrokeSVG,
+  createStrokeOrderContainer
+} from './hanziWriterRenderer';
 
 // 新的 cnchar-draw 相关导出（使用别名避免冲突）
 export {
