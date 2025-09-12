@@ -101,7 +101,9 @@ const PrintButton: React.FC<PrintButtonProps> = ({
           ...(printOptions.styles || []),
         ],
         onBeforePrint: () => {
-          printOptions.onBeforePrint?.();
+          // 如果onBeforePrint返回false，则阻止打印
+          const result = printOptions.onBeforePrint?.();
+          return result !== false; // 只有明确返回false才阻止打印
         },
         onAfterPrint: () => {
           printOptions.onAfterPrint?.();

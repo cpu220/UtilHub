@@ -92,8 +92,8 @@ export interface IPrintOptions {
   showPreview: boolean;
   /** 打印样式 */
   styles: string[];
-  /** 打印前回调函数 */
-  onBeforePrint?: () => void;
+  /** 打印前回调函数，返回false可阻止打印 */
+  onBeforePrint?: () => void | boolean;
   /** 打印后回调函数 */
   onAfterPrint?: () => void;
   /** 左上角时间内容，不传则不显示 */

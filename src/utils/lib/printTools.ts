@@ -20,9 +20,9 @@ export interface PrintOptions {
   styles?: string[];
 
   /**
-   * 打印前的回调函数
+   * 打印前的回调函数，返回false可阻止打印
    */
-  onBeforePrint?: () => void;
+  onBeforePrint?: () => void | boolean;
 
   /**
    * 打印后的回调函数
@@ -234,9 +234,13 @@ export const printElementById = async (elementId: string, options: PrintOptions 
   } = options;
 
   try {
-    // 调用打印前的回调
+    // 调用打印前的回调，检查是否允许打印
     if (onBeforePrint && typeof onBeforePrint === 'function') {
-      onBeforePrint();
+      const shouldContinue = onBeforePrint();
+      if (shouldContinue === false) {
+        console.log('打印被onBeforePrint回调阻止');
+        return; // 阻止打印
+      }
     }
 
     // 获取要打印的元素

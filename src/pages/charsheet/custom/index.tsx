@@ -28,6 +28,8 @@ const CustomCharsheetPage: React.FC = () => {
     renderOptions: getRenderOptionsByMode('stroke') // 默认使用笔画模式
   });
   const [currentTemplateType, setCurrentTemplateType] = useState<TemplateType>(TemplateType.STANDARD);
+  const [isRendering, setIsRendering] = useState<boolean>(false);
+  const [renderStats, setRenderStats] = useState<{ totalPages: number; totalCells: number } | null>(null);
 
   const handleCreateFontList = () => {
     const randomFontList = generateRandomChineseCharsString(153);
@@ -51,8 +53,23 @@ const CustomCharsheetPage: React.FC = () => {
   // 处理模板类型变化的回调函数
   const handleTemplateChange = (templateType: TemplateType) => {
     setCurrentTemplateType(templateType);
+    setIsRendering(true); // 开始渲染
+    setRenderStats(null); // 清空之前的统计
     message.info(`已切换到${templateType === TemplateType.STANDARD ? '标准网格' : '左右分栏'}模板`);
   };
+
+  // 处理渲染完成的回调函数
+  const handleRenderComplete = (stats: { totalPages: number; totalCells: number }) => {
+    setIsRendering(false);
+    setRenderStats(stats);
+    console.log(`渲染完成统计: ${stats.totalPages}页, ${stats.totalCells}个单元格`);
+  };
+
+  // 监听配置变化，重置渲染状态
+  useEffect(() => {
+    setIsRendering(true);
+    setRenderStats(null);
+  }, [currentFontLibrary.list, customConfig]);
 
 
 
@@ -61,7 +78,15 @@ const CustomCharsheetPage: React.FC = () => {
   // 打印选项配置
   const printOptions = {
     onBeforePrint: () => {
-      message.info('正在准备打印内容...');
+      if (isRendering) {
+        message.warning('内容正在渲染中，请稍后再试...');
+        return false; // 阻止打印
+      }
+      if (!renderStats) {
+        message.warning('内容尚未完全加载，请稍后再试...');
+        return false; // 阻止打印
+      }
+      message.info(`正在准备打印内容... (${renderStats.totalPages}页, ${renderStats.totalCells}个单元格)`);
     },
     onAfterPrint: () => {
       message.success('打印操作完成');
@@ -105,6 +130,7 @@ const CustomCharsheetPage: React.FC = () => {
         renderOptions={customConfig.renderOptions}
         config={customConfig.config}
         templateType={currentTemplateType}
+        onRenderComplete={handleRenderComplete}
       />
 
       {/* 滚动控制器 - 悬浮在右下角 */}

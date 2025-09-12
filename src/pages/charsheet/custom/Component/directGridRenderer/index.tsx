@@ -18,6 +18,7 @@ interface DirectGridRendererProps {
     renderOptions: IRenderOptions;
     config: ICharsheetConfig;
     templateType?: TemplateType; // 新增：模板类型选择
+    onRenderComplete?: (result: { totalPages: number; totalCells: number }) => void; // 新增：渲染完成回调
 }
 
 // 使用const.tsx中定义的网格配置
@@ -31,7 +32,8 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
     fontList,
     renderOptions,
     config,
-    templateType = TemplateType.STANDARD // 默认使用标准模板
+    templateType = TemplateType.STANDARD, // 默认使用标准模板
+    onRenderComplete
 }) => {
     const gridContainerRef = useRef<HTMLDivElement>(null);
     // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
@@ -100,10 +102,30 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             
             if (result.success) {
                 // 等待所有渲染完成
-                Promise.all(result.renderPromises).then(() => {
+                try {
+                    await Promise.all(result.renderPromises);
                     message.success(`字帖生成完成 (${template.name})`);
                     console.log(`渲染完成: ${result.totalPages}页, ${result.totalCells}个单元格`);
-                });
+                    
+                    // 触发渲染完成回调
+                    if (onRenderComplete) {
+                        onRenderComplete({
+                            totalPages: result.totalPages,
+                            totalCells: result.totalCells
+                        });
+                    }
+                } catch (renderError) {
+                    console.error('渲染过程中出现错误:', renderError);
+                    message.warning('部分内容渲染可能不完整');
+                    
+                    // 即使有错误，也触发回调（但标记为可能不完整）
+                    if (onRenderComplete) {
+                        onRenderComplete({
+                            totalPages: result.totalPages,
+                            totalCells: result.totalCells
+                        });
+                    }
+                }
             } else {
                 message.error(`字帖生成失败: ${result.error}`);
             }
