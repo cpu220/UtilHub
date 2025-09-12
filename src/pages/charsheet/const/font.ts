@@ -18,7 +18,7 @@ export const GridConfig: ICharsheetConfig = {
   width: 60 * FONT_SCALE,
   height: 60 * FONT_SCALE,
   fontSize: 60 * FONT_SCALE,
-  defaultRow: 250,
+  defaultRow: 25000,
   defaultCol: 10
 };
 

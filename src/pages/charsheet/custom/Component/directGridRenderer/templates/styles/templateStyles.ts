@@ -80,14 +80,29 @@ const SINGLE_ROW_TEMPLATE_STYLES: TemplateStyleConfig = {
   type: TemplateType.SINGLE_ROW,
   name: '单行网格',
   screenStyles: `
+    .single-row-with-stroke-container {
+      display: block;
+      width: 100%;
+      margin-bottom: calc(15px * var(--charsheet-font-scale, 1));
+    }
+    
+    .single-row-with-stroke-container:nth-child(5n) {
+      margin-bottom: calc(25px * var(--charsheet-font-scale, 1));
+    }
+    
+    .stroke-order-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      color: #666;
+      line-height: 1.2;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
     .single-row-container {
       display: flex;
       width: 100%;
-      margin-bottom: calc(10px * var(--charsheet-font-scale, 1));
-    }
-    
-    .single-row-container:nth-child(5n) {
-      margin-bottom: calc(20px * var(--charsheet-font-scale, 1));
+      margin-bottom: calc(5px * var(--charsheet-font-scale, 1));
     }
     
     .single-row-item {
@@ -104,11 +119,28 @@ const SINGLE_ROW_TEMPLATE_STYLES: TemplateStyleConfig = {
   `,
   printStyles: `
     @media print {
+      .single-row-with-stroke-container {
+        display: block !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        margin-bottom: 15px !important;
+      }
+      
+      .stroke-order-container {
+        display: flex !important;
+        align-items: center !important;
+        margin-bottom: 6px !important;
+        color: #666 !important;
+        line-height: 1.2 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        page-break-inside: avoid;
+      }
+      
       .single-row-container {
         display: flex !important;
         width: 100% !important;
         page-break-inside: avoid;
-        margin-bottom: 10px !important;
+        margin-bottom: 5px !important;
       }
       
       .single-row-item {

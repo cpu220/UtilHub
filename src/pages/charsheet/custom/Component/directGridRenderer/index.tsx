@@ -33,7 +33,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
     fontList,
     renderOptions,
     config,
-    templateType = TemplateType.STANDARD, // 默认使用标准模板
+    templateType = TemplateType.SINGLE_ROW, // 默认使用标准模板
     onRenderComplete
 }) => {
     const gridContainerRef = useRef<HTMLDivElement>(null);
