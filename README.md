@@ -237,3 +237,13 @@ npm run build
 - [cnchar](https://github.com/cn-char/cnchar) - 汉字处理库
 - [hanzi-writer](https://github.com/chanind/hanzi-writer) - 汉字书写库
 - [cnchar-data](https://github.com/cn-char/cnchar-data) - 汉字数据本地化
+
+
+
+---
+你检查一下pdf导出的功能，应该是 imageTools 这个文件
+我发现在处理 SingleRowTemplate 渲染的字帖时，里面用到了 createStrokeOrderContainer，来生成汉字的笔画顺序展示，其中还对于笔画之间的span元素，在导出时存在丢失
+
+通过debugger，我发现  你需要注意以下几点
+1. 目前svg内容非常的复杂，你导出svg目前没有问题，尽量不要去修改这部分的逻辑
+2. 指定要导出pdf的容器内，包含的不是只有svg，还有其他的元素，这些元素也是要导出的。并且需要保持其在web中渲染的效果。

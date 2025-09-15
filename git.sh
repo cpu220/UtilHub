@@ -1,1 +1,1 @@
-git add . && git commit -m "feat: 修正 SingleRowTemplate 未使用本地hanzi-writer-data的问题"
+git add . && git commit -m "feat: 增加注释，调试代码进行链路优化"

@@ -74,6 +74,9 @@ export const createGridSVG = (width: number, height: number, gridColor: string =
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   
+  // 为网格SVG添加统一的T-HZ类名
+  svg.setAttribute('class', 'T-HZ');
+  
   addGridLinesToSVG(svg, width, height, gridColor, { strokeWidth, useDashedLines, showBorder });
   
   return svg;
@@ -294,6 +297,17 @@ export const renderHanziInContainer = (svgId: string, character: string, options
           const targetSvgId = createGridBackground(container, fontSize, fontSize, _opt.gridColor);
           const newWriter = HanziWriter.create(targetSvgId, str, writerOptions);
           writerInstances.set(svgId, newWriter);
+          
+          // 为HanziWriter创建的SVG添加统一的T-HZ类名
+          setTimeout(() => {
+            const targetElement = document.getElementById(targetSvgId);
+            if (targetElement) {
+              const svgElement = targetElement.querySelector('svg');
+              if (svgElement && !svgElement.classList.contains('T-HZ')) {
+                svgElement.classList.add('T-HZ');
+              }
+            }
+          }, 0);
 
           if (_opt.delayBetweenLoops) {
             newWriter.loopCharacterAnimation();
@@ -317,6 +331,17 @@ export const renderHanziInContainer = (svgId: string, character: string, options
 
       const writer = HanziWriter.create(targetSvgId, str, writerOptions);
       writerInstances.set(svgId, writer);
+      
+      // 为HanziWriter创建的SVG添加统一的T-HZ类名
+      setTimeout(() => {
+        const targetElement = document.getElementById(targetSvgId);
+        if (targetElement) {
+          const svgElement = targetElement.querySelector('svg');
+          if (svgElement && !svgElement.classList.contains('T-HZ')) {
+            svgElement.classList.add('T-HZ');
+          }
+        }
+      }, 0);
 
       if (_opt.delayBetweenLoops) {
         writer.loopCharacterAnimation();
@@ -438,9 +463,15 @@ export const createStrokeSVG = (strokePaths: string[], size: number, options: {
   const { fillColor = '#555', className } = options;
   
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  
+  // 添加统一的hanzi-writer标识类名
+  const classes = ['T-HZ'];
   if (className) {
-    svg.setAttribute('class', className);
+    classes.push(className);
   }
+  svg.setAttribute('class', classes.join(' '));
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  
   svg.style.width = `${size}px`;
   svg.style.height = `${size}px`;
   
