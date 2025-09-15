@@ -407,7 +407,15 @@ export const getCharacterStrokeData = async (character: string): Promise<string[
       return [];
     }
     
-    // 使用HanziWriter获取笔画数据
+    // 优先尝试本地数据
+    const localData = loadLocalCharacterData(character);
+    if (localData && localData.strokes) {
+      console.log(`使用本地数据获取字符"${character}"的笔画数据`);
+      return localData.strokes;
+    }
+    
+    // 降级到 CDN 数据
+    console.warn(`本地数据不可用，使用 CDN 获取字符"${character}"的笔画数据`);
     const charData = await HanziWriter.loadCharacterData(character);
     return charData?.strokes || [];
   } catch (error) {
