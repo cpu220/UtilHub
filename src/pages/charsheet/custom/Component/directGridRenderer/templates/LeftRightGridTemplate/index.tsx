@@ -1,285 +1,144 @@
 /**
- * 左右分栏网格模板
+ * 左右分栏网格模板函数组件
  * 实现左右两栏布局，每栏独立显示字符和米字格
  */
 
-import { BaseGridTemplate } from '../BaseGridTemplate';
-import {
-  TemplateType,
-  TemplateRenderParams,
-  TemplateRenderResult
-} from '../types';
-import { getGridColor } from '../../../../../const/colorManager';
-import { createEmptyGridInContainer } from '@/utils';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { TemplateComponentProps } from '../../index';
+import { useGridRenderer } from '../../hooks/useGridRenderer';
+import { 
+  createPageContainer, 
+  createLeftRightRowContainer, 
+  createColumnContainer, 
+  createCellElement 
+} from '../../utils/componentUtils';
+import { CharsheetColors, FONT_SCALE } from '../../../../../const';
 import styles from './index.less';
 
 /**
- * 左右分栏网格模板实现
- * 页面分为左右两个容器，每个容器一行显示 columns/2 个格子
- * 第一个格子是汉字，后面的格子是米字格
+ * 左右分栏网格模板组件
  */
-export class LeftRightGridTemplate extends BaseGridTemplate {
-  readonly type = TemplateType.LEFT_RIGHT;
-  readonly name = '左右分栏网格';
-  readonly description = '左右分栏布局，每栏第一个格子显示汉字，后面显示米字格';
+export const LeftRightGridTemplate: React.FC<TemplateComponentProps> = ({
+  charList,
+  columns,
+  renderOptions,
+  config,
+  onRenderComplete
+}) => {
+  const { renderCharacterToCell, renderEmptyGrid, calculateRenderStats } = useGridRenderer();
+  const startTimeRef = useRef(Date.now());
 
+  // 验证列数是否为偶数
+  const adjustedColumns = columns % 2 === 0 ? columns : columns - 1;
+  
+  // 计算布局参数
+  const totalChars = charList.length;
+  const charsPerRow = 2; // 左右分栏，每行消耗2个字符
+  const finalRows = Math.ceil(totalChars / charsPerRow);
+  const rowsPerPage = 12;
+  const totalPages = Math.ceil(finalRows / rowsPerPage);
 
+  // 使用useMemo缓存配置对象，避免每次渲染都重新创建
+  const pageConfig = useMemo(() => ({
+    rowsPerPage,
+    pageBreakAfter: true,
+    marginBottom: '20px',
+    padding: '20px',
+    debugBorder: false
+  }), [rowsPerPage]);
 
-  /**
-   * 创建左右分栏的行容器
-   */
-  private createLeftRightRowContainer(rowIndex: number): HTMLDivElement {
-    const rowContainer = document.createElement('div');
-    rowContainer.id = `lr-row-container-${rowIndex}`;
-    rowContainer.className = styles['lr-row-container'];
-    
-    return rowContainer;
-  }
+  const cellConfig = useMemo(() => ({
+    width: config.width || 60 * FONT_SCALE,
+    height: config.height || 60 * FONT_SCALE,
+    marginLeft: '6px',
+    fontSize: `${(config.fontSize || config.width || 60 * FONT_SCALE) * 0.6}px`,
+    border: `1px solid ${CharsheetColors.BORDER_COLOR}`
+  }), [config.width, config.fontSize]);
 
-  /**
-   * 创建左栏或右栏容器
-   */
-  private createColumnContainer(
-    side: 'left' | 'right',
-    rowIndex: number,
-    columns: number
-  ): HTMLDivElement {
-    const columnContainer = document.createElement('div');
-    columnContainer.id = `${side}-column-${rowIndex}`;
-    columnContainer.className = styles[`${side}-column`];
-    
-    return columnContainer;
-  }
+  // 使用useMemo优化页面生成，避免无限重渲染
+  const pages = useMemo(() => {
+    const pages: React.ReactElement[] = [];
+    const promises: Promise<void>[] = [];
+    let currentIndex = 0;
 
-  /**
-   * 渲染空的田字格
-   */
-  private renderEmptyGrid(
-    cellId: string,
-    renderOptions: any
-  ): Promise<void> {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        try {
-          // 使用空字符和特殊配置来只显示田字格
-          const gridOnlyOptions = {
-            ...renderOptions,
-            useGridBackground: true,
-            // 对于cnchar-draw，设置showCharacter为false
-            showCharacter: false
-          };
-          
-          // 使用空字符渲染，只显示田字格背景
-          if (renderOptions.renderMode === 'font' && renderOptions.fontFamily) {
-            // 字体模式：创建只有田字格的SVG
-            createEmptyGridInContainer(cellId, renderOptions.width, renderOptions.height, renderOptions.gridColor, {
-              useDashedLines: false,
-              showBorder: true
-            });
-          } else {
-            // 笔画模式：使用cnchar-draw的showCharacter: false选项
-            this.renderCharacterToCell(cellId, '田', gridOnlyOptions);
-          }
-          resolve();
-        } catch (error) {
-          console.error('渲染空田字格失败:', error);
-          resolve();
-        }
-      }, 50);
-    });
-  }
+    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+      const pageRows: React.ReactElement[] = [];
+      const startRow = pageIndex * rowsPerPage;
+      const endRow = Math.min(startRow + rowsPerPage, finalRows);
 
-
-
-  /**
-   * 创建单栏内的格子（第一个是汉字，后面是田字格）
-   */
-  private createColumnCells(
-    columnContainer: HTMLDivElement,
-    character: string,
-    rowIndex: number,
-    side: 'left' | 'right',
-    columns: number,
-    config: any,
-    renderOptions: any
-  ): Promise<void>[] {
-    const cellsPerColumn = Math.floor(columns / 2);
-    const renderPromises: Promise<void>[] = [];
-    const cellConfig = this.getDefaultCellConfig(config);
-
-    for (let i = 0; i < cellsPerColumn; i++) {
-      const cellId = `${side}-cell-${i}-${rowIndex}`;
-      const cellElement = this.createCellElement(cellId, i, cellConfig);
-      cellElement.className += ` ${styles['lr-cell']}`; // 添加左右分栏专用样式
-      
-      columnContainer.appendChild(cellElement);
-
-      if (i === 0) {
-        // 第一个格子显示汉字
-        const renderPromise = this.renderCharacterToCell(
-          cellId,
-          character,
-          renderOptions
-        );
-        renderPromises.push(renderPromise);
-      } else {
-        // 后面的格子显示空的田字格
-        const renderPromise = this.renderEmptyGrid(
-          cellId,
-          renderOptions
-        );
-        renderPromises.push(renderPromise);
-      }
-    }
-
-    return renderPromises;
-  }
-
-  /**
-   * 渲染左右分栏网格
-   */
-  public async render(params: TemplateRenderParams): Promise<TemplateRenderResult> {
-    const { charList, columns, renderOptions, config, containerRef } = params;
-    
-    // 验证参数
-    if (!this.validateParams(params)) {
-      return {
-        success: false,
-        totalPages: 0,
-        totalCells: 0,
-        renderPromises: [],
-        error: '参数验证失败'
-      };
-    }
-
-    // 验证列数是否为偶数
-    if (columns % 2 !== 0) {
-      return {
-        success: false,
-        totalPages: 0,
-        totalCells: 0,
-        renderPromises: [],
-        error: '左右分栏模式要求列数必须为偶数'
-      };
-    }
-
-    try {
-      const container = containerRef.current!;
-      this.clearContainer(container);
-
-      const totalChars = charList.length;
-      const charsPerRow = 2; // 左右分栏，每行消耗2个字符（左栏1个，右栏1个）
-      const finalRows = Math.ceil(totalChars / charsPerRow);
-      
-      const renderPromises: Promise<void>[] = [];
-      const pageConfig = this.getDefaultPageConfig({
-        rowsPerPage:12,
-      });
-      
-      let currentIndex = 0;
-      let currentPageContainer: HTMLDivElement | null = null;
-      let currentPageIndex = 0;
-      let totalPages = 0;
-      let totalCells = 0;
-
-      for (let i = 0; i < finalRows && currentIndex < totalChars; i++) {
-        // 每15行创建一个新的页面容器
-        if (i % pageConfig.rowsPerPage === 0) {
-          currentPageContainer = this.createPageContainer(
-            currentPageIndex,
-            container,
-            pageConfig
-          );
-          currentPageIndex++;
-          totalPages++;
-        }
-
-        // 创建左右分栏的行容器
-        const rowContainer = this.createLeftRightRowContainer(i);
+      for (let i = startRow; i < endRow && currentIndex < totalChars; i++) {
+        // 创建左右分栏的行
+        const leftChar = currentIndex < totalChars ? charList[currentIndex] : '';
+        const rightChar = currentIndex + 1 < totalChars ? charList[currentIndex + 1] : '';
         
-        // 将行容器添加到页面容器中
-        if (currentPageContainer) {
-          currentPageContainer.appendChild(rowContainer);
-        } else {
-          container.appendChild(rowContainer);
+        // 创建左栏单元格
+        const leftCells: React.ReactElement[] = [];
+        for (let j = 0; j < adjustedColumns / 2; j++) {
+          const cellId = `left-cell-${j}-${i}`;
+          const cellElement = createCellElement(cellId, j, cellConfig);
+          leftCells.push(cellElement);
+          
+          if (j === 0 && leftChar) {
+            // 第一个格子渲染汉字
+            const renderPromise = renderCharacterToCell(cellId, leftChar, renderOptions);
+            promises.push(renderPromise);
+          } else {
+            // 其他格子渲染空田字格
+            const renderPromise = renderEmptyGrid(cellId, renderOptions);
+            promises.push(renderPromise);
+          }
         }
-
-        // 创建左栏容器
-        const leftColumn = this.createColumnContainer('left', i, columns);
-        rowContainer.appendChild(leftColumn);
-
-        // 创建右栏容器
-        const rightColumn = this.createColumnContainer('right', i, columns);
-        rowContainer.appendChild(rightColumn);
-
-        // 处理左栏：使用当前字符
-        if (currentIndex < totalChars) {
-          const leftChar = charList[currentIndex];
-          const leftPromises = this.createColumnCells(
-            leftColumn,
-            leftChar,
-            i,
-            'left',
-            columns,
-            config,
-            renderOptions
-          );
-          renderPromises.push(...leftPromises);
-          totalCells += Math.floor(columns / 2);
-          currentIndex++;
+        
+        // 创建右栏单元格
+        const rightCells: React.ReactElement[] = [];
+        for (let j = 0; j < adjustedColumns / 2; j++) {
+          const cellId = `right-cell-${j}-${i}`;
+          const cellElement = createCellElement(cellId, j, cellConfig);
+          rightCells.push(cellElement);
+          
+          if (j === 0 && rightChar) {
+            // 第一个格子渲染汉字
+            const renderPromise = renderCharacterToCell(cellId, rightChar, renderOptions);
+            promises.push(renderPromise);
+          } else {
+            // 其他格子渲染空田字格
+            const renderPromise = renderEmptyGrid(cellId, renderOptions);
+            promises.push(renderPromise);
+          }
         }
-
-        // 处理右栏：使用下一个字符
-        if (currentIndex < totalChars) {
-          const rightChar = charList[currentIndex];
-          const rightPromises = this.createColumnCells(
-            rightColumn,
-            rightChar,
-            i,
-            'right',
-            columns,
-            config,
-            renderOptions
-          );
-          renderPromises.push(...rightPromises);
-          totalCells += Math.floor(columns / 2);
-          currentIndex++;
-        } else {
-          // 如果没有更多字符，右栏显示空的米字格
-          const rightPromises = this.createColumnCells(
-            rightColumn,
-            '',
-            i,
-            'right',
-            columns,
-            config,
-            {
-              ...renderOptions,
-              showCharacter: false,
-              useGridBackground: true
-            }
-          );
-          renderPromises.push(...rightPromises);
-          totalCells += Math.floor(columns / 2);
-        }
+        
+        // 创建左右栏容器
+        const leftColumn = createColumnContainer('left', i, leftCells);
+        const rightColumn = createColumnContainer('right', i, rightCells);
+        
+        // 创建行容器
+        const rowElement = createLeftRightRowContainer(i, [leftColumn, rightColumn]);
+        pageRows.push(rowElement);
+        
+        currentIndex += 2; // 每行消耗2个字符
       }
 
-      return {
-        success: true,
-        totalPages,
-        totalCells,
-        renderPromises
-      };
-
-    } catch (error) {
-      console.error('左右分栏网格模板渲染失败:', error);
-      return {
-        success: false,
-        totalPages: 0,
-        totalCells: 0,
-        renderPromises: [],
-        error: error instanceof Error ? error.message : '未知错误'
-      };
+      // 创建页面容器
+      const pageElement = createPageContainer(pageIndex, pageConfig, pageRows);
+      pages.push(pageElement);
     }
-  }
-}
+    
+    // 直接处理渲染完成回调，避免复杂的状态管理
+    if (promises.length > 0) {
+      Promise.all(promises).then(() => {
+        const stats = calculateRenderStats(totalPages, totalChars, startTimeRef.current);
+        onRenderComplete?.(stats);
+      });
+    }
+    
+    return pages;
+  }, [charList, adjustedColumns, totalPages, rowsPerPage, finalRows, totalChars, cellConfig, pageConfig, renderCharacterToCell, renderEmptyGrid, renderOptions, calculateRenderStats, onRenderComplete]);
+
+  return (
+    <>
+      {pages}
+    </>
+  );
+};
+
+export default LeftRightGridTemplate;

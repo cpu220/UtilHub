@@ -1,30 +1,16 @@
 /**
- * 字帖模板系统入口文件
- * 统一导出所有模板相关的类型、接口、实现和工厂
+ * 模板系统统一导出
+ * 提供模板组件和类型定义的统一入口
  */
 
-// 导出类型定义
-export * from './types';
+// 导出模板组件
+export { default as StandardGridTemplate } from './StandardGridTemplate';
+export { default as LeftRightGridTemplate } from './LeftRightGridTemplate';
+export { default as SingleRowTemplate } from './SingleRowTemplate';
 
-// 导出基础类和接口
-export { BaseGridTemplate } from './BaseGridTemplate';
+// 导出适配器系统
+export * from '../adapters';
 
-// 导出具体模板实现
-export { StandardGridTemplate } from './StandardGridTemplate';
-export { LeftRightGridTemplate } from './LeftRightGridTemplate';
-export { SingleRowTemplate } from './SingleRowTemplate';
-
-// 导出工厂类和便捷函数
-export { GridTemplateFactory, templateFactory } from './TemplateFactory';
-export { createTemplate, getAllTemplateInfo } from './TemplateFactory';
-
-// 导出统一样式管理工具（从utils重新导出）
-export {
-  StyleManager,
-  styleManager,
-  getPrintStyles,
-  applyUnifiedStyles,
-  getComputedStyles,
-  cloneElementWithComputedStyles,
-  createPrintDocument
-} from '@/utils';
+// 导出工具函数
+export * from '../hooks/useGridRenderer';
+export * from '../utils/componentUtils';

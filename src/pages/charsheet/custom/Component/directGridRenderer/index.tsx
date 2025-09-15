@@ -1,152 +1,136 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { message } from 'antd';
-import {
-    renderHanziInContainer,
-    FontRenderer
-} from '@/utils';
-import { IGridItem, IGridData, IRenderOptions, ICharsheetConfig } from '../../../interface';
-import { CharsheetColors, FONT_SCALE } from '../../../const';
-import {
-    TemplateType,
-    createTemplate,
-    TemplateRenderParams
-} from './templates';
-import styles from './index.less';
+/**
+ * DirectGridRenderer 组件
+ * 统一的网格渲染器，根据模板类型调用对应的模板组件
+ */
 
-interface DirectGridRendererProps {
-    fontList: string;
-    renderOptions: IRenderOptions;
-    config: ICharsheetConfig;
-    templateType?: TemplateType; // 新增：模板类型选择
-    onRenderComplete?: (result: { totalPages: number; totalCells: number }) => void; // 新增：渲染完成回调
-}
-
-// 使用const.tsx中定义的网格配置
+import React, { useMemo, useRef, useState, useCallback } from 'react';
+import { IRenderOptions, ICharsheetConfig } from '../../../interface';
+import StandardGridTemplate from './templates/StandardGridTemplate';
+import LeftRightGridTemplate from './templates/LeftRightGridTemplate';
+import SingleRowTemplate from './templates/SingleRowTemplate';
 
 /**
- * 直接网格渲染器组件
- * 支持多种模板的网格渲染逻辑，采用模板系统实现不同布局
- * 当fontList或templateType变更时，完全重新生成网格内容
+ * 模板类型枚举
+ */
+export enum TemplateType {
+  STANDARD = 'standard',
+  LEFT_RIGHT = 'left_right',
+  SINGLE_ROW = 'single_row'
+}
+
+/**
+ * 渲染统计信息
+ */
+export interface RenderStats {
+  totalPages: number;
+  totalCells: number;
+  renderTime: number;
+}
+
+/**
+ * 模板组件 Props 接口
+ */
+export interface TemplateComponentProps {
+  charList: string;
+  columns: number;
+  renderOptions: IRenderOptions;
+  config: ICharsheetConfig;
+  onRenderComplete?: (stats: RenderStats) => void;
+}
+
+/**
+ * DirectGridRenderer 组件属性
+ */
+interface DirectGridRendererProps {
+  fontList: string;
+  templateType: TemplateType;
+  renderOptions: IRenderOptions;
+  config: ICharsheetConfig;
+  onRenderComplete?: (stats: RenderStats) => void;
+}
+
+/**
+ * DirectGridRenderer 组件
  */
 const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
-    fontList,
-    renderOptions,
-    config,
-    templateType = TemplateType.SINGLE_ROW, // 默认使用标准模板
-    onRenderComplete
+  fontList,
+  templateType,
+  renderOptions,
+  config,
+  onRenderComplete
 }) => {
-    const gridContainerRef = useRef<HTMLDivElement>(null);
-    // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
-    const renderKey = useMemo(() => {
-        return `${fontList}-${templateType}-${config.defaultCol}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
-    }, [fontList,
-        templateType,
-        config.defaultCol,
-  
-        renderOptions.strokeColor,
-        renderOptions.radicalColor,
-        config.width, config.height,
-        renderOptions.renderMode,
-        renderOptions.fontFamily,
-        renderOptions.fontSize,
-        renderOptions.fontWeight,
-        renderOptions.fontStyle
-    ]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [renderStats, setRenderStats] = useState<RenderStats | null>(null);
 
-    // 当关键渲染参数变化时，重新生成整个网格
-    useEffect(() => {
-        if (!fontList || fontList.length === 0) {
-            message.error('字体列表为空');
-            return;
-        }
-        
-        message.info(`正在生成新的字帖 (${templateType})...`);
+  // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
+  const renderKey = useMemo(() => {
+    return `${fontList}-${templateType}-${config.defaultCol}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
+  }, [
+    fontList,
+    templateType,
+    config.defaultCol,
+    renderOptions.strokeColor,
+    renderOptions.radicalColor,
+    config.width,
+    config.height,
+    renderOptions.renderMode,
+    renderOptions.fontFamily,
+    renderOptions.fontSize,
+    renderOptions.fontWeight,
+    renderOptions.fontStyle
+  ]);
 
-        // 使用setTimeout确保DOM已准备好
-        const timer = setTimeout(() => {
-            renderWithTemplate();
-        }, 100);
+  // 处理渲染完成回调
+  const handleRenderComplete = useCallback((stats: RenderStats) => {
+    setRenderStats(stats);
+    onRenderComplete?.(stats);
+    console.log(`${templateType} 模板渲染完成:`, stats);
+  }, [templateType, onRenderComplete]);
 
-        return () => clearTimeout(timer);
-    }, [renderKey]); // 只依赖于 renderKey
-
-    /**
-     * 使用模板系统渲染网格
-     */
-    const renderWithTemplate = async () => {
-        if (!gridContainerRef.current) {
-            message.error('网格容器不存在');
-            return;
-        }
-
-        try {
-            // 创建模板实例
-            const template = createTemplate(templateType);
-            if (!template) {
-                message.error(`不支持的模板类型: ${templateType}`);
-                return;
-            }
-
-            // 准备渲染参数
-            const renderParams: TemplateRenderParams = {
-                charList: fontList,
-                columns: config.defaultCol,
-          
-                renderOptions,
-                config,
-                containerRef: gridContainerRef
-            };
-
-            // 执行渲染
-            const result = await template.render(renderParams);
-            
-            if (result.success) {
-                // 等待所有渲染完成
-                try {
-                    await Promise.all(result.renderPromises);
-                    message.success(`字帖生成完成 (${template.name})`);
-                    console.log(`渲染完成: ${result.totalPages}页, ${result.totalCells}个单元格`);
-                    
-                    // 触发渲染完成回调
-                    if (onRenderComplete) {
-                        onRenderComplete({
-                            totalPages: result.totalPages,
-                            totalCells: result.totalCells
-                        });
-                    }
-                } catch (renderError) {
-                    console.error('渲染过程中出现错误:', renderError);
-                    message.warning('部分内容渲染可能不完整');
-                    
-                    // 即使有错误，也触发回调（但标记为可能不完整）
-                    if (onRenderComplete) {
-                        onRenderComplete({
-                            totalPages: result.totalPages,
-                            totalCells: result.totalCells
-                        });
-                    }
-                }
-            } else {
-                message.error(`字帖生成失败: ${result.error}`);
-            }
-        } catch (error) {
-            console.error('模板渲染失败:', error);
-            message.error('字帖生成失败，请重试');
-        }
+  // 直接准备模板属性，无需适配器
+  const templateProps = useMemo(() => {
+    return {
+      charList: fontList,
+      columns: config.defaultCol,
+      renderOptions,
+      config,
+      onRenderComplete: handleRenderComplete
     };
+  }, [fontList, config.defaultCol, renderOptions, config]);
 
-    // 原有的renderGridDirectly方法已被模板系统替代
-    // 如需兼容性支持，可以通过StandardGridTemplate实现
+  // 根据模板类型渲染对应的模板组件
+  const renderTemplate = () => {
+    console.log('renderTemplate', templateType);
+    switch (templateType) {
+      case TemplateType.STANDARD:
+        return <StandardGridTemplate {...templateProps} />;
+      case TemplateType.LEFT_RIGHT:
+        return <LeftRightGridTemplate {...templateProps} />;
+      case TemplateType.SINGLE_ROW:
+        return <SingleRowTemplate {...templateProps} />;
+      default:
+        console.error('不支持的模板类型:', templateType);
+        return <div>不支持的模板类型: {templateType}</div>;
+    }
+  };
 
-    return (
-        <div>
-            <div id="page-grid-container" className={styles['page-grid-container']}>
-                <div id="grid-container" ref={gridContainerRef}>
-                    {/* 网格内容将通过JS直接渲染 */}
-                </div>
-            </div>
+  return (
+    <div key={renderKey}>
+      <div id="translate-button-container">
+        {/* 可以在这里添加工具按钮 */}
+      </div>
+      <div id="page-grid-container" className="page-grid-container">
+        <div id="grid-container" ref={containerRef}>
+          {renderTemplate()}
         </div>
-    );
+      </div>
+      {renderStats && (
+        <div className="render-stats" style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
+          渲染统计: {renderStats.totalPages} 页, {renderStats.totalCells} 个单元格, 耗时 {renderStats.renderTime}ms
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default DirectGridRenderer;

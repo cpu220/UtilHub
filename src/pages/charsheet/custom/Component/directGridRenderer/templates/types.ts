@@ -3,6 +3,7 @@
  * 定义了模板系统的核心接口和类型
  */
 
+import React from 'react';
 import { IRenderOptions, ICharsheetConfig } from '../../../../interface';
 
 /**
@@ -36,6 +37,7 @@ export interface TemplateRenderResult {
   totalPages: number;            // 总页数
   totalCells: number;            // 总单元格数
   renderPromises: Promise<void>[]; // 渲染Promise数组
+  reactElements?: React.ReactElement[]; // React 组件数组
   error?: string;                // 错误信息
 }
 

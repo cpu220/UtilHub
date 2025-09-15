@@ -1,0 +1,82 @@
+/* 通用模板样式 */
+@import '../../../../const/colors.less';
+
+/* 页面容器 */
+.page-container {
+  border-radius: 10px;
+  width: 720px;
+  min-height: 950px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  page-break-after: always;
+}
+
+/* 网格行 */
+.grid-row {
+  display: flex;
+  margin-bottom: calc(5px * var(--charsheet-font-scale, 1));
+}
+
+.grid-row:nth-child(5n) {
+  margin-bottom: calc(20px * var(--charsheet-font-scale, 1));
+}
+
+/* 网格单元格 */
+.grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid;
+  border-color: @charsheet-border-color;
+  margin-left: calc(6px * var(--charsheet-font-scale, 1));
+  box-sizing: border-box;
+}
+
+.grid-item:first-child {
+  margin-left: 0;
+}
+
+/* 左右分栏样式 */
+.lr-row-container {
+  display: flex;
+  margin-bottom: calc(5px * var(--charsheet-font-scale, 1));
+}
+
+.left-column {
+  display: flex;
+  flex: 1;
+  margin-right: calc(10px * var(--charsheet-font-scale, 1));
+}
+
+.right-column {
+  display: flex;
+  flex: 1;
+}
+
+.lr-cell {
+  margin-left: calc(6px * var(--charsheet-font-scale, 1));
+}
+
+.lr-cell:first-child {
+  margin-left: 0;
+}
+
+/* 单行模板样式 */
+.single-row-with-stroke-container {
+  margin-bottom: calc(10px * var(--charsheet-font-scale, 1));
+}
+
+.stroke-order-container {
+  margin-bottom: calc(5px * var(--charsheet-font-scale, 1));
+  display: flex;
+  align-items: center;
+}
+
+.stroke-arrow {
+  margin: 0 calc(5px * var(--charsheet-font-scale, 1));
+}
+
+.stroke-svg {
+  margin-right: calc(5px * var(--charsheet-font-scale, 1));
+}

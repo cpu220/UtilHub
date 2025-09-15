@@ -1,192 +1,123 @@
 /**
- * 单行网格模板
+ * 单行网格模板函数组件
  * 每行第一个格子显示汉字，后面全是米字格
  */
 
-import { BaseGridTemplate } from '../BaseGridTemplate';
-import {
-  TemplateType,
-  TemplateRenderParams,
-  TemplateRenderResult
-} from '../types';
-import { getGridColor } from '../../../../../const/colorManager';
-import { GridConfig } from '../../../../../const/font';
-import { createGridSVG, createEmptyGridInContainer, createStrokeOrderContainer } from '@/utils';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { TemplateComponentProps } from '../../index';
+import { useGridRenderer } from '../../hooks/useGridRenderer';
+import { createPageContainer, createRowElement, createCellElement } from '../../utils/componentUtils';
+import { CharsheetColors, FONT_SCALE } from '../../../../../const';
 import styles from './index.less';
 
 /**
- * 单行网格模板实现
- * 每行第一个格子显示汉字，后面的格子显示米字格
- * 每行顶部显示笔画顺序
+ * 单行网格模板组件
  */
-export class SingleRowTemplate extends BaseGridTemplate {
-  readonly type = TemplateType.SINGLE_ROW;
-  readonly name = '单行网格';
-  readonly description = '每行第一个格子显示汉字，后面显示米字格';
+export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
+  charList,
+  columns,
+  renderOptions,
+  config,
+  onRenderComplete
+}) => {
+  const { renderCharacterToCell, renderEmptyGrid, calculateRenderStats } = useGridRenderer();
+  const startTimeRef = useRef(Date.now());
 
-  // 笔画顺序字体大小比例常量
-  private readonly STROKE_ORDER_FONT_RATIO = 0.3;
+  // 计算布局参数
+  const totalChars = charList.length;
+  // 单行模板：每行显示一个字符，所以行数等于字符数量
+  const actualRows = totalChars;
+  const rowsPerPage = 8; // 单行模板每页8行
+  const totalPages = Math.ceil(actualRows / rowsPerPage);
 
-  /**
-   * 渲染网格
-   */
-  public async render(params: TemplateRenderParams): Promise<TemplateRenderResult> {
-    const { charList, columns, renderOptions, config, containerRef } = params;
-    
-    if (!this.validateParams(params)) {
-      return {
-        success: false,
-        totalPages: 0,
-        totalCells: 0,
-        renderPromises: [],
-        error: '参数验证失败'
-      };
+  // 使用useMemo缓存配置对象，避免每次渲染都重新创建
+  const pageConfig = useMemo(() => ({
+    rowsPerPage,
+    pageBreakAfter: true,
+    marginBottom: '20px',
+    padding: '20px',
+    debugBorder: false
+  }), [rowsPerPage]);
+
+  const cellConfig = useMemo(() => ({
+    width: config.width || 60 * FONT_SCALE,
+    height: config.height || 60 * FONT_SCALE,
+    marginLeft: '6px',
+    fontSize: `${(config.fontSize || config.width || 60 * FONT_SCALE) * 0.6}px`,
+    border: `1px solid ${CharsheetColors.BORDER_COLOR}`
+  }), [config.width, config.fontSize]);
+
+  const rowConfig = useMemo(() => ({
+    marginBottom: '5px',
+    specialSpacing: {
+      every5th: '20px',
+      every15th: '30px'
     }
+  }), []);
 
-    try {
-      const container = containerRef.current!;
-      this.clearContainer(container);
+  // 使用useMemo优化页面生成，避免无限重渲染
+  const pages = useMemo(() => {
+    const pages: React.ReactElement[] = [];
+    const promises: Promise<void>[] = [];
+    let currentIndex = 0;
 
-      const totalChars = charList.length;
-      // 单行模板：每行显示一个字符，所以行数等于字符数量
-    const actualRows = totalChars;
-      const rowsPerPage = 8; // 单行模板每页12行
-      const totalPages = Math.ceil(actualRows / rowsPerPage);
-      const renderPromises: Promise<void>[] = [];
-      
-      let currentIndex = 0;
-      let totalCells = 0;
-      let currentPageContainer: HTMLDivElement | null = null;
+    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+      const pageRows: React.ReactElement[] = [];
+      const startRow = pageIndex * rowsPerPage;
+      const endRow = Math.min(startRow + rowsPerPage, actualRows);
 
-      for (let i = 0; i < actualRows && currentIndex < totalChars; i++) {
-        // 每12行创建新页面
-        if (i % rowsPerPage === 0) {
-          const pageConfig = this.getDefaultPageConfig({
-            debugBorder: false,
-            pageBreakAfter: true,
-            marginBottom: '20px',
-            padding: '20px'
-          });
-          currentPageContainer = this.createPageContainer(Math.floor(i / rowsPerPage), container, pageConfig);
-        }
-
-        // 获取当前字符用于笔画顺序显示
+      for (let i = startRow; i < endRow && currentIndex < totalChars; i++) {
+        // 获取当前字符
         const currentChar = currentIndex < totalChars ? charList[currentIndex] : '';
         
-        // 创建行容器（包含笔画顺序和网格行）
-        const rowContainerPromise = this.createRowWithStrokeOrder(i, currentChar, config);
-        
-        // 添加到渲染Promise列表中
-        const rowRenderPromise = rowContainerPromise.then((rowContainer) => {
-          if (currentPageContainer) {
-            currentPageContainer.appendChild(rowContainer);
-          } else {
-            container.appendChild(rowContainer);
-          }
-          return rowContainer;
-        });
-        
-        renderPromises.push(rowRenderPromise.then(() => {}));
-        
-        // 获取网格行元素（需要等待行容器创建完成）
-        const rowElement = await rowContainerPromise.then(container => container.children[1] as HTMLDivElement);
-
         // 创建该行的所有单元格
+        const rowCells: React.ReactElement[] = [];
         for (let j = 0; j < columns; j++) {
           const cellId = `single-row-item-${j}-${i}`;
-          const cellElement = this.createCellElement(cellId, j, this.getDefaultCellConfig(config));
-          rowElement.appendChild(cellElement);
+          const cellElement = createCellElement(cellId, j, cellConfig);
+          rowCells.push(cellElement);
 
-          if (j === 0 && currentIndex < totalChars) {
+          if (j === 0 && currentChar) {
             // 第一个格子显示汉字
-            const char = charList[currentIndex];
-            const renderPromise = this.renderCharacterToCell(cellId, char, renderOptions);
-            renderPromises.push(renderPromise);
-            currentIndex++;
+            const renderPromise = renderCharacterToCell(cellId, currentChar, renderOptions);
+            promises.push(renderPromise);
           } else {
             // 后面的格子显示空的米字格
-            const renderPromise = this.renderEmptyGrid(cellId, renderOptions);
-            renderPromises.push(renderPromise);
+            const renderPromise = renderEmptyGrid(cellId, renderOptions);
+            promises.push(renderPromise);
           }
-          
-          totalCells++;
+        }
+        
+        // 创建行元素
+        const rowElement = createRowElement(i, rowConfig, rowCells);
+        pageRows.push(rowElement);
+        
+        if (currentIndex < totalChars) {
+          currentIndex++;
         }
       }
 
-      return {
-        success: true,
-        totalPages,
-        totalCells,
-        renderPromises
-      };
-
-    } catch (error) {
-      console.error('单行网格模板渲染失败:', error);
-      return {
-        success: false,
-        totalPages: 0,
-        totalCells: 0,
-        renderPromises: [],
-        error: error instanceof Error ? error.message : '未知错误'
-      };
+      // 创建页面容器
+      const pageElement = createPageContainer(pageIndex, pageConfig, pageRows);
+      pages.push(pageElement);
     }
-  }
-
-
-
-  /**
-   * 创建包含笔画顺序的行容器
-   */
-  private async createRowWithStrokeOrder(rowIndex: number, character: string, config: any): Promise<HTMLDivElement> {
-    const rowContainer = document.createElement('div');
-    rowContainer.className = styles['single-row-with-stroke-container'];
     
-    // 使用统一的笔画顺序API
-    const strokeSize = Math.floor(GridConfig.fontSize * this.STROKE_ORDER_FONT_RATIO);
-    const strokeOrderElement = await createStrokeOrderContainer(character, {
-      strokeSize,
-      containerClassName: styles['stroke-order-container'],
-      arrowClassName: styles['stroke-arrow'],
-      strokeSvgClassName: styles['stroke-svg']
-    });
-    rowContainer.appendChild(strokeOrderElement);
+    // 直接处理渲染完成回调，避免复杂的状态管理
+    if (promises.length > 0) {
+      Promise.all(promises).then(() => {
+        const stats = calculateRenderStats(totalPages, totalChars, startTimeRef.current);
+        onRenderComplete?.(stats);
+      });
+    }
     
-    // 创建网格行
-    const gridRow = this.createRowElement(rowIndex, this.getDefaultRowConfig());
-    rowContainer.appendChild(gridRow);
-    
-    return rowContainer;
-  }
+    return pages;
+  }, [charList, columns, totalPages, rowsPerPage, actualRows, totalChars, cellConfig, rowConfig, pageConfig, renderCharacterToCell, renderEmptyGrid, renderOptions, calculateRenderStats, onRenderComplete]);
 
-  /**
-   * 渲染空的米字格
-   */
-  private renderEmptyGrid(cellId: string, renderOptions: any): Promise<void> {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        try {
-          const gridOnlyOptions = {
-            ...renderOptions,
-            useGridBackground: true,
-            showCharacter: false
-          };
-          
-          if (renderOptions.renderMode === 'font' && renderOptions.fontFamily) {
-            createEmptyGridInContainer(cellId, renderOptions.width, renderOptions.height, renderOptions.gridColor, {
-              useDashedLines: false,
-              showBorder: true
-            });
-          } else {
-            this.renderCharacterToCell(cellId, '田', gridOnlyOptions);
-          }
-          resolve();
-        } catch (error) {
-          console.error('渲染空米字格失败:', error);
-          resolve();
-        }
-      }, 50);
-    });
-  }
+  return (
+    <>
+      {pages}
+    </>
+  );
+};
 
-
-}
+export default SingleRowTemplate;

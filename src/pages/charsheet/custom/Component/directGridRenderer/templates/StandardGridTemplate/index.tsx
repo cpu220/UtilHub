@@ -1,118 +1,114 @@
 /**
- * 标准网格模板
- * 实现原有的单列网格布局逻辑
+ * 标准网格模板函数组件
+ * 实现标准的单列网格布局
  */
 
-import { BaseGridTemplate } from '../BaseGridTemplate';
-import {
-  TemplateType,
-  TemplateRenderParams,
-  TemplateRenderResult
-} from '../types';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { TemplateComponentProps } from '../../index';
+import { useGridRenderer } from '../../hooks/useGridRenderer';
+import { createPageContainer, createRowElement, createCellElement } from '../../utils/componentUtils';
+import { CharsheetColors, FONT_SCALE } from '../../../../../const';
 
 /**
- * 标准网格模板实现
- * 对应原有的renderGridDirectly方法逻辑
+ * 标准网格模板组件
  */
-export class StandardGridTemplate extends BaseGridTemplate {
-  readonly type = TemplateType.STANDARD;
-  readonly name = '标准网格';
-  readonly description = '标准的单列网格布局，每行显示指定数量的字符';
+export const StandardGridTemplate: React.FC<TemplateComponentProps> = ({
+  charList,
+  columns,
+  renderOptions,
+  config,
+  onRenderComplete
+}) => {
+  const { renderCharacterToCell, calculateRenderStats } = useGridRenderer();
+  const startTimeRef = useRef(Date.now());
 
-  /**
-   * 渲染标准网格
-   */
-  public async render(params: TemplateRenderParams): Promise<TemplateRenderResult> {
-    const { charList, columns, renderOptions, config, containerRef } = params;
-    
-    // 验证参数
-    if (!this.validateParams(params)) {
-      return {
-        success: false,
-        totalPages: 0,
-        totalCells: 0,
-        renderPromises: [],
-        error: '参数验证失败'
-      };
+  // 计算布局参数
+  const totalChars = charList.length;
+  const finalRows = Math.ceil(totalChars / columns);
+  const rowsPerPage = 15;
+  const totalPages = Math.ceil(finalRows / rowsPerPage);
+
+  // 使用useMemo缓存配置对象，避免每次渲染都重新创建
+  const pageConfig = useMemo(() => ({
+    rowsPerPage,
+    pageBreakAfter: true,
+    marginBottom: '20px',
+    padding: '20px',
+    debugBorder: false
+  }), [rowsPerPage]);
+
+  const cellConfig = useMemo(() => ({
+    width: config.width || 60 * FONT_SCALE,
+    height: config.height || 60 * FONT_SCALE,
+    marginLeft: '6px',
+    fontSize: `${(config.fontSize || config.width || 60 * FONT_SCALE) * 0.6}px`,
+    border: `1px solid ${CharsheetColors.BORDER_COLOR}`
+  }), [config.width, config.fontSize]);
+
+  const rowConfig = useMemo(() => ({
+    marginBottom: '5px',
+    specialSpacing: {
+      every5th: '20px',
+      every15th: '30px'
     }
+  }), []);
 
-    try {
-      const container = containerRef.current!;
-      this.clearContainer(container);
+  // 使用useMemo优化页面生成，避免无限重渲染
+  const pages = useMemo(() => {
+    const pages: React.ReactElement[] = [];
+    const promises: Promise<void>[] = [];
+    let currentIndex = 0;
 
-      const totalChars = charList.length;
-      const finalRows = Math.ceil(totalChars / columns);
-      
-      const renderPromises: Promise<void>[] = [];
-      const pageConfig = this.getDefaultPageConfig();
-      const cellConfig = this.getDefaultCellConfig(config);
-      const rowConfig = this.getDefaultRowConfig();
-      
-      let currentIndex = 0;
-      let currentPageContainer: HTMLDivElement | null = null;
-      let currentPageIndex = 0;
-      let totalPages = 0;
+    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+      const pageRows: React.ReactElement[] = [];
+      const startRow = pageIndex * rowsPerPage;
+      const endRow = Math.min(startRow + rowsPerPage, finalRows);
 
-      for (let i = 0; i < finalRows && currentIndex < totalChars; i++) {
-        // 每15行创建一个新的页面容器
-        if (i % pageConfig.rowsPerPage === 0) {
-          currentPageContainer = this.createPageContainer(
-            currentPageIndex,
-            container,
-            pageConfig
-          );
-          currentPageIndex++;
-          totalPages++;
-        }
-
-        // 创建行元素
-        const rowElement = this.createRowElement(i, rowConfig);
-        
-        // 将行添加到当前页面容器中
-        if (currentPageContainer) {
-          currentPageContainer.appendChild(rowElement);
-        } else {
-          // 兜底：如果没有页面容器，直接添加到网格容器
-          container.appendChild(rowElement);
-        }
+      for (let i = startRow; i < endRow && currentIndex < totalChars; i++) {
+        const rowCells: React.ReactElement[] = [];
 
         // 创建该行的所有单元格
         for (let j = 0; j < columns && currentIndex < totalChars; j++) {
           const char = charList[currentIndex];
-          const cellId = `direct-grid-item-${j}-${i}`;
+          const cellId = `standard-grid-item-${j}-${i}`;
 
           // 创建单元格
-          const cellElement = this.createCellElement(cellId, j, cellConfig);
-          rowElement.appendChild(cellElement);
+          const cellElement = createCellElement(cellId, j, cellConfig);
+          rowCells.push(cellElement);
 
-          // 渲染字符到单元格
-          const renderPromise = this.renderCharacterToCell(
-            cellId,
-            char,
-            renderOptions
-          );
+          // 添加渲染Promise
+          const renderPromise = renderCharacterToCell(cellId, char, renderOptions);
+          promises.push(renderPromise);
           
-          renderPromises.push(renderPromise);
           currentIndex++;
         }
+
+        // 创建行元素
+        const rowElement = createRowElement(i, rowConfig, rowCells);
+        pageRows.push(rowElement);
       }
 
-      return {
-        success: true,
-        totalPages,
-        totalCells: currentIndex,
-        renderPromises
-      };
-
-    } catch (error) {
-      console.error('标准网格模板渲染失败:', error);
-      return {
-        success: false,
-        totalPages: 0,
-        totalCells: 0,
-        renderPromises: [],
-        error: error instanceof Error ? error.message : '未知错误'
-      };
+      // 创建页面容器
+      const pageElement = createPageContainer(pageIndex, pageConfig, pageRows);
+      pages.push(pageElement);
     }
-  }
-}
+    
+    // 直接处理渲染完成回调，避免复杂的状态管理
+    if (promises.length > 0) {
+      Promise.all(promises).then(() => {
+        const stats = calculateRenderStats(totalPages, totalChars, startTimeRef.current);
+        onRenderComplete?.(stats);
+      });
+    }
+    
+    return pages;
+  }, [charList, columns, totalPages, rowsPerPage, finalRows, totalChars, cellConfig, rowConfig, pageConfig, renderCharacterToCell, renderOptions, calculateRenderStats, onRenderComplete]);
+
+  return (
+    <>
+      {pages}
+    </>
+  );
+};
+
+export default StandardGridTemplate;

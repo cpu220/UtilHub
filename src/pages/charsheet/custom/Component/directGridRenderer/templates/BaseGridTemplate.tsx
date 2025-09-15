@@ -1,8 +1,9 @@
 /**
- * 网格模板抽象基类
- * 提供所有模板的通用功能实现
+ * 基础网格模板抽象类
+ * 提供通用的网格渲染功能和配置
  */
 
+import React from 'react';
 import { message } from 'antd';
 import {
   renderHanziInContainer,
@@ -91,91 +92,106 @@ export abstract class BaseGridTemplate implements IGridTemplate {
 
 
   /**
-   * 创建页面容器
+   * 创建页面容器 React 组件
    */
   protected createPageContainer(
     pageIndex: number,
-    parentContainer: HTMLDivElement,
-    config: PageContainerConfig = this.getDefaultPageConfig()
-  ): HTMLDivElement {
-    const pageContainer = document.createElement('div');
-    pageContainer.id = `page-container-${pageIndex}`;
-    pageContainer.className = `${styles['page-container']} page-container`; // 添加CSS模块化类名和全局类名
-    
-    // 设置样式
-    if (config.pageBreakAfter) {
-      pageContainer.style.pageBreakAfter = 'always';
-    }
-    pageContainer.style.marginBottom = config.marginBottom;
-    pageContainer.style.padding = config.padding;
-    
-    if (config.debugBorder) {
-      pageContainer.style.border = 'solid 1px #f00';
-    }
-    
-    pageContainer.setAttribute('data-page-index', pageIndex.toString());
-    parentContainer.appendChild(pageContainer);
+    config: PageContainerConfig = this.getDefaultPageConfig(),
+    children?: React.ReactNode
+  ): React.ReactElement {
+    const containerStyle: React.CSSProperties = {
+      marginBottom: config.marginBottom,
+      padding: config.padding,
+      ...(config.pageBreakAfter && { pageBreakAfter: 'always' }),
+      ...(config.debugBorder && { border: 'solid 1px #f00' })
+    };
     
     console.log(`创建页面容器: page-container-${pageIndex}`);
-    return pageContainer;
+    
+    return (
+      <div
+        key={`page-container-${pageIndex}`}
+        id={`page-container-${pageIndex}`}
+        className={`${styles['page-container']} page-container`}
+        style={containerStyle}
+        data-page-index={pageIndex.toString()}
+      >
+        {children}
+      </div>
+    );
   }
 
   /**
-   * 创建行元素
+   * 创建行元素 React 组件
    */
   protected createRowElement(
     rowIndex: number,
-    config: RowConfig = this.getDefaultRowConfig()
-  ): HTMLDivElement {
-    const rowElement = document.createElement('div');
-    rowElement.id = `direct-grid-row-${rowIndex}`;
-    rowElement.className = styles['grid-row'];
+    config: RowConfig = this.getDefaultRowConfig(),
+    children?: React.ReactNode
+  ): React.ReactElement {
+    const rowStyle: React.CSSProperties = {};
     
     // 设置特殊间距
     if (config.specialSpacing) {
       if (config.specialSpacing.every5th && (rowIndex + 1) % 6 === 0) {
-        rowElement.style.marginBottom = config.specialSpacing.every5th;
+        rowStyle.marginBottom = config.specialSpacing.every5th;
       }
       if (config.specialSpacing.every15th && (rowIndex + 1) % 12 === 0) {
-        rowElement.style.marginBottom = config.specialSpacing.every15th;
+        rowStyle.marginBottom = config.specialSpacing.every15th;
       }
     }
     
-    return rowElement;
+    return (
+      <div
+        key={`direct-grid-row-${rowIndex}`}
+        id={`direct-grid-row-${rowIndex}`}
+        className={styles['grid-row']}
+        style={rowStyle}
+      >
+        {children}
+      </div>
+    );
   }
 
   /**
-   * 创建单元格元素
+   * 创建单元格元素 React 组件
    */
   protected createCellElement(
     cellId: string,
     colIndex: number,
-    cellConfig: CellConfig
-  ): HTMLDivElement {
-    const cellElement = document.createElement('div');
-    cellElement.id = cellId;
-    cellElement.className = styles['grid-item'];
-    
-    // 设置基础样式
-    cellElement.style.width = `${cellConfig.width}px`;
-    cellElement.style.height = `${cellConfig.height}px`;
-    cellElement.style.fontSize = cellConfig.fontSize || `${cellConfig.width * 0.6}px`;
-    cellElement.style.display = 'flex';
-    cellElement.style.alignItems = 'center';
-    cellElement.style.justifyContent = 'center';
+    cellConfig: CellConfig,
+    children?: React.ReactNode
+  ): React.ReactElement {
+    const cellStyle: React.CSSProperties = {
+      width: `${cellConfig.width}px`,
+      height: `${cellConfig.height}px`,
+      fontSize: cellConfig.fontSize || `${cellConfig.width * 0.6}px`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    };
     
     // 第一个元素不设置左边距
     if (colIndex === 0) {
-      cellElement.style.marginLeft = '0';
+      cellStyle.marginLeft = '0';
     } else if (cellConfig.marginLeft) {
-      cellElement.style.marginLeft = cellConfig.marginLeft;
+      cellStyle.marginLeft = cellConfig.marginLeft;
     }
     
     if (cellConfig.border) {
-      cellElement.style.border = cellConfig.border;
+      cellStyle.border = cellConfig.border;
     }
     
-    return cellElement;
+    return (
+      <div
+        key={cellId}
+        id={cellId}
+        className={styles['grid-item']}
+        style={cellStyle}
+      >
+        {children}
+      </div>
+    );
   }
 
   /**

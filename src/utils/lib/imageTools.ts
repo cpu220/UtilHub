@@ -167,8 +167,8 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
             elementDataUrl = await convertSvgWithCanvg(element as unknown as SVGElement, options);
           } else {
             // 步骤7.3：处理非SVG元素（HTML元素）
-            // 创建临时克隆元素，避免修改原始DOM
-            const tempClone = element.cloneNode(true) as HTMLElement;
+            // 使用更完整的克隆方法，保留所有样式和子元素
+            const tempClone = cloneElementWithComputedStyles(element as HTMLElement);
             
             // 修复边框渲染问题：移除右边框避免在网格中出现重叠
             tempClone.style.borderRight = '0';
@@ -176,7 +176,34 @@ const handleGridContainer = async (containerElement: HTMLElement, options: Image
             // 将克隆元素隐藏在屏幕外，避免影响页面布局
             tempClone.style.position = 'absolute';
             tempClone.style.left = '-9999px';
+            tempClone.style.top = '-9999px';
+            tempClone.style.visibility = 'hidden';
             document.body.appendChild(tempClone);
+            
+            // 确保所有子元素的样式都被正确复制
+            const preserveChildStyles = (original: HTMLElement, clone: HTMLElement) => {
+              const originalChildren = Array.from(original.children) as HTMLElement[];
+              const cloneChildren = Array.from(clone.children) as HTMLElement[];
+              
+              for (let i = 0; i < Math.min(originalChildren.length, cloneChildren.length); i++) {
+                const originalChild = originalChildren[i];
+                const cloneChild = cloneChildren[i];
+                
+                // 复制计算样式
+                const computedStyle = window.getComputedStyle(originalChild);
+                for (let j = 0; j < computedStyle.length; j++) {
+                  const property = computedStyle[j];
+                  cloneChild.style.setProperty(property, computedStyle.getPropertyValue(property));
+                }
+                
+                // 递归处理子元素
+                if (originalChild.children.length > 0) {
+                  preserveChildStyles(originalChild, cloneChild);
+                }
+              }
+            };
+            
+            preserveChildStyles(element as HTMLElement, tempClone);
             
             // 配置html-to-image选项
             const elementOptions = {

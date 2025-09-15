@@ -3,7 +3,7 @@ import { Form, ColorPicker, InputNumber, Select } from 'antd';
 import type { FormProps } from 'antd';
 import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '../../../interface';
 import { FONT_LIBRARY, FONT_OPTIONS, mergeRenderOptions } from '../../../const';
-import { TemplateType, getAllTemplateInfo } from '../directGridRenderer/templates';
+import { TemplateType } from '../directGridRenderer';
 import styles from './index.less';
 
 interface StyleConfigFormProps {
@@ -126,7 +126,11 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
   const defaultFontLibrary = FONT_LIBRARY.find(lib => lib.select) || FONT_LIBRARY[0];
 
   // 获取所有可用模板信息
-  const templateOptions = getAllTemplateInfo();
+  const templateOptions = [
+    { type: TemplateType.STANDARD, name: '标准网格' },
+    { type: TemplateType.LEFT_RIGHT, name: '左右分栏网格' },
+    { type: TemplateType.SINGLE_ROW, name: '单行网格' }
+  ];
 
   // 表单初始值
   const initialValues: any = {
@@ -204,7 +208,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
               }
             }}
           >
-            {templateOptions.map(template => (
+            {templateOptions.map((template: { type: TemplateType; name: string }) => (
               <Select.Option key={template.type} value={template.type}>
                 {template.name}
               </Select.Option>
