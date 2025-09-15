@@ -23,18 +23,7 @@ export class LeftRightGridTemplate extends BaseGridTemplate {
   readonly name = '左右分栏网格';
   readonly description = '左右分栏布局，每栏第一个格子显示汉字，后面显示米字格';
 
-  /**
-   * 计算左右分栏模式下的行数
-   * 由于是左右分栏，实际字符消耗速度是标准模式的2倍
-   */
-  public calculateRows(charCount: number, columns: number, maxRows: number): number {
-    // 每行消耗2个字符（左栏1个，右栏1个）
-    const charsPerRow = 2;
-    const fullRows = Math.floor(charCount / charsPerRow);
-    const remainder = charCount % charsPerRow;
-    const actualRows = fullRows + (remainder > 0 ? 1 : 0);
-    return Math.min(actualRows, maxRows);
-  }
+
 
   /**
    * 创建左右分栏的行容器
@@ -150,7 +139,7 @@ export class LeftRightGridTemplate extends BaseGridTemplate {
    * 渲染左右分栏网格
    */
   public async render(params: TemplateRenderParams): Promise<TemplateRenderResult> {
-    const { charList, columns, rowsCount, renderOptions, config, containerRef } = params;
+    const { charList, columns, renderOptions, config, containerRef } = params;
     
     // 验证参数
     if (!this.validateParams(params)) {
@@ -179,7 +168,8 @@ export class LeftRightGridTemplate extends BaseGridTemplate {
       this.clearContainer(container);
 
       const totalChars = charList.length;
-      const finalRows = this.calculateRows(totalChars, columns, rowsCount);
+      const charsPerRow = 2; // 左右分栏，每行消耗2个字符（左栏1个，右栏1个）
+      const finalRows = Math.ceil(totalChars / charsPerRow);
       
       const renderPromises: Promise<void>[] = [];
       const pageConfig = this.getDefaultPageConfig({

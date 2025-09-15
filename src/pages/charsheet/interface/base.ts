@@ -28,8 +28,6 @@ export interface ICharsheetConfig {
   width: number;
   /** 单元格高度 */
   height: number;
-  /** 默认行数 */
-  defaultRow: number;
   /** 默认列数 */
   defaultCol: number;
   /** 字体大小 */

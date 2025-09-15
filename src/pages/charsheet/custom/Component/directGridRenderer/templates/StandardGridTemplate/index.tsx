@@ -23,7 +23,7 @@ export class StandardGridTemplate extends BaseGridTemplate {
    * 渲染标准网格
    */
   public async render(params: TemplateRenderParams): Promise<TemplateRenderResult> {
-    const { charList, columns, rowsCount, renderOptions, config, containerRef } = params;
+    const { charList, columns, renderOptions, config, containerRef } = params;
     
     // 验证参数
     if (!this.validateParams(params)) {
@@ -41,7 +41,7 @@ export class StandardGridTemplate extends BaseGridTemplate {
       this.clearContainer(container);
 
       const totalChars = charList.length;
-      const finalRows = this.calculateRows(totalChars, columns, rowsCount);
+      const finalRows = Math.ceil(totalChars / columns);
       
       const renderPromises: Promise<void>[] = [];
       const pageConfig = this.getDefaultPageConfig();

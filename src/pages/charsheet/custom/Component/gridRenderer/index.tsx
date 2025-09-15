@@ -70,7 +70,7 @@ const GridRenderer: React.FC<GridRendererProps> = ({
 
     useEffect(() => {
         // 调用 renderGrid 方法来渲染网格
-        const grid = createGrid(GridConfig.defaultCol, GridConfig.defaultRow);
+        const grid = createGrid(GridConfig.defaultCol, Math.ceil(fontList.length / GridConfig.defaultCol));
         setGridData(grid);
 
         // 清理函数 - 移除过早的cleanupHanziWriter调用

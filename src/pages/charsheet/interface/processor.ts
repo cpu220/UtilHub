@@ -38,8 +38,6 @@ export { TemplateType };
 export interface CharsheetProcessorOptions extends ContentProcessOptions {
   /** 字体缩放比例 */
   fontScale?: number;
-  /** 每页行数 */
-  rowsPerPage?: number;
   /** 是否包含边框调试 */
   debugBorder?: boolean;
 }

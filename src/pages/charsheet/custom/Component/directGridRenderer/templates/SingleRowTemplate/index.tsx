@@ -31,7 +31,7 @@ export class SingleRowTemplate extends BaseGridTemplate {
    * 渲染网格
    */
   public async render(params: TemplateRenderParams): Promise<TemplateRenderResult> {
-    const { charList, columns, rowsCount, renderOptions, config, containerRef } = params;
+    const { charList, columns, renderOptions, config, containerRef } = params;
     
     if (!this.validateParams(params)) {
       return {
@@ -49,7 +49,7 @@ export class SingleRowTemplate extends BaseGridTemplate {
 
       const totalChars = charList.length;
       // 单行模板：每行显示一个字符，所以行数等于字符数量
-      const actualRows = Math.min(totalChars, rowsCount);
+    const actualRows = totalChars;
       const rowsPerPage = 8; // 单行模板每页12行
       const totalPages = Math.ceil(actualRows / rowsPerPage);
       const renderPromises: Promise<void>[] = [];

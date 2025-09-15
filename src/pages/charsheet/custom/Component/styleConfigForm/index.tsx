@@ -54,9 +54,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     // 使用allValues获取表单的完整状态，确保所有配置都被保留
     
     // 更新config部分
-    if (allValues.rows !== undefined) {
-      newConfig.config.defaultRow = allValues.rows;
-    }
+
     if (allValues.cols !== undefined) {
       newConfig.config.defaultCol = allValues.cols;
     }
@@ -134,7 +132,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
   const initialValues: any = {
     strokeColor: defaultRenderOptions.strokeColor,
     radicalColor: defaultRenderOptions.radicalColor,
-    rows: defaultConfig.defaultRow,
+
     cols: defaultConfig.defaultCol,
     fontSize: defaultRenderOptions.fontSize || defaultRenderOptions.width,
     fontLibrary: defaultFontLibrary.name,
@@ -158,9 +156,7 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
         <Form.Item label="偏旁颜色" name="radicalColor">
           <ColorPicker />
         </Form.Item>
-        <Form.Item label="行数" name="rows">
-          <InputNumber min={1}  />
-        </Form.Item>
+
         <Form.Item label="列数" name="cols">
           <InputNumber min={1} max={20} />
         </Form.Item>

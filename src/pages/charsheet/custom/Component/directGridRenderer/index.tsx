@@ -38,11 +38,11 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
     const gridContainerRef = useRef<HTMLDivElement>(null);
     // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
     const renderKey = useMemo(() => {
-        return `${fontList}-${templateType}-${config.defaultCol}-${config.defaultRow}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
+        return `${fontList}-${templateType}-${config.defaultCol}-${renderOptions.strokeColor}-${renderOptions.radicalColor}-${config.width}-${config.height}-${renderOptions.renderMode}-${renderOptions.fontFamily}-${renderOptions.fontSize}-${renderOptions.fontWeight}-${renderOptions.fontStyle}`;
     }, [fontList,
         templateType,
         config.defaultCol,
-        config.defaultRow,
+  
         renderOptions.strokeColor,
         renderOptions.radicalColor,
         config.width, config.height,
@@ -91,7 +91,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
             const renderParams: TemplateRenderParams = {
                 charList: fontList,
                 columns: config.defaultCol,
-                rowsCount: config.defaultRow,
+          
                 renderOptions,
                 config,
                 containerRef: gridContainerRef

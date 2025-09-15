@@ -88,15 +88,7 @@ export abstract class BaseGridTemplate implements IGridTemplate {
     return true;
   }
 
-  /**
-   * 计算实际需要的行数
-   */
-  public calculateRows(charCount: number, columns: number, maxRows: number): number {
-    const fullRows = Math.floor(charCount / columns);
-    const remainder = charCount % columns;
-    const actualRows = fullRows + (remainder > 0 ? 1 : 0);
-    return Math.min(actualRows, maxRows);
-  }
+
 
   /**
    * 创建页面容器

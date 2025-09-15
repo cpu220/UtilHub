@@ -23,7 +23,6 @@ export enum TemplateType {
 export interface TemplateRenderParams {
   charList: string;              // 字符列表
   columns: number;               // 列数
-  rowsCount: number;             // 行数限制
   renderOptions: IRenderOptions; // 渲染选项
   config: ICharsheetConfig;      // 字帖配置
   containerRef: React.RefObject<HTMLDivElement | null>; // 容器引用
@@ -62,14 +61,7 @@ export interface IGridTemplate {
    */
   validateParams(params: TemplateRenderParams): boolean;
   
-  /**
-   * 计算实际需要的行数
-   * @param charCount 字符总数
-   * @param columns 列数
-   * @param maxRows 最大行数限制
-   * @returns 实际行数
-   */
-  calculateRows(charCount: number, columns: number, maxRows: number): number;
+
 }
 
 /**
