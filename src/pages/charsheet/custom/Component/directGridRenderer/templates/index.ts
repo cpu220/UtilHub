@@ -9,5 +9,5 @@ export { default as LeftRightGridTemplate } from './LeftRightGridTemplate';
 export { default as SingleRowTemplate } from './SingleRowTemplate';
 
 // 导出工具函数
-export * from '../hooks/useGridRenderer';
-export * from '../utils/componentUtils';
+export * from '@/pages/charsheet/custom/Component/directGridRenderer/hooks/useGridRenderer';
+export * from '@/pages/charsheet/custom/Component/directGridRenderer/utils/componentUtils';

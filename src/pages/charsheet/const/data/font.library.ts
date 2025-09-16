@@ -1,4 +1,4 @@
-import { IFontLibrary } from '../interface';
+import { IFontLibrary } from '@/pages/charsheet/interface';
 
 // 4年级 上学期 写字表
 // export const GRADE_4_UPPER_WRITING_LIST = '一二'

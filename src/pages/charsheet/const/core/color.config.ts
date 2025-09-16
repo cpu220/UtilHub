@@ -28,9 +28,6 @@ export class ColorManager {
 
   private constructor() {}
 
-  /**
-   * 获取单例实例
-   */
   public static getInstance(): ColorManager {
     if (!ColorManager.instance) {
       ColorManager.instance = new ColorManager();
@@ -42,22 +39,22 @@ export class ColorManager {
    * 获取边框颜色
    */
   public getBorderColor(): string {
-    if (!this.colorCache.has('border')) {
+    if (!this.colorCache.has('borderColor')) {
       const color = getCSSVariableValue('charsheet-border-color', '#ddd');
-      this.colorCache.set('border', color);
+      this.colorCache.set('borderColor', color);
     }
-    return this.colorCache.get('border')!;
+    return this.colorCache.get('borderColor')!;
   }
 
   /**
-   * 获取网格颜色（米字格颜色）
+   * 获取网格颜色
    */
   public getGridColor(): string {
-    if (!this.colorCache.has('grid')) {
+    if (!this.colorCache.has('gridColor')) {
       const color = getCSSVariableValue('charsheet-grid-color', '#ddd');
-      this.colorCache.set('grid', color);
+      this.colorCache.set('gridColor', color);
     }
-    return this.colorCache.get('grid')!;
+    return this.colorCache.get('gridColor')!;
   }
 
   /**
@@ -65,15 +62,15 @@ export class ColorManager {
    */
   public getFontScale(): number {
     if (!this.colorCache.has('fontScale')) {
-      const scale = getCSSVariableValue('charsheet-font-scale', '1');
-      const numScale = parseFloat(scale) || 1;
-      this.colorCache.set('fontScale', numScale.toString());
+      const scaleStr = getCSSVariableValue('charsheet-font-scale', '1');
+      const scale = parseFloat(scaleStr) || 1;
+      this.colorCache.set('fontScale', scale.toString());
     }
-    return parseFloat(this.colorCache.get('fontScale')!) || 1;
+    return parseFloat(this.colorCache.get('fontScale')!);
   }
 
   /**
-   * 清除缓存（当颜色配置更新时调用）
+   * 清除缓存
    */
   public clearCache(): void {
     this.colorCache.clear();
@@ -92,31 +89,29 @@ export class ColorManager {
 }
 
 /**
- * 导出单例实例
+ * 颜色管理器单例实例
  */
 export const colorManager = ColorManager.getInstance();
 
 /**
- * 便捷函数：获取边框颜色
+ * 获取边框颜色的便捷函数
  */
 export const getBorderColor = (): string => colorManager.getBorderColor();
 
 /**
- * 便捷函数：获取网格颜色
+ * 获取网格颜色的便捷函数
  */
 export const getGridColor = (): string => colorManager.getGridColor();
 
 /**
- * 便捷函数：获取字体缩放比例
+ * 获取字体缩放比例的便捷函数
  */
 export const getFontScale = (): number => {
-  const scal =  colorManager.getFontScale();
-  console.log('getFontScale', scal);
-  return scal;
-}
+  return colorManager.getFontScale();
+};
 
 /**
- * 更新后的字帖颜色常量（兼容现有代码）
+ * 字帖颜色常量对象
  */
 export const CharsheetColors = {
   get BORDER_COLOR() {

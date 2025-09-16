@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, type ButtonProps } from 'antd';
 import { printElementById } from '@/utils';
-import { IPrintOptions } from '../../../interface';
+import { IPrintOptions } from '@/pages/charsheet/interface';
 import { TemplateType } from '@/pages/charsheet/const';
 import styles from './index.less';
 

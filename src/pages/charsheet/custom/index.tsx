@@ -2,15 +2,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { message, Button } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
-import { ICharsheetConfig, IRenderOptions } from '../interface';
-
-import { GridConfig, getRenderOptionsByMode, refreshFontScale } from '../const';
+import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '@/pages/charsheet/interface';
+import { GridConfig, getRenderOptionsByMode, refreshFontScale, FONT_LIBRARY, TemplateType } from '@/pages/charsheet/const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter, ScrollController } from './Component';
-import { TemplateType } from '@/pages/charsheet/const';
-
-import { FONT_LIBRARY } from '../const';
-import { IFontLibrary } from '../interface';
 
 
 
@@ -99,6 +94,7 @@ const CustomCharsheetPage: React.FC = () => {
         return false; // 阻止打印
       }
       message.info(`正在准备打印内容... (${renderStats.totalPages}页, ${renderStats.totalCells}个单元格)`);
+      return true; // 允许打印
     },
     onAfterPrint: () => {
       message.success('打印操作完成');

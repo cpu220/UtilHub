@@ -5,9 +5,9 @@
 
 import React from 'react';
 import { PageConfig, CellConfig, RowConfig, StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke, StrokeDataConfig } from '@/pages/charsheet/interface';
-import { STROKE_CLASSES } from '@/pages/charsheet/const/font';
-import { generateStrokeData } from '@/utils/lib/core/rendering';
-import styles from '../templates/index.less';
+import { STROKE_CLASSES } from '@/pages/charsheet/const';
+import { generateStrokeData } from '@/utils/lib';
+import styles from '@/pages/charsheet/custom/Component/directGridRenderer/templates/index.less';
 import './stroke.less';
 
 /**

@@ -4,7 +4,7 @@
  */
 
 import { IRenderOptions } from '@/pages/charsheet/interface';
-import { getGridColor } from '@/pages/charsheet/const/colorManager';
+import { getGridColor } from '@/pages/charsheet/const';
 
 export interface IFontRenderOptions extends IRenderOptions {
   renderMode: 'font';

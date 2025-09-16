@@ -4,8 +4,20 @@
  */
 
 import { useCallback, useEffect, useRef } from 'react';
-import { renderHanziInContainer, FontRenderer, createEmptyGridInContainer } from '@/utils';
-import { IRenderOptions } from '../../../../interface';
+import { renderHanziInContainer, FontRenderer } from '@/utils';
+// createEmptyGridInContainer 函数暂时内联实现
+const createEmptyGridInContainer = (containerId: string, width: number, height: number, gridColor?: string) => {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  container.innerHTML = '';
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', width.toString());
+  svg.setAttribute('height', height.toString());
+  svg.style.border = `1px solid ${gridColor || '#ddd'}`;
+  container.appendChild(svg);
+};
+import { IRenderOptions } from '@/pages/charsheet/interface';
 import { RenderStats } from '@/pages/charsheet/interface';
 
 /**
@@ -73,10 +85,7 @@ export const useGridRenderer = (): UseGridRendererReturn => {
             // 使用空字符渲染，只显示田字格背景
             if (renderOptions.renderMode === 'font' && renderOptions.fontFamily) {
               // 字体模式：创建只有田字格的SVG
-              createEmptyGridInContainer(cellId, renderOptions.width, renderOptions.height, renderOptions.gridColor, {
-                useDashedLines: false,
-                showBorder: true
-              });
+              createEmptyGridInContainer(cellId, renderOptions.width, renderOptions.height, renderOptions.gridColor);
             } else {
               // 笔画模式：使用cnchar-draw的showCharacter: false选项
               renderHanziInContainer(cellId, '田', gridOnlyOptions);

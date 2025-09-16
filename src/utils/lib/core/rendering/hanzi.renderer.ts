@@ -8,7 +8,7 @@
 import * as HanziWriterImpl from './hanzi-writer.renderer';
 import * as CncharImpl from './cnchar.renderer';
 import { IRenderOptions } from '@/pages/charsheet/interface';
-import { getGridColor } from '@/pages/charsheet/const/colorManager';
+import { getGridColor } from '@/pages/charsheet/const';
 
 // 渲染引擎类型
 export type RenderEngine = 'hanzi-writer' | 'cnchar-draw';

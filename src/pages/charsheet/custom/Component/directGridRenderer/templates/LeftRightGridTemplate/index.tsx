@@ -8,11 +8,10 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { TemplateComponentProps } from '@/pages/charsheet/interface';
 import { RowConfigWithStroke } from '@/pages/charsheet/interface';
-import { useGridRenderer } from '../../hooks/useGridRenderer';
-import { createPageContainer, createBasicCellElement } from '../../utils/componentUtils';
-import { renderStrokeProgressInContainer, getCharacterStrokeData } from '@/utils/lib/core/rendering';
-import { CharsheetColors, FONT_SCALE } from '../../../../../const';
-import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../../../const/font';
+import { useGridRenderer } from '@/pages/charsheet/custom/Component/directGridRenderer/hooks/useGridRenderer';
+import { createPageContainer, createBasicCellElement } from '@/pages/charsheet/custom/Component/directGridRenderer/utils/componentUtils';
+import { renderStrokeProgressInContainer, getCharacterStrokeData } from '@/utils/lib';
+import { CharsheetColors, FONT_SCALE, STROKE_DISPLAY_DEFAULT_CONFIG } from '@/pages/charsheet/const';
 import styles from './index.less';
 
 /**

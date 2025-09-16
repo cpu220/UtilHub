@@ -2,8 +2,8 @@
  * DirectGridRenderer 相关接口定义
  */
 
-import { IRenderOptions, ICharsheetConfig } from './base';
-import { TemplateType } from '../const';
+import { IRenderOptions, ICharsheetConfig } from '@/pages/charsheet/interface';
+import { TemplateType } from '@/pages/charsheet/const';
 
 /**
  * 渲染统计信息

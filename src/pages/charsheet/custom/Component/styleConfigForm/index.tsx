@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { Form, ColorPicker, InputNumber, Select } from 'antd';
 import type { FormProps } from 'antd';
-import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '../../../interface';
-import { FONT_LIBRARY, FONT_OPTIONS, mergeRenderOptions } from '../../../const';
+import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '@/pages/charsheet/interface';
+import { FONT_LIBRARY, FONT_OPTIONS, mergeRenderOptions } from '@/pages/charsheet/const';
 import { TemplateType } from '@/pages/charsheet/const';
 import styles from './index.less';
 

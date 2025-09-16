@@ -3,8 +3,7 @@
  * 提供通用的打印功能，支持选择性打印指定HTML元素
  */
 
-import { renderPrintTemplate } from '../style/template.loader';
-import { cloneElementWithComputedStyles } from '../style/style.manager';
+import { renderPrintTemplate, cloneElementWithComputedStyles } from '@/utils/lib';
 
 /**
  * 打印配置选项

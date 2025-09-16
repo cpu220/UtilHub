@@ -4,9 +4,8 @@
  */
 
 import React, { useMemo, useRef, useState, useCallback } from 'react';
-import { TemplateType } from '../../../const';
-import { RenderStats, TemplateComponentProps, DirectGridRendererProps } from '../../../interface';
-import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../const/font';
+import { TemplateType, STROKE_DISPLAY_DEFAULT_CONFIG } from '@/pages/charsheet/const';
+import { RenderStats, TemplateComponentProps, DirectGridRendererProps } from '@/pages/charsheet/interface';
 import StandardGridTemplate from './templates/StandardGridTemplate';
 import LeftRightGridTemplate from './templates/LeftRightGridTemplate';
 import SingleRowTemplate from './templates/SingleRowTemplate';

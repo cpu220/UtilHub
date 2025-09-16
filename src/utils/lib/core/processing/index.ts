@@ -5,9 +5,8 @@
  */
 
 // 导出字帖相关接口（从正确位置）
-export * from '../../../../pages/charsheet/interface';
+export * from '@/pages/charsheet/interface';
 
-// 注意：由于模块解析问题，暂时注释掉处理器导出
-// 可以直接从各自文件导入：
-// import { CharsheetProcessor } from './charsheetProcessor';
-// import { processContent } from './processorFactory';
+// 导出处理器相关功能
+export { CharsheetProcessor } from './charsheetProcessor';
+export { processContent } from './processorFactory';

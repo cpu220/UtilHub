@@ -5,9 +5,8 @@
 
 import HanziWriter from 'hanzi-writer';
 import React from 'react';
-import { getBorderColor, getGridColor } from '@/pages/charsheet/const/colorManager';
+import { getBorderColor, getGridColor, STROKE_DEFAULT_CONFIG, STROKE_COLORS, STROKE_ERROR_MESSAGES, getStrokeSize, getArrowFontSize, HANZI_WRITER_DEFAULT_OPTIONS } from '@/pages/charsheet/const';
 import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, StrokeDataConfig, StrokeDataResult } from '@/pages/charsheet/interface';
-import { STROKE_DEFAULT_CONFIG, STROKE_COLORS, STROKE_ERROR_MESSAGES, getStrokeSize, getArrowFontSize, HANZI_WRITER_DEFAULT_OPTIONS } from '@/pages/charsheet/const/font';
 
 // 使用统一的默认配置选项
 const defaultOptions = HANZI_WRITER_DEFAULT_OPTIONS;

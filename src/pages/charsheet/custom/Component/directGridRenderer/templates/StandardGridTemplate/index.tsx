@@ -5,11 +5,11 @@
  */
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { TemplateComponentProps } from '@/pages/charsheet/interface';
+import { TemplateComponentProps, PageConfig } from '@/pages/charsheet/interface';
 import { RowConfigWithStroke } from '@/pages/charsheet/interface';
-import { useGridRenderer } from '../../hooks/useGridRenderer';
-import { createPageContainer, createBasicCellElement } from '../../utils/componentUtils';
-import { CharsheetColors, FONT_SCALE } from '../../../../../const';
+import { useGridRenderer } from '@/pages/charsheet/custom/Component/directGridRenderer/hooks/useGridRenderer';
+import { createPageContainer, createBasicCellElement } from '@/pages/charsheet/custom/Component/directGridRenderer/utils/componentUtils';
+import { CharsheetColors, FONT_SCALE } from '@/pages/charsheet/const';
 import styles from './index.less';
 
 /**
@@ -32,7 +32,7 @@ export const StandardGridTemplate: React.FC<TemplateComponentProps> = ({
   const totalPages = Math.ceil(finalRows / rowsPerPage); // 总页数
 
   // 静态配置对象 - 页面布局配置
-  const pageConfig = {
+  const pageConfig: PageConfig = {
     rowsPerPage,
     pageBreakAfter: true, // 每页后分页
     marginBottom: '20px', // 页面间距

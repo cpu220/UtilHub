@@ -1,25 +1,27 @@
 /**
  * 字帖相关接口统一导出
- * 按功能模块分类导出，便于维护和使用
+ * 重构后的模块化结构
  */
 
-// 基础接口
+// 核心接口
+export * from './core';
+
+// 渲染接口
+export * from './rendering';
+
+// 导出接口
+export * from './export';
+
+// 处理接口
+export * from './processing';
+
+// 基础接口（向后兼容）
 export * from './base';
 
-// 通用接口
-export * from './common';
-
-// 内容处理器接口
-export * from './processor';
-
-// PDF导出接口
-export * from './pdf';
-
-// 笔画相关接口
-export * from './stroke';
-
-// 渲染器相关接口
-export * from './renderer';
-
-// 注意：由于上面已经使用 export * 导出了所有内容，
-// 这里不需要再重复导出特定类型，避免冗余
+// 向后兼容的具体导出
+export type { IGridItem, IGridData, IFontLibrary } from './core/grid.interface';
+export type { ICharsheetConfig, IRenderOptions, IPrintOptions, IPreviewOptions } from './core/config.interface';
+export type { RenderStats, TemplateComponentProps, DirectGridRendererProps } from './rendering/render.interface';
+export type { PDFExportOptions } from './export/pdf.interface';
+export type { IContentProcessor } from './processing/processor.interface';
+export type { PageContent, ContentProcessResult } from './processing/content.interface';

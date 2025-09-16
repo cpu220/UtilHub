@@ -3,7 +3,7 @@
  * 根据元素类型自动选择合适的处理器
  */
 
-import { IContentProcessor, TemplateType } from '../../../../pages/charsheet/interface/processor';
+import { IContentProcessor, TemplateType } from '@/pages/charsheet/interface';
 import { CharsheetProcessor } from './charsheetProcessor';
 
 /**

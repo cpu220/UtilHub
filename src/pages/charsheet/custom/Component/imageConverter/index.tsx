@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { Button, message, Space, Dropdown, MenuProps } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
-import { PDFExportTool, ImageExportTool } from '@/utils/lib/export';
+import { PDFExportTool, ImageExportTool } from '@/utils/lib';
 import { elementToImage } from '@/utils';
-import { CharsheetColors } from '../../../const';
+import { CharsheetColors } from '@/pages/charsheet/const';
 import styles from './index.less';
 
 interface ImageConverterProps {
