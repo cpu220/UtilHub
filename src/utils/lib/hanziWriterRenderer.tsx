@@ -683,6 +683,72 @@ export const generateStrokeData = async (
   }
 };
 
+/**
+ * 在指定容器中渲染汉字的笔画进度
+ * @param containerId 容器ID
+ * @param character 汉字字符
+ * @param strokeCount 要显示的笔画数量（1表示显示第1笔，2表示显示第1+2笔）
+ * @param options 渲染选项
+ */
+export const renderStrokeProgressInContainer = async (
+  containerId: string,
+  character: string,
+  strokeCount: number,
+  options: any = {}
+): Promise<void> => {
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.warn(`容器 ${containerId} 不存在`);
+    return;
+  }
+
+  try {
+    // 获取笔画数据
+    const strokes = await getCharacterStrokeData(character);
+    if (strokes.length === 0 || strokeCount <= 0) {
+      // 如果没有笔画数据或笔画数量为0，渲染空的米字格
+      createEmptyGridInContainer(containerId, options.width || 100, options.height || 100);
+      return;
+    }
+
+    // 限制笔画数量不超过实际笔画数
+    const actualStrokeCount = Math.min(strokeCount, strokes.length);
+    const strokesPortion = strokes.slice(0, actualStrokeCount);
+
+    // 清空容器
+    safelyClearContainer(container);
+
+    // 创建SVG容器
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', (options.width || 100).toString());
+    svg.setAttribute('height', (options.height || 100).toString());
+    svg.setAttribute('class', 'T-HZ stroke-progress');
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+    // 添加米字格背景
+    if (options.useGridBackground !== false) {
+      addGridLinesToSVG(svg, options.width || 100, options.height || 100, options.gridColor);
+    }
+
+    // 创建笔画SVG并添加到容器
+    const strokeSVG = createStrokeSVG(strokesPortion, options.width || 100, {
+      fillColor: options.strokeColor || '#555'
+    });
+
+    // 将笔画路径添加到主SVG中
+    const strokeGroup = strokeSVG.querySelector('g');
+    if (strokeGroup) {
+      svg.appendChild(strokeGroup.cloneNode(true));
+    }
+
+    container.appendChild(svg);
+  } catch (error) {
+    console.error(`渲染笔画进度失败:`, error);
+    // 出错时渲染空的米字格
+    createEmptyGridInContainer(containerId, options.width || 100, options.height || 100);
+  }
+};
+
 export default {
   renderHanziInContainer,
   cleanupHanziWriter,
@@ -691,5 +757,6 @@ export default {
   getCharacterStrokeData,
   createStrokeSVG,
   createMultiColorStrokeSVG,
-  generateStrokeData
+  generateStrokeData,
+  renderStrokeProgressInContainer
 };

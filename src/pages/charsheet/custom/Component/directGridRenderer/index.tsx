@@ -8,6 +8,7 @@ import { IRenderOptions, ICharsheetConfig } from '../../../interface';
 import StandardGridTemplate from './templates/StandardGridTemplate';
 import LeftRightGridTemplate from './templates/LeftRightGridTemplate';
 import SingleRowTemplate from './templates/SingleRowTemplate';
+import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../const/font';
 
 /**
  * 模板类型枚举
@@ -36,6 +37,13 @@ export interface TemplateComponentProps {
   renderOptions: IRenderOptions;
   config: ICharsheetConfig;
   onRenderComplete?: (stats: RenderStats) => void;
+  /** 笔画展示数量（仅SingleRowTemplate使用）
+   * 0: 后面全都是米字格
+   * 1: 第2个格子显示第1笔，其余是米字格
+   * n: 第2到第n+1个格子显示笔画进度，其余是米字格
+   * 最大值不能超过 columns-1
+   */
+  strokeDisplayCount?: number;
 }
 
 /**
@@ -47,6 +55,13 @@ interface DirectGridRendererProps {
   renderOptions: IRenderOptions;
   config: ICharsheetConfig;
   onRenderComplete?: (stats: RenderStats) => void;
+  /** 笔画展示数量（仅SingleRowTemplate使用）
+   * 0: 后面全都是米字格
+   * 1: 第2个格子显示第1笔，其余是米字格
+   * n: 第2到第n+1个格子显示笔画进度，其余是米字格
+   * 最大值不能超过 columns-1
+   */
+  strokeDisplayCount?: number;
 }
 
 /**
@@ -57,10 +72,11 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
   templateType,
   renderOptions,
   config,
-  onRenderComplete
+  onRenderComplete,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [renderStats, setRenderStats] = useState<RenderStats | null>(null);
+  const [renderStats, setRenderStats] = useState<RenderStats | null>(null);  
+  const [strokeDisplayCount, setStrokeDisplayCount] = useState<number>(STROKE_DISPLAY_DEFAULT_CONFIG.DEFAULT_STROKE_DISPLAY_COUNT);
 
   // 使用 useMemo 来优化依赖项，只有关键属性变化时才重新渲染
   const renderKey = useMemo(() => {
@@ -94,9 +110,10 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
       columns: config.defaultCol,
       renderOptions,
       config,
-      onRenderComplete: handleRenderComplete
+      onRenderComplete: handleRenderComplete,
+      strokeDisplayCount
     };
-  }, [fontList, config.defaultCol, renderOptions, config]);
+  }, [fontList, config.defaultCol, renderOptions, config, strokeDisplayCount]);
 
   // 根据模板类型渲染对应的模板组件
   const renderTemplate = () => {
@@ -107,7 +124,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
       case TemplateType.LEFT_RIGHT:
         return <LeftRightGridTemplate {...templateProps} />;
       case TemplateType.SINGLE_ROW:
-        return <SingleRowTemplate {...templateProps} />;
+        return <SingleRowTemplate {...templateProps} strokeDisplayCount={strokeDisplayCount} />;
       default:
         console.error('不支持的模板类型:', templateType);
         return <div>不支持的模板类型: {templateType}</div>;

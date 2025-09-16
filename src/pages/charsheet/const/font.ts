@@ -106,7 +106,7 @@ const FontRenderOptions = {
  */
 export const STROKE_DEFAULT_CONFIG = {
   /** 基础笔画大小（会根据FONT_SCALE动态调整） */
-  BASE_STROKE_SIZE: GridConfig.fontSize * 0.4,
+  BASE_STROKE_SIZE: GridConfig.fontSize * 0.3,
   /** 默认填充颜色 */
   FILL_COLOR: '#7c7b7b', // BaseRenderOptions.strokeColor,
   /** 默认箭头字符 */
@@ -193,6 +193,15 @@ export const HANZI_WRITER_DEFAULT_OPTIONS = {
   gridColor: '#DDD',
   useLocalData: true, // 控制是否使用本地字库
   showOutline: true
+} as const;
+
+/**
+ * 笔画展示默认配置
+ * SingleRowTemplate笔画展示功能的默认参数
+ */
+export const STROKE_DISPLAY_DEFAULT_CONFIG = {
+  /** 默认笔画展示数量 */
+  DEFAULT_STROKE_DISPLAY_COUNT: 3
 } as const;
 
 

@@ -8,7 +8,9 @@ import { TemplateComponentProps } from '../../index';
 import { RowConfigWithStroke } from '@/pages/charsheet/interface';
 import { useGridRenderer } from '../../hooks/useGridRenderer';
 import { createPageContainer, createBasicCellElement, createStrokeOrderContainerJSX, createStrokeDisplayJSX } from '../../utils/componentUtils';
+import { renderStrokeProgressInContainer, getCharacterStrokeData } from '@/utils/lib/hanziWriterRenderer';
 import { CharsheetColors, FONT_SCALE } from '../../../../../const';
+import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../../../const/font';
 import styles from './index.less';
 
 /**
@@ -19,13 +21,18 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
   columns,
   renderOptions,
   config,
-  onRenderComplete
+  onRenderComplete,
+  strokeDisplayCount = STROKE_DISPLAY_DEFAULT_CONFIG.DEFAULT_STROKE_DISPLAY_COUNT // 使用统一的默认值
 }) => {
   const { renderCharacterToCell, renderEmptyGrid, calculateRenderStats } = useGridRenderer();
   const startTimeRef = useRef(Date.now());
+  
+  // 笔画数据状态管理
   const [strokeDataMap, setStrokeDataMap] = useState<Map<number, React.ReactElement>>(new Map());
   const [loadingStrokes, setLoadingStrokes] = useState<Set<number>>(new Set());
-
+  // 汉字笔画数缓存
+  const [characterStrokeCountMap, setCharacterStrokeCountMap] = useState<Map<string, number>>(new Map());
+  
   // 计算布局参数
   const totalChars = charList.length;
   // 单行模板：每行显示一个字符，所以行数等于字符数量
@@ -138,6 +145,35 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     return `${totalWidth}px`;
   };
 
+  // 获取汉字的实际笔画数
+  const getCharacterStrokeCount = async (character: string): Promise<number> => {
+    if (!character) return 0;
+    
+    // 先从缓存中查找
+    const cached = characterStrokeCountMap.get(character);
+    if (cached !== undefined) {
+      return cached;
+    }
+    
+    try {
+      // 获取笔画数据
+      const strokes = await getCharacterStrokeData(character);
+      const strokeCount = strokes.length;
+      
+      // 缓存结果
+      setCharacterStrokeCountMap(prev => {
+        const newMap = new Map(prev);
+        newMap.set(character, strokeCount);
+        return newMap;
+      });
+      
+      return strokeCount;
+    } catch (error) {
+      console.warn(`获取汉字 ${character} 的笔画数失败:`, error);
+      return 0;
+    }
+  };
+
   // 创建笔画显示元素的函数 - 普通函数
   const createStrokeElement = (rowIndex: number, character: string): React.ReactElement | null => {
     if (!character) return null;
@@ -206,12 +242,42 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     );
   };
 
-  // 处理汉字渲染的函数 - 普通函数
-  const handleCharacterRender = (cellId: string, character: string, rowIndex: number) => {
+  // 处理汉字渲染的函数 - 异步函数
+  const handleCharacterRender = async (cellId: string, character: string, rowIndex: number, cellIndex: number, currentRowChar: string) => {
     if (character) {
+      // 第一个格子显示汉字
       return renderCharacterToCell(cellId, character, renderOptions);
     } else {
-      return renderEmptyGrid(cellId, renderOptions);
+      // 判断是否需要显示笔画进度
+      const shouldShowStroke = strokeDisplayCount > 0 && 
+                              cellIndex > 0 && 
+                              cellIndex <= strokeDisplayCount && 
+                              currentRowChar;
+      
+      if (shouldShowStroke) {
+        // 获取汉字的实际笔画数
+        const actualStrokeCount = await getCharacterStrokeCount(currentRowChar);
+        
+        // 限制笔画展示数量：不能超过实际笔画数
+        const effectiveStrokeCount = Math.min(cellIndex, actualStrokeCount);
+        
+        if (effectiveStrokeCount > 0) {
+          // 显示笔画进度：cellIndex=1显示第1笔，cellIndex=2显示第1+2笔，以此类推
+          return renderStrokeProgressInContainer(cellId, currentRowChar, effectiveStrokeCount, {
+            width: renderOptions.width,
+            height: renderOptions.height,
+            useGridBackground: renderOptions.useGridBackground,
+            gridColor: renderOptions.gridColor,
+            strokeColor: renderOptions.strokeColor
+          });
+        } else {
+          // 如果没有有效的笔画数，显示空的米字格
+          return renderEmptyGrid(cellId, renderOptions);
+        }
+      } else {
+        // 显示空的米字格
+        return renderEmptyGrid(cellId, renderOptions);
+      }
     }
   };
 
@@ -235,15 +301,51 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
         pageRows.push(rowElement);
 
         // 处理汉字渲染Promise
+        // 计算当前行的笔画展示数量：min(strokeDisplayCount, 汉字笔画数, columns-1)
+        const maxStrokeSlots = columns - 1; // 减去汉字占用的第1个格子
+        let actualStrokeDisplayCount = 0;
+        
+        if (currentChar && strokeDisplayCount > 0) {
+          // 获取汉字笔画数来计算实际展示数量
+          const strokeCountPromise = getCharacterStrokeCount(currentChar).then(strokeCount => {
+            actualStrokeDisplayCount = Math.min(strokeDisplayCount, strokeCount, maxStrokeSlots);
+          });
+          promises.push(strokeCountPromise);
+        }
+        
         for (let j = 0; j < columns; j++) {
           const cellId = `grid-item-${j}-${i}`;
-          if (j === 0 && currentChar) {
-            // 第一个格子显示汉字
-            const renderPromise = handleCharacterRender(cellId, currentChar, i);
+          
+          if (j === 0) {
+            // 第一个格子：显示汉字或空米字格
+            const renderPromise = (async () => {
+              if (currentChar) {
+                await handleCharacterRender(cellId, currentChar, i, j, currentChar);
+              } else {
+                await handleCharacterRender(cellId, '', i, j, '');
+              }
+            })();
             promises.push(renderPromise);
           } else {
-            // 后面的格子显示空的米字格
-            const renderPromise = handleCharacterRender(cellId, '', i);
+            // 后续格子：根据位置决定显示笔画进度还是米字格
+            const renderPromise = (async () => {
+              // 等待笔画数量计算完成
+              if (currentChar && strokeDisplayCount > 0) {
+                const strokeCount = await getCharacterStrokeCount(currentChar);
+                const effectiveStrokeDisplayCount = Math.min(strokeDisplayCount, strokeCount, maxStrokeSlots);
+                
+                if (j <= effectiveStrokeDisplayCount) {
+                  // 显示笔画进度：j=1显示第1笔，j=2显示第1+2笔
+                  await handleCharacterRender(cellId, '', i, j, currentChar);
+                } else {
+                  // 显示空米字格
+                  await handleCharacterRender(cellId, '', i, j, '');
+                }
+              } else {
+                // 显示空米字格
+                await handleCharacterRender(cellId, '', i, j, '');
+              }
+            })();
             promises.push(renderPromise);
           }
         }

@@ -136,7 +136,8 @@ const CustomCharsheetPage: React.FC = () => {
         renderOptions={customConfig.renderOptions}
         config={customConfig.config}
         templateType={currentTemplateType}
-        onRenderComplete={handleRenderComplete}
+        onRenderComplete={handleRenderComplete}  
+         
       />
 
       {/* 滚动控制器 - 悬浮在右下角 */}
