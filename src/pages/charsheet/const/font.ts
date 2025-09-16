@@ -1,11 +1,31 @@
 import { IGridItem, IGridData, ICharsheetConfig, IRenderOptions, IPrintOptions } from '../interface';
-import { CharsheetColors as DynamicCharsheetColors, getFontScale } from './colorManager';
+import { CharsheetColors as DynamicCharsheetColors, getFontScale, colorManager } from './colorManager';
 
 /**
  * 字体缩放比例，控制页面展示尺寸的
  * 从CSS变量中动态获取
  */
 export const FONT_SCALE = getFontScale();
+
+/**
+ * 刷新字体缩放比例
+ * 清除缓存并重新获取最新的FONT_SCALE值
+ * 当CSS变量--charsheet-font-scale发生变化时调用此函数
+ */
+export const refreshFontScale = (): number => {
+  // 清除ColorManager的缓存
+  colorManager.clearCache();
+  // 重新获取最新的字体缩放比例
+  return getFontScale();
+};
+
+/**
+ * 获取当前的字体缩放比例
+ * 每次调用都会获取最新值（不使用缓存）
+ */
+export const getCurrentFontScale = (): number => {
+  return getFontScale();
+};
 
 /**
  * 字帖颜色常量
@@ -21,11 +41,11 @@ export const GridConfig: ICharsheetConfig = {
   defaultCol: 10
 };
 
-
 export const FONT_RENDER_ENGINE = {
   CNCHAR_DRAW: 'cnchar-draw' as const,
   HANZI_WRITER: 'hanzi-writer' as const,
 } as const;
+
 
 /**
  * 公共渲染配置（两种模式共用）
@@ -74,6 +94,87 @@ const FontRenderOptions = {
   fontSizeRatio: 0.8, // 默认字体大小比例
   // 字体模式下文字颜色使用strokeColor，不需要单独的textColor字段
 };
+
+
+
+
+
+/**
+ * 笔画展示通用默认配置
+ * 汉字渲染相关的通用默认值统一在此维护
+ */
+export const STROKE_DEFAULT_CONFIG = {
+  /** 基础笔画大小（会根据FONT_SCALE动态调整） */
+  BASE_STROKE_SIZE: GridConfig.fontSize * 0.4,
+  /** 默认填充颜色 */
+  FILL_COLOR: '#7c7b7b', // BaseRenderOptions.strokeColor,
+  /** 默认箭头字符 */
+  ARROW_CHAR: '→',
+  /** 箭头字体大小比例（相对于笔画大小） */
+  ARROW_FONT_RATIO: 0.5,
+  /** 字体比例 */
+  FONT_RATIO: 0.6,
+  /** 最小容器高度偏移 */
+  MIN_HEIGHT_OFFSET: 4
+} as const;
+
+/**
+ * 内置的笔画颜色组合（10种颜色）
+ * 用于多彩笔画模式，为每个笔画分配不同的颜色
+ */
+export const STROKE_COLORS = [
+  '#3889f2',  
+  '#f27c38',  
+  '#1ba44e', 
+] as const;
+
+/**
+ * 获取基于字体缩放比例的笔画大小
+ * 根据FONT_SCALE动态计算笔画展示尺寸
+ */
+export const getStrokeSize = (): number => {
+  const fontScale = getCurrentFontScale();
+  return Math.round(STROKE_DEFAULT_CONFIG.BASE_STROKE_SIZE * fontScale);
+};
+
+/**
+ * 获取基于字体缩放比例的箭头字体大小
+ * 根据FONT_SCALE动态计算箭头字体尺寸
+ */
+export const getArrowFontSize = (strokeSize?: number): number => {
+  const actualStrokeSize = strokeSize || getStrokeSize();
+  return Math.floor(actualStrokeSize * STROKE_DEFAULT_CONFIG.ARROW_FONT_RATIO);
+};
+
+/**
+ * 笔画CSS类名常量
+ * 统一管理笔画相关的CSS类名
+ */
+export const STROKE_CLASSES = {
+  /** 笔画顺序容器类名 */
+  STROKE_ORDER_CONTAINER: 'stroke-order-container',
+  /** 笔画SVG类名 */
+  STROKE_SVG: 'stroke-svg',
+  /** 箭头类名 */
+  STROKE_ARROW: 'stroke-arrow',
+  /** 错误提示类名 */
+  ERROR_MESSAGE: 'stroke-error-message',
+  /** 无数据提示类名 */
+  NO_DATA_MESSAGE: 'stroke-no-data-message'
+} as const;
+
+/**
+ * 笔画错误消息常量
+ * 统一管理笔画相关的错误提示信息
+ */
+export const STROKE_ERROR_MESSAGES = {
+  /** 暂无笔画数据 */
+  NO_STROKE_DATA: '暂无笔画数据',
+  /** 笔画加载失败 */
+  LOAD_FAILED: '笔画加载失败',
+  /** 字符为空 */
+  EMPTY_CHARACTER: '字符不能为空'
+} as const;
 
 
 /**

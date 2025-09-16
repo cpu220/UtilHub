@@ -4,7 +4,7 @@ import { message, Button } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
 import { ICharsheetConfig, IRenderOptions } from '../interface';
 
-import { GridConfig, getRenderOptionsByMode } from '../const';
+import { GridConfig, getRenderOptionsByMode, refreshFontScale } from '../const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter, ScrollController } from './Component';
 import { TemplateType } from './Component/directGridRenderer';
@@ -64,6 +64,11 @@ const CustomCharsheetPage: React.FC = () => {
     setRenderStats(stats);
     console.log(`渲染完成统计: ${stats.totalPages}页, ${stats.totalCells}个单元格`);
   };
+
+  // 页面初始化时调用refreshFontScale
+  useEffect(() => {
+    refreshFontScale();
+  }, []);
 
   // 监听配置变化，重置渲染状态
   useEffect(() => {

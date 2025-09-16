@@ -109,7 +109,11 @@ export const getGridColor = (): string => colorManager.getGridColor();
 /**
  * 便捷函数：获取字体缩放比例
  */
-export const getFontScale = (): number => colorManager.getFontScale();
+export const getFontScale = (): number => {
+  const scal =  colorManager.getFontScale();
+  console.log('getFontScale', scal);
+  return scal;
+}
 
 /**
  * 更新后的字帖颜色常量（兼容现有代码）

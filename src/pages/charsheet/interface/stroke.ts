@@ -6,19 +6,44 @@
 import React from 'react';
 
 /**
+ * 笔画颜色模式
+ * 参考hanzi-writer的设计理念
+ */
+export type StrokeColorMode = 
+  | 'single'      // 单一颜色模式
+  | 'stroke'      // 每个笔画不同颜色
+  | 'radical'     // 偏旁部首不同颜色
+  | 'custom';     // 自定义颜色数组
+
+/**
  * 笔画展示配置
+ * 参考hanzi-writer的参数设计，统一颜色控制
  */
 export interface StrokeDisplayConfig {
   /** 笔画大小 */
   strokeSize?: number;
-  /** 填充颜色 */
+  
+  /** 颜色模式 */
+  colorMode?: StrokeColorMode;
+  
+  /** 单一颜色（colorMode为'single'时使用） */
   fillColor?: string;
+  
+  /** 偏旁颜色（colorMode为'radical'时使用） */
+  radicalColor?: string;
+  
+  /** 自定义颜色数组（colorMode为'custom'时使用） */
+  customColors?: string[];
+  
   /** SVG类名 */
   svgClassName?: string;
+  
   /** 是否显示箭头分隔符 */
   showArrow?: boolean;
+  
   /** 箭头类名 */
   arrowClassName?: string;
+  
   /** 箭头字符 */
   arrowChar?: string;
 }

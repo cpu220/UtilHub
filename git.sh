@@ -1,1 +1,1 @@
-git add . && git commit -m "feat: 重构模板，原来的逻辑封装太复杂，不利于维护"
+git add . && git commit -m "feat: 重构模板，重点是笔画展示"

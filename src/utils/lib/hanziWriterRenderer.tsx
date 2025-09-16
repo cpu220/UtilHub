@@ -4,7 +4,10 @@
  */
 
 import HanziWriter from 'hanzi-writer';
-import { getGridColor } from '@/pages/charsheet/const/colorManager';
+import React from 'react';
+import { getBorderColor, getGridColor } from '@/pages/charsheet/const/colorManager';
+import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult } from '@/pages/charsheet/interface';
+import { STROKE_DEFAULT_CONFIG, STROKE_COLORS, STROKE_ERROR_MESSAGES, getStrokeSize, getArrowFontSize } from '@/pages/charsheet/const/font';
 
 // 默认配置选项
 const defaultOptions = {
@@ -78,6 +81,53 @@ export const createGridSVG = (width: number, height: number, gridColor: string =
   svg.setAttribute('class', 'T-HZ');
   
   addGridLinesToSVG(svg, width, height, gridColor, { strokeWidth, useDashedLines, showBorder });
+  
+  return svg;
+};
+
+/**
+ * 创建多色笔画SVG元素
+ * 每个笔画使用不同的颜色
+ * @param strokePaths 笔画路径数组
+ * @param size SVG尺寸
+ * @param colors 颜色数组
+ * @returns SVG元素
+ */
+export const createMultiColorStrokeSVG = (strokePaths: string[], size: number, colors: readonly string[]): SVGElement => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  
+  // 添加统一的hanzi-writer标识类名
+  svg.setAttribute('class', 'T-HZ');
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  
+  svg.style.width = `${size}px`;
+  svg.style.height = `${size}px`;
+  
+  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  
+  // 设置变换属性，使字符在指定尺寸下渲染
+  const transformData = HanziWriter.getScalingTransform(size, size);
+  group.setAttributeNS(null, 'transform', transformData.transform);
+  svg.appendChild(group);
+  
+  // 为每个笔画设置不同的颜色
+  strokePaths.forEach((strokePath: string, index: number) => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttributeNS(null, 'd', strokePath);
+    
+    // 如果颜色数组不够，超出的笔画使用默认颜色
+    let strokeColor: string;
+    if (index < colors.length) {
+      // 在颜色数组范围内，使用对应颜色
+      strokeColor = colors[index];
+    } else {
+      // 超出颜色数组范围，使用默认填充颜色
+      strokeColor = STROKE_DEFAULT_CONFIG.FILL_COLOR;
+    }
+    
+    path.style.fill = strokeColor;
+    group.appendChild(path);
+  });
   
   return svg;
 };
@@ -492,67 +542,196 @@ export const createStrokeSVG = (strokePaths: string[], size: number, options: {
   return svg;
 };
 
+
+
 /**
- * 创建笔画顺序显示容器
- * @param character 汉字字符
- * @param options 配置选项
- * @returns Promise<HTMLDivElement>
+ * 笔画数据生成配置
+ * 参考hanzi-writer的设计，支持多种颜色模式
  */
-/**
- * 创建笔画顺序数据（纯数据处理，不创建DOM）
- * @deprecated 请使用 componentUtils 中的 createStrokeDisplayJSX
- */
-export const createStrokeOrderContainer = async (character: string, options: {
+export interface StrokeDataConfig {
+  /** 笔画大小 */
   strokeSize?: number;
-  containerClassName?: string;
-  arrowClassName?: string;
-  strokeSvgClassName?: string;
-  fontRatio?: number;
+  
+  /** 颜色模式 */
+  colorMode?: 'single' | 'stroke' | 'radical' | 'custom';
+  
+  /** 单一颜色（colorMode为'single'时使用） */
   fillColor?: string;
-} = {}): Promise<HTMLDivElement> => {
-  console.warn('createStrokeOrderContainer is deprecated. Please use createStrokeDisplayJSX from componentUtils instead.');
   
-  // 为了向后兼容，创建一个临时的div元素
-  const strokeOrderDiv = document.createElement('div');
-  strokeOrderDiv.className = options.containerClassName || 'stroke-order-container';
-  strokeOrderDiv.style.minHeight = `${(options.strokeSize || 30) + 4}px`;
+  /** 偏旁颜色（colorMode为'radical'时使用） */
+  radicalColor?: string;
   
+  /** 自定义颜色数组（colorMode为'custom'时使用） */
+  customColors?: string[];
+  
+  /** 是否包含箭头分隔符 */
+  includeArrows?: boolean;
+  
+  /** 箭头字符 */
+  arrowChar?: string;
+}
+
+/**
+ * 笔画数据结果
+ */
+export interface StrokeDataResult {
+  /** 汉字字符 */
+  character: string;
+  /** 笔画总数 */
+  strokeCount: number;
+  /** 笔画SVG HTML字符串数组 */
+  strokeSVGs: string[];
+  /** 笔画颜色数组 */
+  strokeColors: string[];
+  /** 是否包含箭头 */
+  includeArrows: boolean;
+  /** 箭头字符 */
+  arrowChar: string;
+  /** 箭头字体大小 */
+  arrowFontSize: number;
+  /** 是否有错误 */
+  hasError: boolean;
+  /** 错误信息 */
+  errorMessage?: string;
+}
+
+/**
+ * 生成笔画数据（通用API）
+ * 纯数据生成，不涉及JSX，供模板组件使用
+ * hanzi-writer的通用封装方法
+ */
+export const generateStrokeData = async (
+  character: string,
+  config: StrokeDataConfig = {}
+): Promise<StrokeDataResult> => {
+  // 使用动态计算的笔画大小，根据FONT_SCALE自动调整
+  const dynamicStrokeSize = getStrokeSize();
+  
+  const {
+    strokeSize = dynamicStrokeSize,
+    colorMode = 'single',
+    fillColor = STROKE_DEFAULT_CONFIG.FILL_COLOR,
+    radicalColor,
+    customColors,
+    includeArrows = true,
+    arrowChar = STROKE_DEFAULT_CONFIG.ARROW_CHAR
+  } = config;
+
   if (!character) {
-    return strokeOrderDiv;
+    return {
+      character: '',
+      strokeCount: 0,
+      strokeSVGs: [],
+      strokeColors: [],
+      includeArrows,
+      arrowChar,
+      arrowFontSize: getArrowFontSize(strokeSize),
+      hasError: true,
+      errorMessage: '字符不能为空'
+    };
   }
-  
+
   try {
     const strokes = await getCharacterStrokeData(character);
     
     if (strokes.length === 0) {
-      strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor((options.strokeSize || 30) * 0.6)}px;">暂无笔画数据</span>`;
-      return strokeOrderDiv;
+      return {
+        character,
+        strokeCount: 0,
+        strokeSVGs: [],
+        strokeColors: [],
+        includeArrows,
+        arrowChar,
+        arrowFontSize: getArrowFontSize(strokeSize),
+        hasError: true,
+        errorMessage: '暂无笔画数据'
+      };
     }
+
+    const strokeSVGs: string[] = [];
+    const strokeColors: string[] = [];
     
-    // 创建笔画顺序显示：逐步累积的笔画SVG
+    // 生成每个笔画的SVG数据
     for (let i = 0; i < strokes.length; i++) {
       const strokesPortion = strokes.slice(0, i + 1);
-      const strokeSVG = createStrokeSVG(strokesPortion, options.strokeSize || 30, { 
-        fillColor: options.fillColor || '#555',
-        className: options.strokeSvgClassName 
-      });
-      strokeOrderDiv.appendChild(strokeSVG);
       
-      // 添加箭头分隔符（除了最后一个）
-      if (i < strokes.length - 1) {
-        const arrow = document.createElement('span');
-        arrow.className = options.arrowClassName || 'stroke-arrow';
-        arrow.style.fontSize = `${Math.floor((options.strokeSize || 30) * 0.5)}px`;
-        arrow.textContent = '→';
-        strokeOrderDiv.appendChild(arrow);
+      // 根据颜色模式创建SVG
+      let strokeSVG: SVGElement;
+      
+      if (colorMode === 'stroke') {
+        // 每个笔画不同颜色模式：需要为每一笔设置不同颜色
+        // 第1个SVG：第1笔用颜色a
+        // 第2个SVG：第1笔用颜色a，第2笔用颜色b
+        // 第3个SVG：第1笔用颜色a，第2笔用颜色b，第3笔用颜色c
+        strokeSVG = createMultiColorStrokeSVG(strokesPortion, strokeSize, STROKE_COLORS);
+        
+        // 记录当前SVG包含的所有笔画颜色
+         const currentStrokeColors = strokesPortion.map((_, index) => {
+           if (index < STROKE_COLORS.length) {
+             // 在颜色数组范围内，使用对应颜色
+             return STROKE_COLORS[index];
+           } else {
+             // 超出颜色数组范围，使用默认填充颜色
+             return STROKE_DEFAULT_CONFIG.FILL_COLOR;
+           }
+         });
+        strokeColors.push(currentStrokeColors.join(','));
+      } else {
+        // 其他颜色模式：统一颜色
+        let currentColor: string;
+        switch (colorMode) {
+          case 'radical':
+            // TODO: 实现偏旁部首颜色逻辑，暂时使用默认颜色
+            currentColor = radicalColor || fillColor;
+            break;
+          case 'custom':
+            // 使用自定义颜色数组
+            currentColor = customColors && customColors.length > 0 
+              ? customColors[i % customColors.length] 
+              : fillColor;
+            break;
+          case 'single':
+          default:
+            // 单一颜色模式
+            currentColor = fillColor;
+            break;
+        }
+        
+        strokeColors.push(currentColor);
+        
+        // 创建单色笔画SVG
+        strokeSVG = createStrokeSVG(strokesPortion, strokeSize, { 
+          fillColor: currentColor
+        });
       }
+      
+      strokeSVGs.push(strokeSVG.outerHTML);
     }
+    
+    return {
+      character,
+      strokeCount: strokes.length,
+      strokeSVGs,
+      strokeColors,
+      includeArrows,
+      arrowChar,
+      arrowFontSize: getArrowFontSize(strokeSize),
+      hasError: false
+    };
   } catch (error) {
-    console.warn(`创建笔画顺序显示失败:`, error);
-    strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor((options.strokeSize || 30) * 0.6)}px;">笔画加载失败</span>`;
+    console.warn(`生成笔画数据失败:`, error);
+    return {
+      character,
+      strokeCount: 0,
+      strokeSVGs: [],
+      strokeColors: [],
+      includeArrows,
+      arrowChar,
+      arrowFontSize: getArrowFontSize(strokeSize),
+      hasError: true,
+      errorMessage: '笔画加载失败'
+    };
   }
-  
-  return strokeOrderDiv;
 };
 
 export default {
@@ -562,5 +741,6 @@ export default {
   safelyClearContainer,
   getCharacterStrokeData,
   createStrokeSVG,
-  createStrokeOrderContainer
+  createMultiColorStrokeSVG,
+  generateStrokeData
 };

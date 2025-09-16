@@ -7,9 +7,9 @@ import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { TemplateComponentProps } from '../../index';
 import { RowConfigWithStroke } from '@/pages/charsheet/interface';
 import { useGridRenderer } from '../../hooks/useGridRenderer';
-import { createPageContainer, createBasicCellElement, createStrokeDisplayJSX, createStrokeOrderContainerJSX } from '../../utils/componentUtils';
+import { createPageContainer, createBasicCellElement, createStrokeOrderContainerJSX, createStrokeDisplayJSX } from '../../utils/componentUtils';
 import { CharsheetColors, FONT_SCALE } from '../../../../../const';
-import styles from './index.less';  
+import styles from './index.less';
 
 /**
  * 单行网格模板组件
@@ -72,12 +72,15 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     try {
       const strokeResult = await createStrokeDisplayJSX(character, {
         svgClassName: styles['stroke-svg'],
-        arrowClassName: styles['stroke-arrow']
+        arrowClassName: styles['stroke-arrow'],
+        showArrow: false,
+        colorMode: 'stroke'
       });
 
       if (!strokeResult.hasError) {
         const strokeJSX = createStrokeOrderContainerJSX(strokeResult.strokeElements, {
-          className: styles['stroke-order-container']
+          className: styles['stroke-order-container'],
+          style: { maxWidth: calculateStrokeContainerMaxWidth() }
         });
         setStrokeDataMap(prev => {
           const newMap = new Map(prev);
@@ -86,7 +89,10 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
         });
       } else {
         const errorJSX = (
-          <div className={styles['stroke-error-message']}>
+          <div
+            className={styles['stroke-error-message']}
+            style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
+          >
             {strokeResult.errorMessage}
           </div>
         );
@@ -99,7 +105,10 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     } catch (error) {
       console.error('加载笔画数据失败:', error);
       const errorJSX = (
-        <div className={styles['stroke-error-message']}>
+        <div
+          className={styles['stroke-error-message']}
+          style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
+        >
           加载失败，请重试
         </div>
       );
@@ -117,21 +126,46 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     }
   };
 
+  // 计算笔画容器的最大宽度 - 根据grid-item个数和宽度计算
+  const calculateStrokeContainerMaxWidth = (): string => {
+    // 单个grid-item的宽度 + 左边距
+    const itemWidth = cellConfig.width;
+    const itemMarginLeft = 6; // 来自CSS中的margin-left
+
+    // 总宽度 = 列数 * (单元格宽度 + 左边距) - 第一个单元格的左边距
+    const totalWidth = columns * (itemWidth + itemMarginLeft) - itemMarginLeft;
+
+    return `${totalWidth}px`;
+  };
+
   // 创建笔画显示元素的函数 - 普通函数
   const createStrokeElement = (rowIndex: number, character: string): React.ReactElement | null => {
     if (!character) return null;
 
     const existingStrokeData = strokeDataMap.get(rowIndex);
     if (existingStrokeData) {
-      return existingStrokeData;
+      // 为已存在的笔画数据添加宽度限制
+      return (
+        <div
+          id={`stroke-content-${rowIndex}`}
+          className={styles['stroke-order-container']}
+          style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
+        >
+          {existingStrokeData}
+        </div>
+      );
     }
 
     // 触发异步加载
     loadStrokeData(rowIndex, character);
 
-    // 返回加载状态
+    // 返回加载状态，同时设置宽度限制
     return (
-      <div id={`stroke-content-${rowIndex}`} className={styles['stroke-order-container']}>
+      <div
+        id={`stroke-content-${rowIndex}`}
+        className={styles['stroke-order-container']}
+        style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
+      >
         <span style={{ color: '#999', fontSize: '12px' }}>加载笔画中...</span>
       </div>
     );
@@ -140,13 +174,13 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
   // 创建单行网格单元格的函数 - 普通函数
   const createRowCells = (rowIndex: number, character: string): React.ReactElement[] => {
     const rowCells: React.ReactElement[] = [];
-    
+
     for (let j = 0; j < columns; j++) {
       const cellId = `grid-item-${j}-${rowIndex}`;
       const cellElement = createBasicCellElement(cellId, j, cellConfig);
       rowCells.push(cellElement);
     }
-    
+
     return rowCells;
   };
 
@@ -162,7 +196,7 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
         className={styles['single-row-with-stroke-container']}
       >
         {strokeElement}
-        <div 
+        <div
           id={`grid-item-content-${rowIndex}`}
           className={styles['single-row-container']}
         >
@@ -195,11 +229,11 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
       for (let i = startRow; i < endRow && currentIndex < totalChars; i++) {
         // 获取当前字符
         const currentChar = currentIndex < totalChars ? charList[currentIndex] : '';
-        
+
         // 使用拆分的函数创建行元素
         const rowElement = createSingleRowElement(i, currentChar);
         pageRows.push(rowElement);
-        
+
         // 处理汉字渲染Promise
         for (let j = 0; j < columns; j++) {
           const cellId = `grid-item-${j}-${i}`;
@@ -213,7 +247,7 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
             promises.push(renderPromise);
           }
         }
-        
+
         if (currentIndex < totalChars) {
           currentIndex++;
         }
@@ -223,7 +257,7 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
       const pageElement = createPageContainer(pageIndex, pageConfig, pageRows);
       pages.push(pageElement);
     }
-    
+
     return { pages, promises };
   };
 
@@ -245,7 +279,7 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     // 2. calculateRenderStats 来自useGridRenderer hook，应该是稳定的
     // 3. 主要关心的是promises.length变化，表示有新的渲染任务
   }, [promises.length, totalPages, totalChars]);
-  
+
   // 如果需要响应onRenderComplete变化，应该单独处理
   // 但通常onRenderComplete在组件生命周期内是稳定的
 

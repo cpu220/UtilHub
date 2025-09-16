@@ -565,9 +565,9 @@ const convertSvgWithCanvg = async (svgElement: SVGElement, options: ImageOptions
           // 3. 确保最终输出符合预期的格式要求
           
           // 添加边框（可选的视觉增强）
-          ctx.strokeStyle = '#ddd';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(0, 0, actualWidth, actualHeight);
+          // ctx.strokeStyle = '#ddd';
+          // ctx.lineWidth = 1;
+          // ctx.strokeRect(0, 0, actualWidth, actualHeight);
           
           // 步骤11：处理不同图片格式的特殊需求
           // 对于JPEG格式，需要确保背景不透明（JPEG不支持透明度）

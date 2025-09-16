@@ -6,8 +6,8 @@
 import React from 'react';
 import { PageConfig, CellConfig, RowConfig } from '../adapters';
 import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke } from '@/pages/charsheet/interface';
-import { DEFAULT_STROKE_CONFIG, DEFAULT_STROKE_CLASSES, STROKE_ERROR_MESSAGES } from '@/pages/charsheet/const';
-import { getCharacterStrokeData, createStrokeSVG } from '@/utils/lib/hanziWriterRenderer';
+import { STROKE_CLASSES } from '@/pages/charsheet/const/font';
+import { generateStrokeData, StrokeDataConfig } from '@/utils/lib/hanziWriterRenderer';
 import styles from '../templates/index.less';
 import './stroke.less';
 
@@ -25,7 +25,7 @@ export const createPageContainer = (
     ...(config.pageBreakAfter && { pageBreakAfter: 'always' }),
     ...(config.debugBorder && { border: 'solid 1px #f00' })
   };
-  
+
   return (
     <div
       key={`page-container-${pageIndex}`}
@@ -39,104 +39,7 @@ export const createPageContainer = (
   );
 };
 
-/**
- * 创建笔画展示JSX元素
- * 输入汉字字符串，返回每个笔画的JSX展示
- */
-export const createStrokeDisplayJSX = async (
-  character: string,
-  config: StrokeDisplayConfig = {}
-): Promise<StrokeDisplayResult> => {
-  const {
-    strokeSize = DEFAULT_STROKE_CONFIG.STROKE_SIZE,
-    fillColor = DEFAULT_STROKE_CONFIG.FILL_COLOR,
-    svgClassName = DEFAULT_STROKE_CLASSES.STROKE_SVG,
-    showArrow = true,
-    arrowClassName = DEFAULT_STROKE_CLASSES.STROKE_ARROW,
-    arrowChar = DEFAULT_STROKE_CONFIG.ARROW_CHAR
-  } = config;
 
-  if (!character) {
-    return {
-      character: '',
-      strokeCount: 0,
-      strokeElements: [],
-      hasError: true,
-      errorMessage: STROKE_ERROR_MESSAGES.EMPTY_CHARACTER
-    };
-  }
-
-  try {
-    const strokes = await getCharacterStrokeData(character);
-    
-    if (strokes.length === 0) {
-      return {
-        character,
-        strokeCount: 0,
-        strokeElements: [],
-        hasError: true,
-        errorMessage: STROKE_ERROR_MESSAGES.NO_STROKE_DATA
-      };
-    }
-
-    const strokeElements: StrokeJSXElement[] = [];
-    
-    // 创建每个笔画的JSX元素
-    for (let i = 0; i < strokes.length; i++) {
-      const strokesPortion = strokes.slice(0, i + 1);
-      
-      // 创建笔画SVG的JSX元素
-      const strokeSVG = createStrokeSVG(strokesPortion, strokeSize, { 
-        fillColor,
-        className: svgClassName 
-      });
-      
-      const strokeElement = (
-        <div 
-          key={`stroke-${i}`}
-          className={svgClassName}
-          dangerouslySetInnerHTML={{ __html: strokeSVG.outerHTML }}
-        />
-      );
-      
-      // 创建箭头元素（除了最后一个）
-      let arrowElement: React.ReactElement | undefined;
-      if (showArrow && i < strokes.length - 1) {
-        arrowElement = (
-          <span 
-            key={`arrow-${i}`}
-            className={arrowClassName}
-            style={{ fontSize: `${Math.floor(strokeSize * 0.5)}px` }}
-          >
-            {arrowChar}
-          </span>
-        );
-      }
-      
-      strokeElements.push({
-        index: i,
-        strokeElement,
-        arrowElement
-      });
-    }
-    
-    return {
-      character,
-      strokeCount: strokes.length,
-      strokeElements,
-      hasError: false
-    };
-  } catch (error) {
-    console.warn(`创建笔画JSX失败:`, error);
-    return {
-      character,
-      strokeCount: 0,
-      strokeElements: [],
-      hasError: true,
-      errorMessage: STROKE_ERROR_MESSAGES.LOAD_FAILED
-    };
-  }
-};
 
 /**
  * 创建笔画顺序容器JSX（解耦后的布局组件）
@@ -146,7 +49,7 @@ export const createStrokeOrderContainerJSX = (
   containerConfig: { className?: string; style?: React.CSSProperties } = {}
 ): React.ReactElement => {
   const {
-    className = DEFAULT_STROKE_CLASSES.STROKE_ORDER_CONTAINER,
+    className = STROKE_CLASSES.STROKE_ORDER_CONTAINER,
     style = {}
   } = containerConfig;
 
@@ -276,4 +179,90 @@ export const createColumnContainer = (
       {children}
     </div>
   );
+};
+
+/**
+ * 创建笔画展示JSX元素（模板层）
+ * 调用hanziWriterRenderer的generateStrokeData API获取数据，然后创建JSX
+ * 实现了数据生成和UI创建的解耦
+ * 支持多种颜色模式：单色、多彩笔画、偏旁颜色、自定义颜色
+ */
+export const createStrokeDisplayJSX = async (
+  character: string,
+  config: StrokeDisplayConfig = {}
+): Promise<StrokeDisplayResult> => {
+  const {
+    strokeSize,
+    colorMode = 'single',
+    fillColor,
+    radicalColor,
+    customColors,
+    svgClassName = STROKE_CLASSES.STROKE_SVG,
+    showArrow = true,
+    arrowClassName = STROKE_CLASSES.STROKE_ARROW,
+    arrowChar
+  } = config;
+
+  // 调用hanziWriterRenderer的通用API获取笔画数据
+  const strokeDataConfig: StrokeDataConfig = {
+    strokeSize,
+    colorMode,
+    fillColor,
+    radicalColor,
+    customColors,
+    includeArrows: showArrow,
+    arrowChar
+  };
+
+  const strokeData = await generateStrokeData(character, strokeDataConfig);
+
+  if (strokeData.hasError) {
+    return {
+      character: strokeData.character,
+      strokeCount: strokeData.strokeCount,
+      strokeElements: [],
+      hasError: true,
+      errorMessage: strokeData.errorMessage
+    };
+  }
+
+  const strokeElements: StrokeJSXElement[] = [];
+
+  // 根据数据创建JSX元素
+  for (let i = 0; i < strokeData.strokeSVGs.length; i++) {
+    const strokeElement = (
+      <div 
+        key={`stroke-${i}`}
+        className={svgClassName}
+        dangerouslySetInnerHTML={{ __html: strokeData.strokeSVGs[i] }}
+      />
+    );
+
+    // 创建箭头元素（除了最后一个）
+    let arrowElement: React.ReactElement | undefined;
+    if (strokeData.includeArrows && i < strokeData.strokeSVGs.length - 1) {
+      arrowElement = (
+        <span 
+          key={`arrow-${i}`}
+          className={arrowClassName}
+          style={{ fontSize: `${strokeData.arrowFontSize}px` }}
+        >
+          {strokeData.arrowChar}
+        </span>
+      );
+    }
+
+    strokeElements.push({
+      index: i,
+      strokeElement,
+      arrowElement
+    });
+  }
+
+  return {
+    character: strokeData.character,
+    strokeCount: strokeData.strokeCount,
+    strokeElements,
+    hasError: false
+  };
 };
