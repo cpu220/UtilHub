@@ -5,8 +5,8 @@
  */
 
 // 导入两种实现
-import * as HanziWriterImpl from './hanziWriterRenderer';
-import * as CncharImpl from './cncharTools';
+import * as HanziWriterImpl from './hanzi-writer.renderer';
+import * as CncharImpl from './cnchar.renderer';
 import { IRenderOptions } from '@/pages/charsheet/interface';
 import { getGridColor } from '@/pages/charsheet/const/colorManager';
 

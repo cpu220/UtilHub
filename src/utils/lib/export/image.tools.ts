@@ -62,7 +62,7 @@
  */
 import * as htmlToImage from 'html-to-image';
 import { Canvg } from 'canvg';
-import { cloneElementWithComputedStyles } from './styleManager';
+import { cloneElementWithComputedStyles } from '../style/style.manager';
 
 
 

@@ -21,9 +21,5 @@ export * from './stroke';
 // 渲染器相关接口
 export * from './renderer';
 
-// 类型导出（用于明确导出特定类型）
-export type { PageContent, ContentProcessResult } from './common';
-export type { IContentProcessor } from './processor';
-export type { PDFExportOptions, PDFPageConfig } from './pdf';
-export type { StrokeDisplayConfig, StrokeOrderContainerConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke } from './stroke';
-export type { RenderStats, TemplateComponentProps, DirectGridRendererProps, PageConfig, CellConfig, RowConfig } from './renderer';
+// 注意：由于上面已经使用 export * 导出了所有内容，
+// 这里不需要再重复导出特定类型，避免冗余

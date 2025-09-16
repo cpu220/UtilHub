@@ -10,7 +10,7 @@ import { TemplateComponentProps } from '@/pages/charsheet/interface';
 import { RowConfigWithStroke } from '@/pages/charsheet/interface';
 import { useGridRenderer } from '../../hooks/useGridRenderer';
 import { createPageContainer, createBasicCellElement } from '../../utils/componentUtils';
-import { renderStrokeProgressInContainer, getCharacterStrokeData } from '@/utils/lib/hanziWriterRenderer';
+import { renderStrokeProgressInContainer, getCharacterStrokeData } from '@/utils/lib/core/rendering';
 import { CharsheetColors, FONT_SCALE } from '../../../../../const';
 import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../../../const/font';
 import styles from './index.less';

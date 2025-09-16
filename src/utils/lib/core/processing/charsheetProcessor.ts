@@ -3,8 +3,8 @@
  * 专门处理字帖模板的容器裁剪和分页逻辑
  */
 
-import { elementToImage } from '../imageTools';
-import { IContentProcessor, ContentProcessOptions, ContentProcessResult, PageContent } from '../../../pages/charsheet/interface';
+import { elementToImage } from '../../export/image.tools';
+import { IContentProcessor, ContentProcessOptions, ContentProcessResult, PageContent } from '../../../../pages/charsheet/interface';
 
 export class CharsheetProcessor implements IContentProcessor {
   readonly name = 'CharsheetProcessor';

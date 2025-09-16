@@ -1,67 +1,20 @@
-// 原有导出（排除有冲突的方法）
-export * from './printTools'
-export * from './mockUtils'
-export * from './imageTools'
-export * from './fontManager'
-export * from './fontRenderer'
+/**
+ * Utils/Lib 统一导出文件
+ * 重构后的模块化结构
+ */
 
-// 从 hanziWriterRenderer 导出非冲突的方法和米字格工具
-export {
-  preloadLocalCharacterData as preloadHanziWriterData,
-  cleanupHanziWriter as cleanupHanziWriterOriginal,
-  createGridSVG,
-  addGridLinesToSVG,
-  createEmptyGridInContainer,
-  safelyClearContainer,
-  getCharacterStrokeData,
-  createStrokeSVG,
-  createStrokeOrderContainer
-} from './hanziWriterRenderer';
+// 核心功能模块
+export * from './core';
 
-// 新的 cnchar-draw 相关导出（使用别名避免冲突）
-export {
-  renderHanziWithCnchar,
-  cleanupCncharDraw,
-  preloadLocalCharacterData as preloadCncharData,
-  cnchar
-} from './cncharTools';
+// 导出功能模块
+export * from './export';
 
-// 内容处理器相关导出
-export * from './contentProcessors';
+// 样式管理模块
+export * from './style';
 
-// 汉字渲染适配器导出（这个是主要的统一接口，替代原来的 fontTools）
-export {
-  renderHanziInContainer,  // 使用适配器版本替代原来的 fontTools 版本
-  cleanupHanziWriter,
-  preloadLocalCharacterData,
-  renderWithHanziWriter,
-  renderWithCnchar,
-  batchRenderHanzi,
-  setRendererConfig,
-  getRendererConfig,
-  type RenderEngine
-} from './hanziRenderer';
-
-// 为了向后兼容，也导出一个别名
+// 向后兼容的别名导出
 export {
   renderHanziInContainer as renderHanzi
-} from './hanziRenderer';
-
-// 统一样式管理工具
-export {
-  StyleManager,
-  styleManager,
-  getPrintStyles,
-  applyUnifiedStyles,
-  getComputedStyles,
-  cloneElementWithComputedStyles,
-  createPrintDocument,
-  computedStyleToInline,
-  optimizeForPrint
-} from './styleManager';
-
-// 模板加载工具
-export {
-  renderPrintTemplate,
-  preloadTemplate
-} from './templateLoader';
+} from './core';
+// 旧的导出已移动到对应的模块中
+// 通过上面的 export * from './style' 自动导出

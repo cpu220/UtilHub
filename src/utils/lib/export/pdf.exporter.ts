@@ -5,11 +5,11 @@
  * 与内容处理器配合，支持不同模板类型的PDF导出
  */
 import { jsPDF } from 'jspdf';
-import { processContent } from './contentProcessors/processorFactory';
-import { PDFExportOptions } from '../../pages/charsheet/interface';
+import { processContent } from '../core/processing/processorFactory';
+import { PDFExportOptions } from '../../../pages/charsheet/interface';
 
 // 重新导出PDFExportOptions以保持向后兼容
-export { PDFExportOptions } from '../../pages/charsheet/interface';
+export { PDFExportOptions } from '../../../pages/charsheet/interface';
 
 export class PDFExportTool {
   /**
