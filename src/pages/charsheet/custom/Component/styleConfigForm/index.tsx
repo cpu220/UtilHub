@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { Form, ColorPicker, InputNumber, Select } from 'antd';
 import type { FormProps } from 'antd';
 import { ICharsheetConfig, IRenderOptions, IFontLibrary } from '../../../interface';
@@ -132,19 +132,31 @@ const StyleConfigForm: React.FC<StyleConfigFormProps> = ({
     { type: TemplateType.SINGLE_ROW, name: '单行网格' }
   ];
 
-  // 表单初始值
-  const initialValues: any = {
-    strokeColor: defaultRenderOptions.strokeColor,
-    radicalColor: defaultRenderOptions.radicalColor,
-
-    cols: defaultConfig.defaultCol,
-    fontSize: defaultRenderOptions.fontSize || defaultRenderOptions.width,
-    fontLibrary: defaultFontLibrary.name,
-    renderMode: defaultRenderOptions.renderMode || 'stroke',
-    fontFamily: defaultRenderOptions.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value,
-    templateType: defaultTemplateType
-  };
-  console.log('initialValues', initialValues);
+  // 使用useMemo优化initialValues，避免每次渲染都重新创建
+  const initialValues = useMemo(() => {
+    const values = {
+      strokeColor: defaultRenderOptions.strokeColor,
+      radicalColor: defaultRenderOptions.radicalColor,
+      cols: defaultConfig.defaultCol,
+      fontSize: defaultRenderOptions.fontSize || defaultRenderOptions.width,
+      fontLibrary: defaultFontLibrary.name,
+      renderMode: defaultRenderOptions.renderMode || 'stroke',
+      fontFamily: defaultRenderOptions.fontFamily || FONT_OPTIONS.find(f => f.label === '黑体')?.value || FONT_OPTIONS[0]?.value,
+      templateType: defaultTemplateType
+    };
+    console.log('initialValues (memoized)', values);
+    return values;
+  }, [
+    defaultRenderOptions.strokeColor,
+    defaultRenderOptions.radicalColor,
+    defaultRenderOptions.fontSize,
+    defaultRenderOptions.width,
+    defaultRenderOptions.renderMode,
+    defaultRenderOptions.fontFamily,
+    defaultConfig.defaultCol,
+    defaultFontLibrary.name,
+    defaultTemplateType
+  ]);
   return (
     <div id="style-option-container" className={styles['style-option-container']}>
       <Form

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { message, Button } from 'antd';
 import { renderHanziInContainer, cleanupHanziWriter, generateRandomChineseCharsString } from '@/utils';
 import { ICharsheetConfig, IRenderOptions } from '../interface';
@@ -40,30 +40,27 @@ const CustomCharsheetPage: React.FC = () => {
     });
   }
 
-  // 处理配置变化的回调函数
-  const handleConfigChange = (newConfig: { config: ICharsheetConfig; renderOptions: IRenderOptions }) => {
+  // 使用useCallback优化回调函数，避免不必要的重新渲染
+  const handleConfigChange = useCallback((newConfig: { config: ICharsheetConfig; renderOptions: IRenderOptions }) => {
     setCustomConfig(newConfig);
-  };
+  }, []);
 
-  // 处理字库选择变化的回调函数
-  const handleFontLibraryChange = (fontLibrary: IFontLibrary) => {
+  const handleFontLibraryChange = useCallback((fontLibrary: IFontLibrary) => {
     setCurrentFontLibrary(fontLibrary);
-  };
+  }, []);
 
-  // 处理模板类型变化的回调函数
-  const handleTemplateChange = (templateType: TemplateType) => {
+  const handleTemplateChange = useCallback((templateType: TemplateType) => {
     setCurrentTemplateType(templateType);
-    setIsRendering(true); // 开始渲染
-    setRenderStats(null); // 清空之前的统计
-    message.info(`已切换到${templateType === TemplateType.STANDARD ? '标准网格' : '左右分栏'}模板`);
-  };
+    setIsRendering(true);
+    setRenderStats(null);
+    message.info(`已切换到${templateType === TemplateType.STANDARD ? '标准网格' : templateType === TemplateType.LEFT_RIGHT ? '左右分栏' : '单行网格'}模板`);
+  }, []);
 
-  // 处理渲染完成的回调函数
-  const handleRenderComplete = (stats: { totalPages: number; totalCells: number }) => {
+  const handleRenderComplete = useCallback((stats: { totalPages: number; totalCells: number }) => {
     setIsRendering(false);
     setRenderStats(stats);
     console.log(`渲染完成统计: ${stats.totalPages}页, ${stats.totalCells}个单元格`);
-  };
+  }, []);
 
   // 页面初始化时调用refreshFontScale
   useEffect(() => {
@@ -75,6 +72,16 @@ const CustomCharsheetPage: React.FC = () => {
     setIsRendering(true);
     setRenderStats(null);
   }, [currentFontLibrary.list, customConfig]);
+
+  // 使用useMemo优化defaultRenderOptions，避免每次渲染都重新创建
+  const memoizedDefaultRenderOptions = useMemo(() => {
+    return getRenderOptionsByMode('stroke');
+  }, []);
+
+  // 使用useMemo优化defaultConfig，避免每次渲染都重新创建
+  const memoizedDefaultConfig = useMemo(() => {
+    return { ...GridConfig };
+  }, []);
 
 
 
@@ -104,8 +111,8 @@ const CustomCharsheetPage: React.FC = () => {
     <div style={{ padding: '24px' }}>
       <div className={styles['button-container']}>
         <StyleConfigForm
-          defaultRenderOptions={getRenderOptionsByMode('stroke')}
-          defaultConfig={GridConfig}
+          defaultRenderOptions={memoizedDefaultRenderOptions}
+          defaultConfig={memoizedDefaultConfig}
           onConfigChange={handleConfigChange}
           onFontLibraryChange={handleFontLibraryChange}
           onTemplateChange={handleTemplateChange}

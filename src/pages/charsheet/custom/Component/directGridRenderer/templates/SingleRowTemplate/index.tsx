@@ -41,6 +41,23 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
       isMountedRef.current = false;
     };
   }, []);
+  
+  // 预加载所有汉字的笔画数据，避免重复获取
+  useEffect(() => {
+    const preloadStrokeData = async () => {
+      // 将charList转换为字符数组并去重
+      const chars = Array.from(charList).filter((char: string) => char && char.trim());
+      const uniqueChars = [...new Set(chars)];
+      // 并发预加载，但不等待结果，让缓存在后台生效
+      uniqueChars.forEach((char: string) => {
+        getCharacterStrokeData(char).catch(() => {});
+      });
+    };
+    
+    if (charList && charList.length > 0) {
+      preloadStrokeData();
+    }
+  }, [charList]);
 
   // 计算布局参数
   const totalChars = charList.length;
@@ -362,15 +379,6 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
         // 处理汉字渲染Promise
         // 计算当前行的笔画展示数量：min(strokeDisplayCount, 汉字笔画数, columns-1)
         const maxStrokeSlots = columns - 1; // 减去汉字占用的第1个格子
-        let actualStrokeDisplayCount = 0;
-
-        if (currentChar && strokeDisplayCount > 0) {
-          // 获取汉字笔画数来计算实际展示数量
-          const strokeCountPromise = getCharacterStrokeCount(currentChar).then(strokeCount => {
-            actualStrokeDisplayCount = Math.min(strokeDisplayCount, strokeCount, maxStrokeSlots);
-          });
-          promises.push(strokeCountPromise);
-        }
 
         for (let j = 0; j < columns; j++) {
           const cellId = `grid-item-${j}-${i}`;

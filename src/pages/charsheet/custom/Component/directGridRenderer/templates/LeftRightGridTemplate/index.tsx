@@ -39,6 +39,23 @@ export const LeftRightGridTemplate: React.FC<TemplateComponentProps> = ({
       isMountedRef.current = false;
     };
   }, []);
+  
+  // 预加载所有汉字的笔画数据，避免重复获取
+  useEffect(() => {
+    const preloadStrokeData = async () => {
+      // 将charList转换为字符数组并去重
+      const chars = Array.from(charList).filter((char: string) => char && char.trim());
+      const uniqueChars = [...new Set(chars)];
+      // 并发预加载，但不等待结果，让缓存在后台生效
+      uniqueChars.forEach((char: string) => {
+        getCharacterStrokeData(char).catch(() => {});
+      });
+    };
+    
+    if (charList && charList.length > 0) {
+      preloadStrokeData();
+    }
+  }, [charList]);
 
   // 验证列数是否为偶数 - 左右分栏需要偶数列
   const adjustedColumns = columns % 2 === 0 ? columns : columns - 1;

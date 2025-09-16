@@ -21,6 +21,34 @@ const writerInstances = new Map<string, any>();
 // 本地字库数据缓存
 const localCharacterDataCache = new Map<string, any>();
 
+// 笔画数据全局缓存 - 避免重复获取
+const strokeDataCache = new Map<string, string[]>();
+
+/**
+ * 清理笔画数据缓存
+ * @param character 可选，指定要清理的字符，不传则清理所有缓存
+ */
+export const clearStrokeDataCache = (character?: string) => {
+  if (character) {
+    strokeDataCache.delete(character);
+    console.log(`已清理字符"${character}"的笔画数据缓存`);
+  } else {
+    const cacheSize = strokeDataCache.size;
+    strokeDataCache.clear();
+    console.log(`已清理所有笔画数据缓存 (${cacheSize}个字符)`);
+  }
+};
+
+/**
+ * 获取缓存统计信息
+ */
+export const getStrokeDataCacheStats = () => {
+  return {
+    size: strokeDataCache.size,
+    characters: Array.from(strokeDataCache.keys())
+  };
+};
+
 /**
  * 安全清理容器内容
  * @param container 容器元素
@@ -478,17 +506,37 @@ export const getCharacterStrokeData = async (character: string): Promise<string[
       return [];
     }
     
+    // 先检查全局缓存
+    if (strokeDataCache.has(character)) {
+      return strokeDataCache.get(character)!;
+    }
+    
+    let strokes: string[] = [];
+    let dataSource = '';
+    
     // 优先尝试本地数据
     const localData = loadLocalCharacterData(character);
     if (localData && localData.strokes) {
-      console.log(`使用本地数据获取字符"${character}"的笔画数据`);
-      return localData.strokes;
+      strokes = localData.strokes;
+      dataSource = '本地数据';
+    } else {
+      // 降级到 CDN 数据
+      const charData = await HanziWriter.loadCharacterData(character);
+      strokes = charData?.strokes || [];
+      dataSource = 'CDN数据';
     }
     
-    // 降级到 CDN 数据
-    console.warn(`本地数据不可用，使用 CDN 获取字符"${character}"的笔画数据`);
-    const charData = await HanziWriter.loadCharacterData(character);
-    return charData?.strokes || [];
+    // 缓存结果
+    strokeDataCache.set(character, strokes);
+    
+    // 只在首次获取时打印日志
+    if (strokes.length > 0) {
+      console.log(`首次获取字符"${character}"的笔画数据 (${dataSource}, ${strokes.length}笔)`);
+    } else {
+      console.warn(`字符"${character}"无笔画数据`);
+    }
+    
+    return strokes;
   } catch (error) {
     console.warn(`获取字符"${character}"的笔画数据失败:`, error);
     return [];
