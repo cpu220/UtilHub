@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, type ButtonProps } from 'antd';
 import { printElementById } from '@/utils';
 import { IPrintOptions } from '../../../interface';
-import { TemplateType, getPrintStyles } from '../directGridRenderer/templates';
+import { TemplateType } from '@/pages/charsheet/const';
 import styles from './index.less';
 
 interface PrintButtonProps {

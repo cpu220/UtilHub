@@ -8,9 +8,6 @@ export { default as StandardGridTemplate } from './StandardGridTemplate';
 export { default as LeftRightGridTemplate } from './LeftRightGridTemplate';
 export { default as SingleRowTemplate } from './SingleRowTemplate';
 
-// 导出适配器系统
-export * from '../adapters';
-
 // 导出工具函数
 export * from '../hooks/useGridRenderer';
 export * from '../utils/componentUtils';

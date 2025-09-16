@@ -4,8 +4,7 @@
  */
 
 import React from 'react';
-import { PageConfig, CellConfig, RowConfig } from '../adapters';
-import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke, StrokeDataConfig } from '@/pages/charsheet/interface';
+import { PageConfig, CellConfig, RowConfig, StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke, StrokeDataConfig } from '@/pages/charsheet/interface';
 import { STROKE_CLASSES } from '@/pages/charsheet/const/font';
 import { generateStrokeData } from '@/utils/lib/hanziWriterRenderer';
 import styles from '../templates/index.less';

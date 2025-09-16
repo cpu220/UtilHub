@@ -4,65 +4,12 @@
  */
 
 import React, { useMemo, useRef, useState, useCallback } from 'react';
-import { IRenderOptions, ICharsheetConfig } from '../../../interface';
+import { TemplateType } from '../../../const';
+import { RenderStats, TemplateComponentProps, DirectGridRendererProps } from '../../../interface';
+import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../const/font';
 import StandardGridTemplate from './templates/StandardGridTemplate';
 import LeftRightGridTemplate from './templates/LeftRightGridTemplate';
 import SingleRowTemplate from './templates/SingleRowTemplate';
-import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../const/font';
-
-/**
- * 模板类型枚举
- */
-export enum TemplateType {
-  STANDARD = 'standard',
-  LEFT_RIGHT = 'left_right',
-  SINGLE_ROW = 'single_row'
-}
-
-/**
- * 渲染统计信息
- */
-export interface RenderStats {
-  totalPages: number;
-  totalCells: number;
-  renderTime: number;
-}
-
-/**
- * 模板组件 Props 接口
- */
-export interface TemplateComponentProps {
-  charList: string;
-  columns: number;
-  renderOptions: IRenderOptions;
-  config: ICharsheetConfig;
-  onRenderComplete?: (stats: RenderStats) => void;
-  /** 笔画展示数量（仅SingleRowTemplate使用）
-   * 0: 后面全都是米字格
-   * 1: 第2个格子显示第1笔，其余是米字格
-   * n: 第2到第n+1个格子显示笔画进度，其余是米字格
-   * 最大值不能超过 columns-1
-   */
-  strokeDisplayCount?: number;
-}
-
-/**
- * DirectGridRenderer 组件属性
- */
-interface DirectGridRendererProps {
-  fontList: string;
-  templateType: TemplateType;
-  renderOptions: IRenderOptions;
-  config: ICharsheetConfig;
-  onRenderComplete?: (stats: RenderStats) => void;
-  /** 笔画展示数量（仅SingleRowTemplate使用）
-   * 0: 后面全都是米字格
-   * 1: 第2个格子显示第1笔，其余是米字格
-   * n: 第2到第n+1个格子显示笔画进度，其余是米字格
-   * 最大值不能超过 columns-1
-   */
-  strokeDisplayCount?: number;
-}
 
 /**
  * DirectGridRenderer 组件
@@ -122,7 +69,7 @@ const DirectGridRenderer: React.FC<DirectGridRendererProps> = ({
       case TemplateType.STANDARD:
         return <StandardGridTemplate {...templateProps} />;
       case TemplateType.LEFT_RIGHT:
-        return <LeftRightGridTemplate {...templateProps} />;
+        return <LeftRightGridTemplate {...templateProps} strokeDisplayCount={strokeDisplayCount} />;
       case TemplateType.SINGLE_ROW:
         return <SingleRowTemplate {...templateProps} strokeDisplayCount={strokeDisplayCount} />;
       default:

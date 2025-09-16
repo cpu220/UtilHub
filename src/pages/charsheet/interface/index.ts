@@ -18,8 +18,12 @@ export * from './pdf';
 // 笔画相关接口
 export * from './stroke';
 
-// 便捷类型别名
+// 渲染器相关接口
+export * from './renderer';
+
+// 类型导出（用于明确导出特定类型）
 export type { PageContent, ContentProcessResult } from './common';
 export type { IContentProcessor } from './processor';
 export type { PDFExportOptions, PDFPageConfig } from './pdf';
 export type { StrokeDisplayConfig, StrokeOrderContainerConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke } from './stroke';
+export type { RenderStats, TemplateComponentProps, DirectGridRendererProps, PageConfig, CellConfig, RowConfig } from './renderer';

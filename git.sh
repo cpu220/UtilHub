@@ -1,1 +1,1 @@
-git add . && git commit -m "feat: 修正边框架不一致的问题，全部放在svg内处理"
+git add . && git commit -m "feat: 扩展 SingleRowTemplate 组件"

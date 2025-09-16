@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { TemplateComponentProps } from '../../index';
+import { TemplateComponentProps } from '@/pages/charsheet/interface';
 import { RowConfigWithStroke } from '@/pages/charsheet/interface';
 import { useGridRenderer } from '../../hooks/useGridRenderer';
 import { createPageContainer, createBasicCellElement } from '../../utils/componentUtils';

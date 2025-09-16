@@ -7,7 +7,7 @@ import { ICharsheetConfig, IRenderOptions } from '../interface';
 import { GridConfig, getRenderOptionsByMode, refreshFontScale } from '../const';
 import styles from './index.less';
 import { PrintButton, DirectGridRenderer, StyleConfigForm, ImageConverter, ScrollController } from './Component';
-import { TemplateType } from './Component/directGridRenderer';
+import { TemplateType } from '@/pages/charsheet/const';
 
 import { FONT_LIBRARY } from '../const';
 import { IFontLibrary } from '../interface';

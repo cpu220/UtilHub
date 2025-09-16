@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { TemplateComponentProps } from '../../index';
+import { TemplateComponentProps } from '@/pages/charsheet/interface';
 import { RowConfigWithStroke } from '@/pages/charsheet/interface';
 import { useGridRenderer } from '../../hooks/useGridRenderer';
 import { createPageContainer, createBasicCellElement, createStrokeOrderContainerJSX, createStrokeDisplayJSX } from '../../utils/componentUtils';
@@ -26,12 +26,20 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
 }) => {
   const { renderCharacterToCell, renderEmptyGrid, calculateRenderStats } = useGridRenderer();
   const startTimeRef = useRef(Date.now());
+  const isMountedRef = useRef(true);
   
   // 笔画数据状态管理
   const [strokeDataMap, setStrokeDataMap] = useState<Map<number, React.ReactElement>>(new Map());
   const [loadingStrokes, setLoadingStrokes] = useState<Set<number>>(new Set());
   // 汉字笔画数缓存
   const [characterStrokeCountMap, setCharacterStrokeCountMap] = useState<Map<string, number>>(new Map());
+  
+  // 组件卸载时设置标志
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
   
   // 计算布局参数
   const totalChars = charList.length;
@@ -160,12 +168,14 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
       const strokes = await getCharacterStrokeData(character);
       const strokeCount = strokes.length;
       
-      // 缓存结果
-      setCharacterStrokeCountMap(prev => {
-        const newMap = new Map(prev);
-        newMap.set(character, strokeCount);
-        return newMap;
-      });
+      // 缓存结果 - 只有在组件仍然挂载时才更新状态
+      if (isMountedRef.current) {
+        setCharacterStrokeCountMap(prev => {
+          const newMap = new Map(prev);
+          newMap.set(character, strokeCount);
+          return newMap;
+        });
+      }
       
       return strokeCount;
     } catch (error) {

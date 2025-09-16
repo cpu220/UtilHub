@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { renderHanziInContainer, FontRenderer, createEmptyGridInContainer } from '@/utils';
 import { IRenderOptions } from '../../../../interface';
-import { RenderStats } from '../adapters';
+import { RenderStats } from '@/pages/charsheet/interface';
 
 /**
  * 网格渲染 Hook 的返回值
