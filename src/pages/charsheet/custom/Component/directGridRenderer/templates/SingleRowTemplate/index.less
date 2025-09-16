@@ -11,19 +11,46 @@
   margin-bottom: calc(25px * var(--charsheet-font-scale, 1));
 }
 
+.stroke-top-container {
+  display: flex;
+
+  .stroke-top-container-left {
+    // display: flex;
+    // justify-content: flex-start;
+    width: calc(64px * var(--charsheet-font-scale, 1));
+    // border: solid 1px #000; // debugger 用
+    text-align: center;
+    color: #000;
+  }
+
+  .stroke-top-container-right {
+    display: flex;
+    justify-content: flex-start;
+    width: calc(100% - 60px * var(--charsheet-font-scale, 1));
+    // border: solid 1px #f00; // debugger 用
+
+  }
+}
+
 /* 笔画顺序容器 */
 .stroke-order-container {
   display: flex;
   align-items: flex-start;
-  flex-wrap: wrap; /* 允许换行，防止超出容器宽度 */
-  margin-bottom: calc(2px * var(--charsheet-font-scale, 1));
+  flex-wrap: wrap;
+  /* 允许换行，防止超出容器宽度 */
+  // margin-bottom: calc(2px * var(--charsheet-font-scale, 1));
   color: #666;
   // line-height: 1.2;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  gap: 2px;
-  overflow: hidden; /* 隐藏超出部分 */
-  word-break: break-all; /* 强制换行 */
-  box-sizing: border-box; /* 确保padding和border包含在宽度内 */
+  // gap: 2px;
+  overflow: hidden;
+  /* 隐藏超出部分 */
+  word-break: break-all;
+  /* 强制换行 */
+  box-sizing: border-box;
+  /* 确保padding和border包含在宽度内 */
+
+
 }
 
 /* 笔画SVG样式 */
@@ -74,6 +101,7 @@
 
 /* 打印优化样式 - 仅添加打印特有的属性 */
 @media print {
+
   .single-row-with-stroke-container,
   .stroke-order-container,
   .single-row-container,

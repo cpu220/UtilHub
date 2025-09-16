@@ -1,44 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from 'antd';
+import React from 'react';
+import { Button, Affix } from 'antd';
 import { UpOutlined, DownOutlined } from '@ant-design/icons';
-import styles from './index.less';
 
 interface ScrollControllerProps {
   /**
    * 滚动容器的选择器，默认为window
    */
   container?: string | HTMLElement;
-  /**
-   * 显示阈值，滚动超过多少像素后显示按钮
-   */
-  showThreshold?: number;
 }
 
 const ScrollController: React.FC<ScrollControllerProps> = ({
-  container,
-  showThreshold = 300
+  container
 }) => {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = container 
-        ? (container as HTMLElement).scrollTop || (document.querySelector(container as string))?.scrollTop || 0
-        : window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      
-      setVisible(scrollTop > showThreshold);
-    };
-
-    const scrollElement = container 
-      ? (typeof container === 'string' ? document.querySelector(container) : container)
-      : window;
-
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', handleScroll);
-      return () => scrollElement.removeEventListener('scroll', handleScroll);
-    }
-  }, [container, showThreshold]);
-
   const scrollToTop = () => {
     const scrollElement = container 
       ? (typeof container === 'string' ? document.querySelector(container) : container)
@@ -68,29 +41,25 @@ const ScrollController: React.FC<ScrollControllerProps> = ({
     }
   };
 
-  if (!visible) {
-    return null;
-  }
-
   return (
-    <div className={styles['scroll-controller']}>
-      <Button
-        type="primary"
-        shape="circle"
-        icon={<UpOutlined />}
-        onClick={scrollToTop}
-        className={styles['scroll-button']}
-        title="滚动到顶部"
-      />
-      <Button
-        type="primary"
-        shape="circle"
-        icon={<DownOutlined />}
-        onClick={scrollToBottom}
-        className={styles['scroll-button']}
-        title="滚动到底部"
-      />
-    </div>
+    <Affix offsetTop={24} style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 1000 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<UpOutlined />}
+          onClick={scrollToTop}
+          title="滚动到顶部"
+        />
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<DownOutlined />}
+          onClick={scrollToBottom}
+          title="滚动到底部"
+        />
+      </div>
+    </Affix>
   );
 };
 

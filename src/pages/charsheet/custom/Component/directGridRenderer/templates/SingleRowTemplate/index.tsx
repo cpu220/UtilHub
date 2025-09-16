@@ -9,6 +9,7 @@ import { RowConfigWithStroke } from '@/pages/charsheet/interface';
 import { useGridRenderer } from '../../hooks/useGridRenderer';
 import { createPageContainer, createBasicCellElement, createStrokeOrderContainerJSX, createStrokeDisplayJSX } from '../../utils/componentUtils';
 import { renderStrokeProgressInContainer, getCharacterStrokeData } from '@/utils/lib/hanziWriterRenderer';
+import { getPinyinString } from '@/utils/lib/pinyinRenderer';
 import { CharsheetColors, FONT_SCALE } from '../../../../../const';
 import { STROKE_DISPLAY_DEFAULT_CONFIG } from '../../../../../const/font';
 import styles from './index.less';
@@ -27,20 +28,20 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
   const { renderCharacterToCell, renderEmptyGrid, calculateRenderStats } = useGridRenderer();
   const startTimeRef = useRef(Date.now());
   const isMountedRef = useRef(true);
-  
+
   // 笔画数据状态管理
   const [strokeDataMap, setStrokeDataMap] = useState<Map<number, React.ReactElement>>(new Map());
   const [loadingStrokes, setLoadingStrokes] = useState<Set<number>>(new Set());
   // 汉字笔画数缓存
   const [characterStrokeCountMap, setCharacterStrokeCountMap] = useState<Map<string, number>>(new Map());
-  
+
   // 组件卸载时设置标志
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
     };
   }, []);
-  
+
   // 计算布局参数
   const totalChars = charList.length;
   // 单行模板：每行显示一个字符，所以行数等于字符数量
@@ -54,7 +55,14 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     pageBreakAfter: true,
     marginBottom: '20px',
     padding: '20px',
-    debugBorder: false
+    debugBorder: false,
+    // 笔画容器配置
+    showPinyinAndStroke: true, // 是否显示拼音和笔画的左右分栏布局（false时只显示笔画）
+    pinyinConfig: {
+      withTone: true, // 是否显示声调
+      toneType: 'symbol' as const, // 声调类型：symbol(ā) 或 number(a1)
+      capitalize: false // 是否首字母大写
+    }
   };
 
   // 需要useMemo的配置（依赖props变化，涉及计算）
@@ -156,18 +164,18 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
   // 获取汉字的实际笔画数
   const getCharacterStrokeCount = async (character: string): Promise<number> => {
     if (!character) return 0;
-    
+
     // 先从缓存中查找
     const cached = characterStrokeCountMap.get(character);
     if (cached !== undefined) {
       return cached;
     }
-    
+
     try {
       // 获取笔画数据
       const strokes = await getCharacterStrokeData(character);
       const strokeCount = strokes.length;
-      
+
       // 缓存结果 - 只有在组件仍然挂载时才更新状态
       if (isMountedRef.current) {
         setCharacterStrokeCountMap(prev => {
@@ -176,7 +184,7 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
           return newMap;
         });
       }
-      
+
       return strokeCount;
     } catch (error) {
       console.warn(`获取汉字 ${character} 的笔画数失败:`, error);
@@ -189,33 +197,74 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
     if (!character) return null;
 
     const existingStrokeData = strokeDataMap.get(rowIndex);
-    if (existingStrokeData) {
-      // 为已存在的笔画数据添加宽度限制
+    
+    // 根据配置决定显示布局
+    if (pageConfig.showPinyinAndStroke) {
+      // 显示左右分栏布局
+      const pinyinText = getPinyinString(character, pageConfig.pinyinConfig);
+      
+      if (existingStrokeData) {
+        return (
+          <div
+            id={`stroke-content-${rowIndex}`}
+            className={styles['stroke-top-container']}
+            style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
+          >
+            <div className={styles['stroke-top-container-left']}>
+              {pinyinText}
+            </div>
+            <div className={styles['stroke-top-container-right']}>
+              {existingStrokeData}
+            </div>
+          </div>
+        );
+      }
+      
+      // 触发异步加载
+      loadStrokeData(rowIndex, character);
+      
       return (
         <div
           id={`stroke-content-${rowIndex}`}
-          className={styles['stroke-order-container']}
+          className={styles['stroke-top-container']}
           style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
         >
-          {existingStrokeData}
+          <div className={styles['stroke-top-container-left']}>
+            {pinyinText}
+          </div>
+          <div className={styles['stroke-top-container-right']}>
+            <div style={{ color: '#999', fontSize: '12px' }}>加载中...</div>
+          </div>
         </div>
       );
-    }
-
-    // 触发异步加载
-    loadStrokeData(rowIndex, character);
-
-    // 返回加载状态，同时设置宽度限制
-    return (
-      <div
-        id={`stroke-content-${rowIndex}`}
-        className={styles['stroke-order-container']}
-        style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
-      >
-        <span style={{ color: '#999', fontSize: '12px' }}>加载笔画中...</span>
-      </div>
-    );
-  };
+    } else {
+      // 只显示笔画，不分栏
+      if (existingStrokeData) {
+        return (
+          <div
+            id={`stroke-content-${rowIndex}`}
+            className={styles['stroke-top-container']}
+            style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
+          >
+            {existingStrokeData}
+          </div>
+        );
+      }
+      
+      // 触发异步加载
+      loadStrokeData(rowIndex, character);
+      
+      return (
+        <div
+          id={`stroke-content-${rowIndex}`}
+          className={styles['stroke-top-container']}
+          style={{ maxWidth: calculateStrokeContainerMaxWidth() }}
+        >
+          <div style={{ color: '#999', fontSize: '12px' }}>加载笔画中...</div>
+        </div>
+      );
+     }
+   };
 
   // 创建单行网格单元格的函数 - 普通函数
   const createRowCells = (rowIndex: number, character: string): React.ReactElement[] => {
@@ -259,18 +308,18 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
       return renderCharacterToCell(cellId, character, renderOptions);
     } else {
       // 判断是否需要显示笔画进度
-      const shouldShowStroke = strokeDisplayCount > 0 && 
-                              cellIndex > 0 && 
-                              cellIndex <= strokeDisplayCount && 
-                              currentRowChar;
-      
+      const shouldShowStroke = strokeDisplayCount > 0 &&
+        cellIndex > 0 &&
+        cellIndex <= strokeDisplayCount &&
+        currentRowChar;
+
       if (shouldShowStroke) {
         // 获取汉字的实际笔画数
         const actualStrokeCount = await getCharacterStrokeCount(currentRowChar);
-        
+
         // 限制笔画展示数量：不能超过实际笔画数
         const effectiveStrokeCount = Math.min(cellIndex, actualStrokeCount);
-        
+
         if (effectiveStrokeCount > 0) {
           // 显示笔画进度：cellIndex=1显示第1笔，cellIndex=2显示第1+2笔，以此类推
           return renderStrokeProgressInContainer(cellId, currentRowChar, effectiveStrokeCount, {
@@ -314,7 +363,7 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
         // 计算当前行的笔画展示数量：min(strokeDisplayCount, 汉字笔画数, columns-1)
         const maxStrokeSlots = columns - 1; // 减去汉字占用的第1个格子
         let actualStrokeDisplayCount = 0;
-        
+
         if (currentChar && strokeDisplayCount > 0) {
           // 获取汉字笔画数来计算实际展示数量
           const strokeCountPromise = getCharacterStrokeCount(currentChar).then(strokeCount => {
@@ -322,10 +371,10 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
           });
           promises.push(strokeCountPromise);
         }
-        
+
         for (let j = 0; j < columns; j++) {
           const cellId = `grid-item-${j}-${i}`;
-          
+
           if (j === 0) {
             // 第一个格子：显示汉字或空米字格
             const renderPromise = (async () => {
@@ -343,7 +392,7 @@ export const SingleRowTemplate: React.FC<TemplateComponentProps> = ({
               if (currentChar && strokeDisplayCount > 0) {
                 const strokeCount = await getCharacterStrokeCount(currentChar);
                 const effectiveStrokeDisplayCount = Math.min(strokeDisplayCount, strokeCount, maxStrokeSlots);
-                
+
                 if (j <= effectiveStrokeDisplayCount) {
                   // 显示笔画进度：j=1显示第1笔，j=2显示第1+2笔
                   await handleCharacterRender(cellId, '', i, j, currentChar);

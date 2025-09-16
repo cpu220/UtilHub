@@ -141,7 +141,7 @@ const CustomCharsheetPage: React.FC = () => {
       />
 
       {/* 滚动控制器 - 悬浮在右下角 */}
-      <ScrollController showThreshold={300} />
+      <ScrollController />
 
     </div>
   );
