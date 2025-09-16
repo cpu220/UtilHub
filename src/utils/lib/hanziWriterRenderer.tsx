@@ -498,6 +498,10 @@ export const createStrokeSVG = (strokePaths: string[], size: number, options: {
  * @param options 配置选项
  * @returns Promise<HTMLDivElement>
  */
+/**
+ * 创建笔画顺序数据（纯数据处理，不创建DOM）
+ * @deprecated 请使用 componentUtils 中的 createStrokeDisplayJSX
+ */
 export const createStrokeOrderContainer = async (character: string, options: {
   strokeSize?: number;
   containerClassName?: string;
@@ -506,18 +510,12 @@ export const createStrokeOrderContainer = async (character: string, options: {
   fontRatio?: number;
   fillColor?: string;
 } = {}): Promise<HTMLDivElement> => {
-  const {
-    strokeSize = 30,
-    containerClassName = 'stroke-order-container',
-    arrowClassName = 'stroke-arrow',
-    strokeSvgClassName,
-    fontRatio = 0.3,
-    fillColor = '#555'
-  } = options;
+  console.warn('createStrokeOrderContainer is deprecated. Please use createStrokeDisplayJSX from componentUtils instead.');
   
+  // 为了向后兼容，创建一个临时的div元素
   const strokeOrderDiv = document.createElement('div');
-  strokeOrderDiv.className = containerClassName;
-  strokeOrderDiv.style.minHeight = `${strokeSize + 4}px`;
+  strokeOrderDiv.className = options.containerClassName || 'stroke-order-container';
+  strokeOrderDiv.style.minHeight = `${(options.strokeSize || 30) + 4}px`;
   
   if (!character) {
     return strokeOrderDiv;
@@ -527,31 +525,31 @@ export const createStrokeOrderContainer = async (character: string, options: {
     const strokes = await getCharacterStrokeData(character);
     
     if (strokes.length === 0) {
-      strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor(strokeSize * 0.6)}px;">暂无笔画数据</span>`;
+      strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor((options.strokeSize || 30) * 0.6)}px;">暂无笔画数据</span>`;
       return strokeOrderDiv;
     }
     
     // 创建笔画顺序显示：逐步累积的笔画SVG
     for (let i = 0; i < strokes.length; i++) {
       const strokesPortion = strokes.slice(0, i + 1);
-      const strokeSVG = createStrokeSVG(strokesPortion, strokeSize, { 
-        fillColor,
-        className: strokeSvgClassName 
+      const strokeSVG = createStrokeSVG(strokesPortion, options.strokeSize || 30, { 
+        fillColor: options.fillColor || '#555',
+        className: options.strokeSvgClassName 
       });
       strokeOrderDiv.appendChild(strokeSVG);
       
       // 添加箭头分隔符（除了最后一个）
       if (i < strokes.length - 1) {
         const arrow = document.createElement('span');
-        arrow.className = arrowClassName;
-        arrow.style.fontSize = `${Math.floor(strokeSize * 0.5)}px`;
+        arrow.className = options.arrowClassName || 'stroke-arrow';
+        arrow.style.fontSize = `${Math.floor((options.strokeSize || 30) * 0.5)}px`;
         arrow.textContent = '→';
         strokeOrderDiv.appendChild(arrow);
       }
     }
   } catch (error) {
     console.warn(`创建笔画顺序显示失败:`, error);
-    strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor(strokeSize * 0.6)}px;">笔画加载失败</span>`;
+    strokeOrderDiv.innerHTML = `<span style="color: #999; font-size: ${Math.floor((options.strokeSize || 30) * 0.6)}px;">笔画加载失败</span>`;
   }
   
   return strokeOrderDiv;

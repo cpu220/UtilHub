@@ -1,46 +1,68 @@
 /* 左右分栏网格模板样式 */
 
-/* 左右分栏行容器 */
-.lr-row-container {
-  display: flex;
+/* 包含左右分栏内容的行容器 */
+.left-right-row-container {
+  display: block;
   width: 100%;
-  margin-bottom: calc(10px * var(--charsheet-font-scale, 1));
+  margin-bottom: calc(5px * var(--charsheet-font-scale, 1));
 }
 
-.lr-row-container:nth-child(5n) {
+.left-right-row-container:nth-child(5n) {
   margin-bottom: calc(20px * var(--charsheet-font-scale, 1));
 }
 
-/* 左右栏容器 */
-.left-column,
-.right-column {
+.left-right-row-container:nth-child(15n) {
+  margin-bottom: calc(30px * var(--charsheet-font-scale, 1));
+}
+
+/* 左右分栏容器 - 包含左栏和右栏 */
+.left-right-container {
+  display: flex;
+  width: 100%;
+  gap: calc(20px * var(--charsheet-font-scale, 1));
+}
+
+/* 左栏容器 */
+.left-column-container {
   display: flex;
   width: 50%;
   justify-content: flex-start;
+  gap: calc(6px * var(--charsheet-font-scale, 1));
 }
 
-.right-column {
-  margin-left: 20px;
+/* 右栏容器 */
+.right-column-container {
+  display: flex;
+  width: 50%;
+  justify-content: flex-start;
+  gap: calc(6px * var(--charsheet-font-scale, 1));
 }
 
 /* 左右分栏单元格 */
-.lr-cell {
+.left-right-grid-item {
   display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-}
-
-.lr-cell:not(:first-child) {
-  margin-left: 6px;
+  flex-shrink: 0;
 }
 
 /* 打印优化样式 - 仅添加打印特有的属性 */
 @media print {
-  .lr-row-container,
-  .left-column,
-  .right-column,
-  .lr-cell {
+  .left-right-row-container,
+  .left-right-container,
+  .left-column-container,
+  .right-column-container,
+  .left-right-grid-item {
     page-break-inside: avoid;
+  }
+  
+  .left-right-container {
+    gap: calc(15px * var(--charsheet-font-scale, 1));
+  }
+  
+  .left-column-container,
+  .right-column-container {
+    gap: calc(4px * var(--charsheet-font-scale, 1));
   }
 }

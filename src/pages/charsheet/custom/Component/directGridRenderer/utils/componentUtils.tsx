@@ -5,7 +5,11 @@
 
 import React from 'react';
 import { PageConfig, CellConfig, RowConfig } from '../adapters';
+import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke } from '@/pages/charsheet/interface';
+import { DEFAULT_STROKE_CONFIG, DEFAULT_STROKE_CLASSES, STROKE_ERROR_MESSAGES } from '@/pages/charsheet/const';
+import { getCharacterStrokeData, createStrokeSVG } from '@/utils/lib/hanziWriterRenderer';
 import styles from '../templates/index.less';
+import './stroke.less';
 
 /**
  * 创建页面容器组件
@@ -36,37 +40,166 @@ export const createPageContainer = (
 };
 
 /**
- * 创建行元素组件
+ * 创建笔画展示JSX元素
+ * 输入汉字字符串，返回每个笔画的JSX展示
  */
-export const createRowElement = (
-  rowIndex: number,
-  config: RowConfig,
+export const createStrokeDisplayJSX = async (
+  character: string,
+  config: StrokeDisplayConfig = {}
+): Promise<StrokeDisplayResult> => {
+  const {
+    strokeSize = DEFAULT_STROKE_CONFIG.STROKE_SIZE,
+    fillColor = DEFAULT_STROKE_CONFIG.FILL_COLOR,
+    svgClassName = DEFAULT_STROKE_CLASSES.STROKE_SVG,
+    showArrow = true,
+    arrowClassName = DEFAULT_STROKE_CLASSES.STROKE_ARROW,
+    arrowChar = DEFAULT_STROKE_CONFIG.ARROW_CHAR
+  } = config;
+
+  if (!character) {
+    return {
+      character: '',
+      strokeCount: 0,
+      strokeElements: [],
+      hasError: true,
+      errorMessage: STROKE_ERROR_MESSAGES.EMPTY_CHARACTER
+    };
+  }
+
+  try {
+    const strokes = await getCharacterStrokeData(character);
+    
+    if (strokes.length === 0) {
+      return {
+        character,
+        strokeCount: 0,
+        strokeElements: [],
+        hasError: true,
+        errorMessage: STROKE_ERROR_MESSAGES.NO_STROKE_DATA
+      };
+    }
+
+    const strokeElements: StrokeJSXElement[] = [];
+    
+    // 创建每个笔画的JSX元素
+    for (let i = 0; i < strokes.length; i++) {
+      const strokesPortion = strokes.slice(0, i + 1);
+      
+      // 创建笔画SVG的JSX元素
+      const strokeSVG = createStrokeSVG(strokesPortion, strokeSize, { 
+        fillColor,
+        className: svgClassName 
+      });
+      
+      const strokeElement = (
+        <div 
+          key={`stroke-${i}`}
+          className={svgClassName}
+          dangerouslySetInnerHTML={{ __html: strokeSVG.outerHTML }}
+        />
+      );
+      
+      // 创建箭头元素（除了最后一个）
+      let arrowElement: React.ReactElement | undefined;
+      if (showArrow && i < strokes.length - 1) {
+        arrowElement = (
+          <span 
+            key={`arrow-${i}`}
+            className={arrowClassName}
+            style={{ fontSize: `${Math.floor(strokeSize * 0.5)}px` }}
+          >
+            {arrowChar}
+          </span>
+        );
+      }
+      
+      strokeElements.push({
+        index: i,
+        strokeElement,
+        arrowElement
+      });
+    }
+    
+    return {
+      character,
+      strokeCount: strokes.length,
+      strokeElements,
+      hasError: false
+    };
+  } catch (error) {
+    console.warn(`创建笔画JSX失败:`, error);
+    return {
+      character,
+      strokeCount: 0,
+      strokeElements: [],
+      hasError: true,
+      errorMessage: STROKE_ERROR_MESSAGES.LOAD_FAILED
+    };
+  }
+};
+
+/**
+ * 创建笔画顺序容器JSX（解耦后的布局组件）
+ */
+export const createStrokeOrderContainerJSX = (
+  strokeElements: StrokeJSXElement[],
+  containerConfig: { className?: string; style?: React.CSSProperties } = {}
+): React.ReactElement => {
+  const {
+    className = DEFAULT_STROKE_CLASSES.STROKE_ORDER_CONTAINER,
+    style = {}
+  } = containerConfig;
+
+  return (
+    <div className={className} style={style}>
+      {strokeElements.map((element) => (
+        <React.Fragment key={element.index}>
+          {element.strokeElement}
+          {element.arrowElement}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+/**
+ * 创建基础单元格元素
+ * 只负责创建单个网格单元格，不涉及行级别的逻辑
+ */
+export const createBasicCellElement = (
+  cellId: string,
+  colIndex: number,
+  cellConfig: CellConfig,
   children?: React.ReactNode
 ): React.ReactElement => {
-  const rowStyle: React.CSSProperties = {};
-  
-  // 设置特殊间距
-  if (config.specialSpacing) {
-    if (config.specialSpacing.every5th && (rowIndex + 1) % 6 === 0) {
-      rowStyle.marginBottom = config.specialSpacing.every5th;
-    }
-    if (config.specialSpacing.every15th && (rowIndex + 1) % 12 === 0) {
-      rowStyle.marginBottom = config.specialSpacing.every15th;
-    }
-  }
-  
+  const cellStyle: React.CSSProperties = {
+    width: cellConfig.width,
+    height: cellConfig.height,
+    marginLeft: cellConfig.marginLeft,
+    fontSize: cellConfig.fontSize,
+    border: cellConfig.border
+  };
+
   return (
     <div
-      key={`grid-row-${rowIndex}`}
-      id={`grid-row-${rowIndex}`}
-      className={styles['grid-row']}
-      style={rowStyle}
+      key={cellId}
+      id={cellId}
+      className={styles['grid-cell']}
+      style={cellStyle}
+      data-col-index={colIndex.toString()}
     >
       {children}
     </div>
   );
 };
 
+/**
+ * @deprecated 请在各模板组件内部自行实现行创建逻辑
+ */
+export const createRowElement = createBasicCellElement;
+
+
+ 
 /**
  * 创建单元格元素组件
  */

@@ -1,0 +1,91 @@
+/**
+ * 笔画展示相关样式
+ * 统一管理笔画顺序显示的样式
+ */
+
+.stroke-order-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  min-height: 34px;
+  
+  &:empty {
+    display: none;
+  }
+}
+
+.stroke-svg {
+  display: inline-block;
+  vertical-align: middle;
+  
+  svg {
+    display: block;
+    border: 1px solid #dee2e6;
+    border-radius: 2px;
+    background-color: #fff;
+  }
+}
+
+.stroke-arrow {
+  display: inline-block;
+  color: #6c757d;
+  font-weight: bold;
+  margin: 0 2px;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.stroke-error-message {
+  color: #dc3545;
+  font-size: 12px;
+  font-style: italic;
+  padding: 4px 8px;
+}
+
+.stroke-no-data-message {
+  color: #6c757d;
+  font-size: 12px;
+  font-style: italic;
+  padding: 4px 8px;
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .stroke-order-container {
+    gap: 2px;
+    padding: 2px 4px;
+    
+    .stroke-svg svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .stroke-arrow {
+      font-size: 12px;
+      margin: 0 1px;
+    }
+  }
+}
+
+// 打印样式
+@media print {
+  .stroke-order-container {
+    background-color: transparent;
+    border: none;
+    margin-bottom: 4px;
+    
+    .stroke-svg svg {
+      border: 1px solid #000;
+    }
+    
+    .stroke-arrow {
+      color: #000;
+    }
+  }
+}

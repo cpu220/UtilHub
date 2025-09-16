@@ -15,7 +15,11 @@ export * from './processor';
 // PDF导出接口
 export * from './pdf';
 
+// 笔画相关接口
+export * from './stroke';
+
 // 便捷类型别名
 export type { PageContent, ContentProcessResult } from './common';
 export type { IContentProcessor } from './processor';
 export type { PDFExportOptions, PDFPageConfig } from './pdf';
+export type { StrokeDisplayConfig, StrokeOrderContainerConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke } from './stroke';

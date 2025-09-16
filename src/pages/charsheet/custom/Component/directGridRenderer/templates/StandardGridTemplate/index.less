@@ -1,36 +1,51 @@
 /* 标准网格模板样式 */
 
-/* 网格行 */
-.grid-row {
-  display: flex;
-  margin-bottom: calc(10px * var(--charsheet-font-scale, 1));
+/* 包含网格内容的行容器 */
+.standard-grid-row-container {
+  display: block;
+  width: 100%;
+  margin-bottom: calc(5px * var(--charsheet-font-scale, 1));
 }
 
-.grid-row:nth-child(5n) {
+.standard-grid-row-container:nth-child(5n) {
   margin-bottom: calc(20px * var(--charsheet-font-scale, 1));
 }
 
+.standard-grid-row-container:nth-child(15n) {
+  margin-bottom: calc(30px * var(--charsheet-font-scale, 1));
+}
+
+/* 网格容器 - 多列布局 */
+.standard-grid-container {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: calc(6px * var(--charsheet-font-scale, 1));
+}
+
 /* 网格单元格 */
-.grid-item {
+.standard-grid-item {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: calc(6px * var(--charsheet-font-scale, 1));
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.grid-item:first-child {
-  margin-left: 0;
-}
-
-.grid-item:nth-child(5n) {
+/* 每5个单元格增加额外间距 */
+.standard-grid-item:nth-child(5n) {
   margin-right: calc(12px * var(--charsheet-font-scale, 1));
 }
 
 /* 打印优化样式 - 仅添加打印特有的属性 */
 @media print {
-  .grid-row,
-  .grid-item {
+  .standard-grid-row-container,
+  .standard-grid-container,
+  .standard-grid-item {
     page-break-inside: avoid;
+  }
+  
+  .standard-grid-container {
+    gap: calc(4px * var(--charsheet-font-scale, 1));
   }
 }
