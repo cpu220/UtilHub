@@ -5,9 +5,9 @@
 
 import React from 'react';
 import { PageConfig, CellConfig, RowConfig } from '../adapters';
-import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke } from '@/pages/charsheet/interface';
+import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, RowConfigWithStroke, StrokeDataConfig } from '@/pages/charsheet/interface';
 import { STROKE_CLASSES } from '@/pages/charsheet/const/font';
-import { generateStrokeData, StrokeDataConfig } from '@/utils/lib/hanziWriterRenderer';
+import { generateStrokeData } from '@/utils/lib/hanziWriterRenderer';
 import styles from '../templates/index.less';
 import './stroke.less';
 
@@ -75,10 +75,11 @@ export const createBasicCellElement = (
   cellConfig: CellConfig,
   children?: React.ReactNode
 ): React.ReactElement => {
+
   const cellStyle: React.CSSProperties = {
     width: cellConfig.width,
     height: cellConfig.height,
-    marginLeft: cellConfig.marginLeft,
+    marginLeft: colIndex === 0 ? '0' : cellConfig.marginLeft,
     fontSize: cellConfig.fontSize,
     border: cellConfig.border
   };
@@ -102,7 +103,7 @@ export const createBasicCellElement = (
 export const createRowElement = createBasicCellElement;
 
 
- 
+
 /**
  * 创建单元格元素组件
  */
@@ -120,18 +121,18 @@ export const createCellElement = (
     alignItems: 'center',
     justifyContent: 'center'
   };
-  
+
   // 第一个元素不设置左边距
   if (colIndex === 0) {
     cellStyle.marginLeft = '0';
   } else if (cellConfig.marginLeft) {
     cellStyle.marginLeft = cellConfig.marginLeft;
   }
-  
+
   if (cellConfig.border) {
     cellStyle.border = cellConfig.border;
   }
-  
+
   return (
     <div
       key={cellId}
@@ -231,7 +232,7 @@ export const createStrokeDisplayJSX = async (
   // 根据数据创建JSX元素
   for (let i = 0; i < strokeData.strokeSVGs.length; i++) {
     const strokeElement = (
-      <div 
+      <div
         key={`stroke-${i}`}
         className={svgClassName}
         dangerouslySetInnerHTML={{ __html: strokeData.strokeSVGs[i] }}
@@ -242,7 +243,7 @@ export const createStrokeDisplayJSX = async (
     let arrowElement: React.ReactElement | undefined;
     if (strokeData.includeArrows && i < strokeData.strokeSVGs.length - 1) {
       arrowElement = (
-        <span 
+        <span
           key={`arrow-${i}`}
           className={arrowClassName}
           style={{ fontSize: `${strokeData.arrowFontSize}px` }}

@@ -89,6 +89,57 @@ export interface StrokeDisplayResult {
 }
 
 /**
+ * 笔画数据生成配置
+ * 参考hanzi-writer的设计，支持多种颜色模式
+ */
+export interface StrokeDataConfig {
+  /** 笔画大小 */
+  strokeSize?: number;
+  
+  /** 颜色模式 */
+  colorMode?: 'single' | 'stroke' | 'radical' | 'custom';
+  
+  /** 单一颜色（colorMode为'single'时使用） */
+  fillColor?: string;
+  
+  /** 偏旁颜色（colorMode为'radical'时使用） */
+  radicalColor?: string;
+  
+  /** 自定义颜色数组（colorMode为'custom'时使用） */
+  customColors?: string[];
+  
+  /** 是否包含箭头分隔符 */
+  includeArrows?: boolean;
+  
+  /** 箭头字符 */
+  arrowChar?: string;
+}
+
+/**
+ * 笔画数据结果
+ */
+export interface StrokeDataResult {
+  /** 汉字字符 */
+  character: string;
+  /** 笔画总数 */
+  strokeCount: number;
+  /** 笔画SVG HTML字符串数组 */
+  strokeSVGs: string[];
+  /** 笔画颜色数组 */
+  strokeColors: string[];
+  /** 是否包含箭头 */
+  includeArrows: boolean;
+  /** 箭头字符 */
+  arrowChar: string;
+  /** 箭头字体大小 */
+  arrowFontSize: number;
+  /** 是否有错误 */
+  hasError: boolean;
+  /** 错误信息 */
+  errorMessage?: string;
+}
+
+/**
  * 行配置扩展（支持笔画顺序显示）
  */
 export interface RowConfigWithStroke {

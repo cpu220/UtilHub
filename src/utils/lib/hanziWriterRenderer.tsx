@@ -6,23 +6,14 @@
 import HanziWriter from 'hanzi-writer';
 import React from 'react';
 import { getBorderColor, getGridColor } from '@/pages/charsheet/const/colorManager';
-import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult } from '@/pages/charsheet/interface';
-import { STROKE_DEFAULT_CONFIG, STROKE_COLORS, STROKE_ERROR_MESSAGES, getStrokeSize, getArrowFontSize } from '@/pages/charsheet/const/font';
+import { StrokeDisplayConfig, StrokeJSXElement, StrokeDisplayResult, StrokeDataConfig, StrokeDataResult } from '@/pages/charsheet/interface';
+import { STROKE_DEFAULT_CONFIG, STROKE_COLORS, STROKE_ERROR_MESSAGES, getStrokeSize, getArrowFontSize, HANZI_WRITER_DEFAULT_OPTIONS } from '@/pages/charsheet/const/font';
 
-// 默认配置选项
-const defaultOptions = {
-  width: 100,
-  height: 100,
-  fontSize: 100, // 统一字体大小参数
-  padding: 5,
-  strokeWidth: 5,
-  strokeColor: '#555',
-  radicalColor: '#ff0000',
-  useGridBackground: false,
-  gridColor: '#DDD',
-  useLocalData: true, // 控制是否使用本地字库
-  showOutline: true
-};
+// 使用统一的默认配置选项
+const defaultOptions = HANZI_WRITER_DEFAULT_OPTIONS;
+
+
+
 
 // 存储已创建的writer实例引用
 const writerInstances = new Map<string, any>();
@@ -151,21 +142,24 @@ export const addGridLinesToSVG = (svg: SVGElement, width: number, height: number
     showBorder = true
   } = options;
   
+  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  group.setAttribute('class', 'grid-lines');
+  
   const halfWidth = Math.round(width / 2) + 0.5;
   const halfHeight = Math.round(height / 2) + 0.5;
   const dashArray = useDashedLines ? '3,3' : undefined;
   
-  // 背景矩形（如果需要边框）
+  // 边框矩形
   if (showBorder) {
-    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    background.setAttribute('x', '0.5');
-    background.setAttribute('y', '0.5');
-    background.setAttribute('width', (width - 1).toString());
-    background.setAttribute('height', (height - 1).toString());
-    background.setAttribute('fill', 'white');
-    background.setAttribute('stroke', gridColor);
-    background.setAttribute('stroke-width', strokeWidth.toString());
-    svg.appendChild(background);
+    const border = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    border.setAttribute('x', '0');
+    border.setAttribute('y', '0');
+    border.setAttribute('width', width.toString());
+    border.setAttribute('height', height.toString());
+    border.setAttribute('fill', 'none');
+    border.setAttribute('stroke', gridColor);
+    border.setAttribute('stroke-width', (strokeWidth * 1.5).toString()); // 边框稍粗一些
+    group.appendChild(border);
   }
   
   // 水平中线
@@ -177,7 +171,7 @@ export const addGridLinesToSVG = (svg: SVGElement, width: number, height: number
   horizontalLine.setAttribute('stroke', gridColor);
   horizontalLine.setAttribute('stroke-width', strokeWidth.toString());
   if (dashArray) horizontalLine.setAttribute('stroke-dasharray', dashArray);
-  svg.appendChild(horizontalLine);
+  group.appendChild(horizontalLine);
   
   // 垂直中线
   const verticalLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -188,7 +182,7 @@ export const addGridLinesToSVG = (svg: SVGElement, width: number, height: number
   verticalLine.setAttribute('stroke', gridColor);
   verticalLine.setAttribute('stroke-width', strokeWidth.toString());
   if (dashArray) verticalLine.setAttribute('stroke-dasharray', dashArray);
-  svg.appendChild(verticalLine);
+  group.appendChild(verticalLine);
   
   // 对角线1（左上到右下）
   const diagonal1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -199,7 +193,7 @@ export const addGridLinesToSVG = (svg: SVGElement, width: number, height: number
   diagonal1.setAttribute('stroke', gridColor);
   diagonal1.setAttribute('stroke-width', strokeWidth.toString());
   if (dashArray) diagonal1.setAttribute('stroke-dasharray', dashArray);
-  svg.appendChild(diagonal1);
+  group.appendChild(diagonal1);
   
   // 对角线2（右上到左下）
   const diagonal2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -210,7 +204,9 @@ export const addGridLinesToSVG = (svg: SVGElement, width: number, height: number
   diagonal2.setAttribute('stroke', gridColor);
   diagonal2.setAttribute('stroke-width', strokeWidth.toString());
   if (dashArray) diagonal2.setAttribute('stroke-dasharray', dashArray);
-  svg.appendChild(diagonal2);
+  group.appendChild(diagonal2);
+  
+  svg.appendChild(group);
 };
 
 /**
@@ -250,13 +246,13 @@ const createGridBackground = (container: HTMLElement, width: number, height: num
   const svg = createGridSVG(width, height, gridColor, {
     strokeWidth: 1,
     useDashedLines: true,
-    showBorder: false // 不使用内置边框，因为要设置CSS边框
+    showBorder: true  
   });
   
   // 设置ID和样式（保持向后兼容）
   svg.setAttribute('id', svgId);
   svg.style.display = 'block';
-  svg.style.border = `1px solid ${gridColor}`;
+  // svg.style.border = `1px solid ${gridColor}`;  
   svg.style.boxSizing = 'border-box';
   
   // 将SVG添加到容器
@@ -544,56 +540,9 @@ export const createStrokeSVG = (strokePaths: string[], size: number, options: {
 
 
 
-/**
- * 笔画数据生成配置
- * 参考hanzi-writer的设计，支持多种颜色模式
- */
-export interface StrokeDataConfig {
-  /** 笔画大小 */
-  strokeSize?: number;
-  
-  /** 颜色模式 */
-  colorMode?: 'single' | 'stroke' | 'radical' | 'custom';
-  
-  /** 单一颜色（colorMode为'single'时使用） */
-  fillColor?: string;
-  
-  /** 偏旁颜色（colorMode为'radical'时使用） */
-  radicalColor?: string;
-  
-  /** 自定义颜色数组（colorMode为'custom'时使用） */
-  customColors?: string[];
-  
-  /** 是否包含箭头分隔符 */
-  includeArrows?: boolean;
-  
-  /** 箭头字符 */
-  arrowChar?: string;
-}
 
-/**
- * 笔画数据结果
- */
-export interface StrokeDataResult {
-  /** 汉字字符 */
-  character: string;
-  /** 笔画总数 */
-  strokeCount: number;
-  /** 笔画SVG HTML字符串数组 */
-  strokeSVGs: string[];
-  /** 笔画颜色数组 */
-  strokeColors: string[];
-  /** 是否包含箭头 */
-  includeArrows: boolean;
-  /** 箭头字符 */
-  arrowChar: string;
-  /** 箭头字体大小 */
-  arrowFontSize: number;
-  /** 是否有错误 */
-  hasError: boolean;
-  /** 错误信息 */
-  errorMessage?: string;
-}
+
+
 
 /**
  * 生成笔画数据（通用API）

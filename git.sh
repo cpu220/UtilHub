@@ -1,1 +1,1 @@
-git add . && git commit -m "feat: 重构模板，重点是笔画展示"
+git add . && git commit -m "feat: 修正边框架不一致的问题，全部放在svg内处理"

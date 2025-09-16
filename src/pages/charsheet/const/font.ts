@@ -77,6 +77,7 @@ const StrokeRenderOptions = {
   showOutline: false, // 显示汉字轮廓
   radicalColor: '#3889f2', // 偏旁颜色
   fontSizeRatio: 1, // 默认字体大小比例
+  showBorder:true
   // delayBetweenLoops: 2000, // 设置动画循环间隔
   // outlineColor: '#F0F0F0' // 设置轮廓颜色
 };
@@ -174,6 +175,24 @@ export const STROKE_ERROR_MESSAGES = {
   LOAD_FAILED: '笔画加载失败',
   /** 字符为空 */
   EMPTY_CHARACTER: '字符不能为空'
+} as const;
+
+/**
+ * hanziWriterRenderer默认配置
+ * 汉字渲染器的通用默认参数
+ */
+export const HANZI_WRITER_DEFAULT_OPTIONS = {
+  width: 100,
+  height: 100,
+  fontSize: 100, // 统一字体大小参数
+  padding: 5,
+  strokeWidth: 5,
+  strokeColor: '#555',
+  radicalColor: '#ff0000',
+  useGridBackground: false,
+  gridColor: '#DDD',
+  useLocalData: true, // 控制是否使用本地字库
+  showOutline: true
 } as const;
 
 

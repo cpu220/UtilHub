@@ -46,7 +46,7 @@ export const StandardGridTemplate: React.FC<TemplateComponentProps> = ({
     height: config.height || 60 * FONT_SCALE,
     marginLeft: '6px',
     fontSize: `${(config.fontSize || config.width || 60 * FONT_SCALE) * 0.6}px`,
-    border: `1px solid ${CharsheetColors.BORDER_COLOR}`
+    // border: `1px solid ${CharsheetColors.BORDER_COLOR}`
   }), [config.width, config.fontSize]);
 
   // 静态配置对象 - 行配置（标准网格不显示笔画顺序）
